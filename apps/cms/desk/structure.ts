@@ -8,11 +8,10 @@ import {
 	MdArchive,
 	MdArticle,
 	MdBusiness,
-	MdFolder,
 	MdHome,
-	MdPages,
 	MdPerson,
 	MdPerson2,
+	MdSchema,
 	MdSearch,
 	MdSettings,
 	MdSettingsSuggest,
@@ -22,8 +21,8 @@ import {
 	RiLayoutBottom2Line,
 	RiLayoutMasonryFill,
 } from "react-icons/ri";
-import { AiOutlineFileSearch } from "react-icons/ai";
 import { IoShareSocial } from "react-icons/io5";
+import { TbSettingsSearch } from "react-icons/tb";
 
 export const structure: StructureResolver = (
 	S: StructureBuilder,
@@ -38,26 +37,28 @@ export const structure: StructureResolver = (
 			div(),
 			singlePage("About", "about", MdPerson2),
 			singlePage("Archive", "archive", MdArchive),
-			pageList("Case Studies", "case-study", MdArticle),
 			div(),
-			folder("Global Layout", RiLayoutMasonryFill, [
+			pageList("Case Studies", "case-study", MdArticle),
+			pageList("Clients", "client", MdBusiness),
+			pageList("Collaborators", "collaborator", MdPerson),
+			div(),
+			folder("Settings", MdSettings, [
 				singlePage("Header", "settings.header", RiLayoutTop2Line),
 				singlePage("Footer", "settings.footer", RiLayoutBottom2Line),
-			]),
-			pageList("Social Networks", "socialNetworks", IoShareSocial),
-			div(),
-			singlePage("Global SEO", "seoDefaults", AiOutlineFileSearch),
-			folder("Schema Markup", MdFolder, [
-				singlePage(
-					"Schema Markup Defaults",
-					"schemaMarkupDefaults",
-					MdSettingsSuggest,
-				),
 				div(),
-				pageList("People", "schemaMarkupPerson", MdPerson),
-				pageList("Organizations", "schemaMarkupOrganization", MdBusiness),
+				singlePage("Global SEO", "seoDefaults", MdSearch),
+				div(),
+				pageList("Social Networks", "socialNetworks", IoShareSocial),
+				folder("Schema Markup", MdSchema, [
+					singlePage(
+						"Schema Markup Defaults",
+						"schemaMarkupDefaults",
+						MdSettingsSuggest,
+					),
+					div(),
+					pageList("People", "schemaMarkupPerson", MdPerson),
+					pageList("Organizations", "schemaMarkupOrganization", MdBusiness),
+				]),
 			]),
-			div(),
-			folder("Settings", MdSettings, []),
 		]);
 };

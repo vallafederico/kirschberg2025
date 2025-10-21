@@ -5,7 +5,7 @@ export default defineCliConfig({
 	api: {
 		...SANITY_CONFIG,
 	},
-	studioHost: "internetthings-starter",
+	studioHost: "kirschberg",
 	/**
 	 * Enable auto-updates for studios.
 	 * Learn more at https://www.sanity.io/docs/cli#auto-updates

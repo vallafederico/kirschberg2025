@@ -20,7 +20,7 @@ const sharedConfig = [
 	}),
 	media(),
 	noteField(),
-	userGuidePlugin({ userGuideStructure }),
+	// userGuidePlugin({ userGuideStructure }),
 	crawlMeMaybe(),
 	// presentationTool({
 	// 	previewUrl: {
@@ -41,7 +41,6 @@ const devConfig = [visionTool()];
 export default defineConfig({
 	...SANITY_CONFIG,
 	scheduledPublishing: { enabled: false }, // enable if client pays for this feature
-	icon: Logo,
 
 	plugins: [...sharedConfig, ...devConfig],
 	schema: {

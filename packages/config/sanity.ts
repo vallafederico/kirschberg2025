@@ -1,6 +1,6 @@
 export default {
-	name: "starter",
-	title: "Starter",
+	name: "kirschberg",
+	title: "Kirschberg",
 	projectId: "hstgvnbq",
 	dataset: "production",
 };

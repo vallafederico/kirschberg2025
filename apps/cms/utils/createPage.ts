@@ -1,7 +1,7 @@
 import { pageDefaultsGroups } from "./_pageDefaults";
 import { HiDocumentText } from "react-icons/hi";
 import type { IconType } from "react-icons/lib";
-import type { FieldDefinition, FormFieldGroup } from "sanity";
+import { defineField, defineType, type FieldDefinition, type FormFieldGroup } from "sanity";
 
 import { SlugInput } from "sanity-plugin-prefixed-slug";
 
@@ -26,7 +26,7 @@ const addDefaultGroups = (fields: Array<FieldDefinition>) => {
 			field.group = "content";
 		}
 
-		return field;
+		return defineField(field);
 	});
 };
 
@@ -114,7 +114,7 @@ export const createPage = (opts: PageAttributes) => {
 	}
 
 	if (slices) {
-		allFields.push({
+		fields.push({
 			name: "slices",
 			title: "Slices",
 			group: "content",
@@ -148,7 +148,7 @@ export const createPage = (opts: PageAttributes) => {
 		orderings,
 	};
 
-	return page;
+	return defineType(page);
 };
 
 export default createPage;
