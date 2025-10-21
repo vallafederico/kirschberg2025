@@ -21,7 +21,7 @@ html {
 	--comp: calc(var(--size) - var(--scrollbar) * var(--d));
 
 	/* font-size: clamp(0px, calc(var(--size) + 1px - var(--c)), var(--infinity)); */
-	font-size: calc(var(--size) - var(--scrollbar) * var(--d));
+	font-size: calc(1.11111vw - var(--scrollbar) * 0.01111);
 
 	@media screen and (max-width: 768px) {
 		--design-width: 360;
