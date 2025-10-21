@@ -1,5 +1,5 @@
-import { createClient } from "@sanity/client";
 import { SANITY_CONFIG } from "@local/config";
+import { createClient } from "@sanity/client";
 
 const sanityClient = createClient({
 	...SANITY_CONFIG,
@@ -11,7 +11,7 @@ const sanityClient = createClient({
 		studioUrl: "https://kirschberg.sanity.studio",
 	},
 	token:
-		"skt5KY1LA2BbW1KNvuFZuSfIpJdertZhUTMGjnIBomnNFsxxl9NuIKXE090jUHcRH6ergamfx89RxXEUPN6T3samP8f4tLc7tntSGwgxejciCu2S8pTm2oSSKUWu3xKGPscCSAcc5sLqy5KZcJZpUXp6qUN5OcSTqAW20R1fXJlp47dyBIQM",
+		"skqo9rdCnlnN8OOGbaqg5S4pREgQUwJ56tZMuFAvi17vrd7AbBWDwoYgO5vvnUGsW1CGQN0PwEzXtMKogQl2ksLgU1xnZVi4dzfrzYNRZrdLoxpR2ibiiQhizHTZYBy70q27gPgGgtzHL1yC3Yh1DRnAndDfxzS4Mfct4iQlLuLMyfUG4GOv",
 });
 
 export default sanityClient;

@@ -2,7 +2,7 @@ import { visionTool } from "@sanity/vision";
 import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
 import { schemaTypes } from "./schemas";
-import { media } from "sanity-plugin-media";
+import { media, mediaAssetSource } from "sanity-plugin-media";
 import { structure } from "./desk/structure";
 import { noteField } from "sanity-plugin-note-field";
 import { userGuidePlugin } from "@q42/sanity-plugin-user-guide";
@@ -47,4 +47,12 @@ export default defineConfig({
 	schema: {
 		types: schemaTypes,
 	},
+	form: {
+    // Don't use this plugin when selecting files only (but allow all other enabled asset sources)
+    file: {
+      assetSources: previousAssetSources => {
+        return previousAssetSources.filter(assetSource => assetSource !== mediaAssetSource)
+      }
+    }
+  }
 });

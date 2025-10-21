@@ -1,7 +1,7 @@
-import { createEffect, createMemo, createSignal, onCleanup } from "solid-js";
-import { groqStore, type GroqStore } from "@sanity/groq-store";
 import { SANITY_CONFIG } from "@local/config";
 import SanityEventSource from "@sanity/eventsource";
+import { type GroqStore, groqStore } from "@sanity/groq-store";
+import { createEffect, createMemo, createSignal, onCleanup } from "solid-js";
 
 type MaybeAccessor<T> = T | (() => T);
 function get<T>(v: MaybeAccessor<T>): T {
@@ -26,7 +26,7 @@ function getStore() {
 	if (_store) return _store;
 
 	const token =
-		"skt5KY1LA2BbW1KNvuFZuSfIpJdertZhUTMGjnIBomnNFsxxl9NuIKXE090jUHcRH6ergamfx89RxXEUPN6T3samP8f4tLc7tntSGwgxejciCu2S8pTm2oSSKUWu3xKGPscCSAcc5sLqy5KZcJZpUXp6qUN5OcSTqAW20R1fXJlp47dyBIQM";
+		"skqo9rdCnlnN8OOGbaqg5S4pREgQUwJ56tZMuFAvi17vrd7AbBWDwoYgO5vvnUGsW1CGQN0PwEzXtMKogQl2ksLgU1xnZVi4dzfrzYNRZrdLoxpR2ibiiQhizHTZYBy70q27gPgGgtzHL1yC3Yh1DRnAndDfxzS4Mfct4iQlLuLMyfUG4GOv";
 
 	// We use a minimal ES class just to inject the Authorization header
 	class ESWithToken extends (SanityEventSource as {

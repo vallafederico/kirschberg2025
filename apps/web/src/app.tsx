@@ -2,15 +2,12 @@ import "./app.css";
 import { Link, MetaProvider, Title } from "@solidjs/meta";
 import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
-// import { VisualEditing } from "@local/sanity";
 
 import { Suspense } from "solid-js";
-import { useViewport } from "~/lib/hooks/useViewport";
-
-import { Nav } from "~/components/Nav";
-import Grid from "~/components/Grid";
-
 import Canvas from "~/components/Canvas";
+import Grid from "~/components/Grid";
+import { Nav } from "~/components/Nav";
+import { useViewport } from "~/lib/hooks/useViewport";
 import { scroll } from "~/lib/utils/scroll";
 
 import { usePageTransition } from "./animation";

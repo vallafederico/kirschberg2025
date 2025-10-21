@@ -6,35 +6,35 @@ export default createPage({
 	title: "Case Studies",
 	preview: {
 		select: {
-			title: 'title',
-					subtitle: 'byline',
-				archived: 'archived',
-				media: 'featuredMedia',
-			},
-			prepare(select: any) {
-				const { title, byline, archived, media } = select;
-				return {
-					title,
-					subtitle: byline,
-					media,
-				};
-			},
+			title: "title",
+			subtitle: "byline",
 		},
-	slices: 'caseStudySlices',
+		prepare(select: any) {
+			const { title, byline, archived } = select;
+			return {
+				title,
+				subtitle: byline,
+			};
+		},
+	},
+	slices: "caseStudySlices",
 	fields: [
 		{
-			name: 'featuredMedia', 
-			type: 'media',
+			name: "featuredMedia",
+			type: "array",
+			description:
+				"Pair of medias, the first item is used on the case study page, the second item is used on the archived project page",
+			of: [{ type: "media" }],
 		},
 
 		{
 			name: "byline",
 			type: "text",
-			rows: 3, 
+			rows: 3,
 		},
 		{
-			name: 'description', 
-			type: 'strippedText'
+			name: "description",
+			type: "strippedText",
 		},
 		{
 			name: "role",
