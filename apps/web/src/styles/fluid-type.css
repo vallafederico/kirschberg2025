@@ -11,7 +11,17 @@ html {
 	--delta-max: calc(var(--base-font-size) / var(--max-scaling-width));
 	--max-fluid-size: calc(var(--delta-max) * var(--max-scaling-width) * 1px);
 
-	font-size: max(0px, var(--fluid-size));
+	/* const fontSize = `calc(${(vw * 16).toFixed(5)}vw - var(--sbw) * ${(16 / grid.mockupWidth).toFixed(5)})` */
+
+	--vw: calc(100 / var(--design-width));
+	--s: calc(var(--vw) * 16);
+	--size: calc(var(--s) * 1vw);
+	--d: calc(16 / var(--design-width));
+	--c: calc(var(--scrollbar) * var(--d));
+	--comp: calc(var(--size) - var(--c));
+
+	/* font-size: clamp(0px, calc(var(--size) + 1px - var(--c)), var(--infinity)); */
+	font-size: calc(1.11vw - (15px * 0.011));
 
 	@media screen and (max-width: 768px) {
 		--design-width: 360;
