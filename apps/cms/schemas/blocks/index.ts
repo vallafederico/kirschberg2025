@@ -4,6 +4,7 @@ import formFields from './form-fields'
 import imageAlt from './imageAlt'
 import link from './link'
 import location from './location'
+import media from './media'
 import strippedText from './strippedText'
 
-export default [...formFields, blockContent, link, imageAlt, location, strippedText, body] as any[]
+export default [...formFields, blockContent, link, imageAlt, location, strippedText, body, media] as any[]

@@ -1,6 +1,7 @@
 import { pageDefaultsGroups } from "./_pageDefaults";
 import { HiDocumentText } from "react-icons/hi";
 import type { IconType } from "react-icons/lib";
+import { PreviewConfig } from "sanity";
 import { defineField, defineType, type FieldDefinition, type FormFieldGroup } from "sanity";
 
 import { SlugInput } from "sanity-plugin-prefixed-slug";
@@ -12,6 +13,7 @@ type PageAttributes = {
 	icon?: IconType;
 	slug?: string | false;
 	groups?: FormFieldGroup[];
+	preview: PreviewConfig;
 	slices?: boolean | string;
 	orderings?: any[];
 	prefix?: string; // Add prefix to slug, i.e "/blog/..."

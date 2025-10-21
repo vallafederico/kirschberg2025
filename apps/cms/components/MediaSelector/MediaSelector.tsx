@@ -1,6 +1,6 @@
-import {Stack, Flex, Button, Label} from '@sanity/ui'
+import {Stack, Tab, TabList, TabPanel} from '@sanity/ui'
 import {MdImage, MdPlayCircle} from 'react-icons/md'
-import {set} from 'sanity'
+import {MemberField, set} from 'sanity'
 import styles from './mediaSelector.module.css'
 import {useCallback} from 'react'
 
@@ -8,18 +8,23 @@ console.log(styles)
 
 export default function MediaSelector(props) {
   const {
-    elementProps: {id, onBlur, onFocus, placeholder, readOnly, ref, value},
+    elementProps: {id, onBlur, onFocus, placeholder, readOnly, ref},
     onChange,
-    schemaType,
-    validation,
-    // value = '',
+    renderField,
+    renderInput,
+    members,
+    renderItem,
+    renderPreview,
+    value,
   } = props
+
+  const val = value?.mediaType?.toLowerCase?.() || 'image'
 
   const handleTypeSelect = useCallback(
     (mediaType: 'image' | 'video') => {
       onChange(set({...props.value, mediaType}))
     },
-    [onChange],
+    [onChange, props.value],
   )
 
   const options = [
@@ -27,26 +32,49 @@ export default function MediaSelector(props) {
     {name: 'Video', icon: MdPlayCircle},
   ]
 
+  const imageMember = members.find((member: any) => member.name === 'image')
+  const videoMember = members.find((member: any) => member.name === 'video')
+
   return (
     <Stack className={styles} space={3}>
-      <Label size={2}>Select a media type</Label>
-      <Flex gap={3}>
-        {options.map((option, index) => (
-          <Button
+      <TabList space={2}>
+        {options.map((option) => (
+          <Tab
+            id={`${option.name.toLowerCase()}-tab`}
+            aria-controls={`${option.name.toLowerCase()}-panel`}
             key={option.name}
-            onClick={() => handleTypeSelect(option.name.toLowerCase())}
+            onClick={() => handleTypeSelect(option.name.toLowerCase() as 'image' | 'video')}
             icon={option.icon}
-            text={option.name}
-            mode={
-              props?.value?.mediaType.toLowerCase() === option.name.toLowerCase()
-                ? 'default'
-                : 'ghost'
-            }
-            fontSize={2}
+            label={option.name}
+            selected={val === option.name.toLowerCase()}
           />
         ))}
-      </Flex>
-      <div className={styles.stuff}>{props.renderDefault(props)}</div>
+      </TabList>
+      <div className={styles.stuff}>
+        {val === 'image' && (
+
+            <MemberField
+              renderInput={renderInput}
+              renderField={renderField}
+              renderItem={renderItem}
+              renderPreview={renderPreview}
+              member={imageMember}
+            />
+
+        )}
+
+        {val === 'video' && (
+          
+            <MemberField
+              renderInput={renderInput}
+              renderField={renderField}
+              renderItem={renderItem}
+              renderPreview={renderPreview}
+              member={videoMember}
+            />
+
+        )}
+      </div>
     </Stack>
   )
 }

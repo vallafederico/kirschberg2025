@@ -4,13 +4,13 @@ import { structureTool } from "sanity/structure";
 import { schemaTypes } from "./schemas";
 import { media } from "sanity-plugin-media";
 import { structure } from "./desk/structure";
-import Logo from "./components/Logo";
 import { noteField } from "sanity-plugin-note-field";
 import { userGuidePlugin } from "@q42/sanity-plugin-user-guide";
 import { userGuideStructure } from "./guides/userGuideStructure";
 import { crawlMeMaybe } from "@crawl-me-maybe/sanity";
 import { DOMAIN, SANITY_CONFIG } from "@local/config";
 import { presentationTool } from "sanity/presentation";
+import { muxInput } from "sanity-plugin-mux-input";
 
 const sharedConfig = [
 	structureTool({
@@ -20,6 +20,7 @@ const sharedConfig = [
 	}),
 	media(),
 	noteField(),
+	muxInput(),
 	// userGuidePlugin({ userGuideStructure }),
 	crawlMeMaybe(),
 	// presentationTool({

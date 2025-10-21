@@ -10,7 +10,16 @@ export default {
       ],
       lists: [],
       marks: {
-        decorators: [],
+        decorators: [
+          {
+            title: 'Italics',
+            value: 'em',
+          },
+          {
+            title: 'Bold',
+            value: 'strong',
+          },
+        ],
         annotations: []
       }
     }
