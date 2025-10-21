@@ -1,6 +1,5 @@
 @import "./styles/variables.css";
-/* @import "./styles/fluid-type.css"; */
-@import "./styles/fluid.css";
+@import "./styles/fluid-type.css";
 @import "./styles/typography.css";
 
 @import "./styles/animation.css";

@@ -1,70 +1,105 @@
+/* --------------------------------------------------------------------------
+   FLUID TYPOGRAPHY SYSTEM — FINAL, LIVE + HEIGHT AWARE
+   --------------------------------------------------------------------------
+   FORMULAS
+     slope (b)     = 100 × (maxSize − minSize) / (maxWidth − minWidth)
+     intercept (a) = minSize − b × (minWidth / 100)
+     font-size     = clamp(minSize, calc(a + b × 1vw), maxSize)
+
+   HEIGHT MODIFIER
+     vh-factor = clamp(vhMinFactor,
+                       calc(vhMinFactor + (100vh - vhMin) /
+                       (vhMax - vhMin) * (vhMaxFactor - vhMinFactor)),
+                       vhMaxFactor)
+
+   RULES
+     • html font-size uses px/vw only → live scaling works
+     • content uses rem → zoom & accessibility preserved
+     • vh-factor subtly shrinks type on short screens
+   -------------------------------------------------------------------------- */
+
 html {
-	--design-width: 1512;
-	--design-height: 982;
+	/* viewport height modulation configuration */
+	--vh-min: 500px;
+	--vh-max: 700px;
+	--vh-min-factor: 0.725;
+	--vh-max-factor: 1;
 
-	--min-font-size: 10.8px;
-	--base-font-size: 10;
-
-	--delta: calc(var(--base-font-size) / var(--design-width));
-	--fluid-size: calc(var(--delta) * 100 * 1vw);
-
-	--delta-max: calc(var(--base-font-size) / var(--max-scaling-width));
-	--max-fluid-size: calc(var(--delta-max) * var(--max-scaling-width) * 1px);
-
-	/* const fontSize = `calc(${(vw * 16).toFixed(5)}vw - var(--sbw) * ${(16 / grid.mockupWidth).toFixed(5)})` */
-
-	--vw: calc(100 / var(--design-width));
-	--s: calc(var(--vw) * 16);
-	--size: calc(var(--s) * 1vw);
-	--d: calc(16 / var(--design-width));
-	--c: calc(var(--scrollbar) * var(--d));
-	--comp: calc(var(--size) - var(--scrollbar) * var(--d));
-	--x: 15px;
-
-	/* font-size: clamp(0px, calc(var(--size) + 1rem), var(--infinity)); */
-	font-size: calc(0.4167rem + 0.22259vw);
-	/* font-size: min(calc(1.11111vw - 15px * 0.01111), var(--infinity)); */
-	/* font-size: var(--fluid-size); */
-
-	@media screen and (max-width: 768px) {
-		--design-width: 360;
-	}
-
-	@media screen and (min-width: 2600px) {
-		font-size: 62.5% !important;
-		--screen-width: calc(var(--max-scaling-width) * 1px - var(--scrollbar));
-	}
-}
-
-@media screen and (min-width: 769px) and (max-width: 1023px) {
-	html {
-		--design-width: 402;
-		--design-height: 874;
-		--vh-ratio: 0.9;
-	}
-}
-
-@media screen and (min-width: 540px) and (max-width: 768px) {
-	html {
-		font-size: 62.5% !important;
-		--delta: 1rem !important;
-	}
-}
-
-/* font-size: clamp(
-		var(--min-size),
+	/* height-based multiplier (0.8–1 across 500–700px) */
+	--vh-factor: clamp(
+		var(--vh-min-factor),
 		calc(
-			(
-				(100vw / var(--design-width) * (var(--value) * var(--vw-ratio))) +
-				(1 - var(--vw-ratio)) *
-				(var(--value) * 1px)
-			) +
-			(
-				(100vh / var(--design-height) * (var(--value) * var(--vh-ratio))) +
-				(1 - var(--vh-ratio)) *
-				(var(--value) * 1px)
-			) /
-			2
+			var(--vh-min-factor) +
+			(100vh - var(--vh-min)) /
+			(var(--vh-max) - var(--vh-min)) *
+			(var(--vh-max-factor) - var(--vh-min-factor))
 		),
-		var(--infinity)
-	); */
+		var(--vh-max-factor)
+	);
+
+	/* Default 1024 → 1440 range */
+	--min-size: 7.104px;
+	--max-size: 10px;
+	--slope: 0.696;
+	--intercept: -0.022px;
+
+	/* One live, fluid formula */
+	font-size: calc(
+		var(--vh-factor) *
+		clamp(
+			var(--min-size),
+			calc(var(--intercept) + var(--slope) * 1vw),
+			var(--max-size)
+		)
+	);
+}
+
+/* 540 → 768 */
+@media (min-width: 540px) and (max-width: 768px) {
+	html {
+		--min-size: 7.104px;
+		--max-size: 10px;
+		--slope: 0.3307;
+		--intercept: 4.96px;
+	}
+}
+
+/* 1024 → 1440 */
+@media (min-width: 1024px) and (max-width: 1440px) {
+	html {
+		--min-size: 7.104px;
+		--max-size: 10px;
+		--slope: 0.696;
+		--intercept: -0.022px;
+	}
+}
+
+/* 1440 → 1920 */
+@media (min-width: 1440px) and (max-width: 1920px) {
+	html {
+		--min-size: 10px;
+		--max-size: 11px;
+		--slope: 0.2083;
+		--intercept: 7px;
+	}
+}
+
+/* 1920 → 2600 */
+@media (min-width: 1920px) and (max-width: 2600px) {
+	html {
+		--min-size: 10px;
+		--max-size: 12.42px;
+		--slope: 0.2086;
+		--intercept: 7px;
+	}
+}
+
+/* ≥2600 */
+@media (min-width: 2600px) {
+	html {
+		--min-size: 12.42px;
+		--max-size: 12.42px;
+		--slope: 0;
+		--intercept: 0;
+	}
+}
