@@ -19,13 +19,11 @@
    -------------------------------------------------------------------------- */
 
 html {
-	/* viewport height modulation configuration */
 	--vh-min: 500px;
 	--vh-max: 700px;
-	--vh-min-factor: 0.725;
 	--vh-max-factor: 1;
+	--vh-min-factor: 0.725;
 
-	/* height-based multiplier (0.8–1 across 500–700px) */
 	--vh-factor: clamp(
 		var(--vh-min-factor),
 		calc(
