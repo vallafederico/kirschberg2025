@@ -21,8 +21,10 @@ html {
 	--comp: calc(var(--size) - var(--scrollbar) * var(--d));
 	--x: 15px;
 
-	/* font-size: clamp(0px, calc(var(--size) + 1px - var(--c)), var(--infinity)); */
-	font-size: min(calc(1.11111vw - var(--x) * 0.01111), var(--infinity));
+	/* font-size: clamp(0px, calc(var(--size) + 1rem), var(--infinity)); */
+	font-size: calc(0.4167rem + 0.22259vw);
+	/* font-size: min(calc(1.11111vw - 15px * 0.01111), var(--infinity)); */
+	/* font-size: var(--fluid-size); */
 
 	@media screen and (max-width: 768px) {
 		--design-width: 360;
