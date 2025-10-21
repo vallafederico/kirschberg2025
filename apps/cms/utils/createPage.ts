@@ -74,7 +74,7 @@ export const createPage = (opts: PageAttributes) => {
 	if (seo !== false) {
 		allFields.push({
 			group: "seo",
-			name: 'seo',
+			name: "metadata",
 			type: "metadata",
 		});
 		allFields.push({

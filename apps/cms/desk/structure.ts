@@ -5,6 +5,7 @@ import type {
 	StructureResolverContext,
 } from "sanity/structure";
 import {
+	MdArchive,
 	MdArticle,
 	MdBusiness,
 	MdFolder,
@@ -36,10 +37,8 @@ export const structure: StructureResolver = (
 			singlePage("Home", "home", MdHome),
 			div(),
 			singlePage("About", "about", MdPerson2),
-			pageList("Articles", "article", MdArticle),
-			div(),
-			pageList("Pages", "page", MdPages),
-			pageList("Socials", "socials", IoShareSocial),
+			singlePage("Archive", "archive", MdArchive),
+			pageList("Case Studies", "case-study", MdArticle),
 			div(),
 			folder("Global Layout", RiLayoutMasonryFill, [
 				singlePage("Header", "settings.header", RiLayoutTop2Line),

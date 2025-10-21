@@ -1,9 +1,9 @@
 import { defineCliConfig } from "sanity/cli";
+import { SANITY_CONFIG } from "@local/config";
 
 export default defineCliConfig({
 	api: {
-		projectId: "6mav93fo",
-		dataset: "production",
+		...SANITY_CONFIG,
 	},
 	studioHost: "internetthings-starter",
 	/**
