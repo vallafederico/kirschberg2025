@@ -19,10 +19,11 @@
    -------------------------------------------------------------------------- */
 
 html {
+	/* viewport-height modulation */
 	--vh-min: 500px;
 	--vh-max: 700px;
+	--vh-min-factor: 0.8;
 	--vh-max-factor: 1;
-	--vh-min-factor: 0.725;
 
 	--vh-factor: clamp(
 		var(--vh-min-factor),
@@ -35,10 +36,13 @@ html {
 		var(--vh-max-factor)
 	);
 
-	--min-size: 7.104px;
+	/* === Default Range (320 → 390) ===
+			 Base target: 10px at 390px
+			 Start smaller at 320px (~8.2px)  */
+	--min-size: 8.2px;
 	--max-size: 10px;
-	--slope: 0.696;
-	--intercept: -0.022px;
+	--slope: 2.5714; /* 100*(10−8.2)/(390−320) */
+	--intercept: 0.9px; /* 8.2 − (2.5714×3.2) */
 
 	font-size: calc(
 		var(--vh-factor) *
@@ -50,15 +54,27 @@ html {
 	);
 }
 
-@media (min-width: 540px) and (max-width: 768px) {
+/* === 390 → 768 === */
+@media (min-width: 390px) and (max-width: 768px) {
 	html {
-		--min-size: 7.104px;
+		--min-size: 10px;
 		--max-size: 10px;
-		--slope: 0.3307;
-		--intercept: 4.96px;
+		--slope: 0;
+		--intercept: 10px;
 	}
 }
 
+/* === 768 → 1024 === */
+@media (min-width: 768px) and (max-width: 1024px) {
+	html {
+		--min-size: 9.6px;
+		--max-size: 10px;
+		--slope: 0.1953;
+		--intercept: 8.1px;
+	}
+}
+
+/* === 1024 → 1440 === */
 @media (min-width: 1024px) and (max-width: 1440px) {
 	html {
 		--min-size: 7.104px;
@@ -68,6 +84,7 @@ html {
 	}
 }
 
+/* === 1440 → 1920 === */
 @media (min-width: 1440px) and (max-width: 1920px) {
 	html {
 		--min-size: 10px;
@@ -77,6 +94,7 @@ html {
 	}
 }
 
+/* === 1920 → 2600 === */
 @media (min-width: 1920px) and (max-width: 2600px) {
 	html {
 		--min-size: 10px;
@@ -86,6 +104,7 @@ html {
 	}
 }
 
+/* ≥2600 */
 @media (min-width: 2600px) {
 	html {
 		--min-size: 12.42px;
