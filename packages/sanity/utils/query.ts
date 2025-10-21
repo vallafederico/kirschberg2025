@@ -1,8 +1,8 @@
-import { createResource } from "solid-js";
-import type { SanityDocumentGetterOptions } from "../types";
-import sanityClient from "../client";
-import resolveLinks from "./resolver";
 import { createAsync, query } from "@solidjs/router";
+import { createResource } from "solid-js";
+import sanityClient from "../client";
+import type { SanityDocumentGetterOptions } from "../types";
+import resolveLinks from "./resolver";
 
 export const getDocByType = async <T = unknown>(
 	documentType: string,
@@ -21,8 +21,8 @@ export const getDocumentByType = async (
 	documentType: string,
 	options?: SanityDocumentGetterOptions,
 ) => {
-	const { filter = "", extraQuery = "{...}", params = {} } = options || {};
-	const q = `*[_type == "${documentType}" ${filter || ""}][0]${extraQuery || "{...}"}`;
+	const { filter = "", extraQuery = "{...}[0]", params = {} } = options || {};
+	const q = `*[_type == "${documentType}" ${filter || ""}]${extraQuery || "{...}"}`;
 
 	const getter = async () => {
 		const data = await sanityClient.fetch(q, params);

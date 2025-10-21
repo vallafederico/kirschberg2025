@@ -1,0 +1,57 @@
+html {
+	--design-width: 1512;
+	--design-height: 982;
+
+	--min-font-size: 10.8px;
+	--base-font-size: 10;
+
+	--delta: calc(var(--base-font-size) / var(--design-width));
+	--fluid-size: calc(var(--delta) * 100 * 1vw);
+
+	--delta-max: calc(var(--base-font-size) / var(--max-scaling-width));
+	--max-fluid-size: calc(var(--delta-max) * var(--max-scaling-width) * 1px);
+
+	font-size: max(0px, var(--fluid-size));
+
+	@media screen and (max-width: 768px) {
+		--design-width: 360;
+	}
+
+	@media screen and (min-width: 2600px) {
+		font-size: 62.5% !important;
+		--screen-width: calc(var(--max-scaling-width) * 1px - var(--scrollbar));
+	}
+}
+
+@media screen and (min-width: 769px) and (max-width: 1023px) {
+	html {
+		--design-width: 402;
+		--design-height: 874;
+		--vh-ratio: 0.9;
+	}
+}
+
+@media screen and (min-width: 540px) and (max-width: 768px) {
+	html {
+		font-size: 62.5% !important;
+		--delta: 1rem !important;
+	}
+}
+
+/* font-size: clamp(
+		var(--min-size),
+		calc(
+			(
+				(100vw / var(--design-width) * (var(--value) * var(--vw-ratio))) +
+				(1 - var(--vw-ratio)) *
+				(var(--value) * 1px)
+			) +
+			(
+				(100vh / var(--design-height) * (var(--value) * var(--vh-ratio))) +
+				(1 - var(--vh-ratio)) *
+				(var(--value) * 1px)
+			) /
+			2
+		),
+		var(--infinity)
+	); */

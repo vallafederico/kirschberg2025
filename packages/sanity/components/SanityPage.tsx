@@ -1,6 +1,6 @@
 import type { SanityDocumentStub } from "@sanity/client";
-import { createEffect, Show, Suspense } from "solid-js";
 import type { JSX } from "solid-js";
+import { Show } from "solid-js";
 
 interface SanityPageProps {
 	children: (data: SanityDocumentStub) => JSX.Element;
@@ -11,10 +11,8 @@ interface SanityPageProps {
 export default function SanityPage({
 	children,
 	fetcher = () => {},
-	class: className,
+	class: className = "",
 }: SanityPageProps) {
-	// console.log(fetcher());
-
 	return (
 		<div class={`min-h-screen ${className}`}>
 			<Show when={fetcher()}>{children(fetcher())}</Show>

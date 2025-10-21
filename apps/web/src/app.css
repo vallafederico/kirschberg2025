@@ -1,5 +1,6 @@
 @import "./styles/variables.css";
 @import "./styles/typography.css";
+@import "./styles/fluid-type.css";
 
 @import "./styles/animation.css";
 @import "./styles/accessibility.css";
@@ -12,71 +13,45 @@
 @import "./styles/grid.css";
 
 @theme {
-  --font-*: initial;
-  --font-sans: soh, sans-serif;
+	--font-sans: soh, sans-serif;
 
-  --text-base-0: var(--text-base);
-  --text-base-1: 1.2;
-  --text-base-length: 2;
+	--text-32: 3.2rem;
+	--text-32--line-height: 1.2;
+	--text-32--font-weight: 900;
 
-  --text-xs-0: var(--text-xs);
-  --text-xs-1: 1.2;
-  --text-xs-length: 2;
+	--text-18: 1.8rem;
+	--text-18--line-height: 1.2;
+	--text-18--font-weight: 400;
 
-  --text-sm-0: var(--text-sm);
-  --text-sm-1: 1.2;
-  --text-sm-length: 2;
+	--text-16: 1.6rem;
+	--text-16--line-height: 1.2;
+	--text-16--font-weight: 400;
 
-  --text-md-0: var(--text-md);
-  --text-md-1: 1.2;
-  --text-md-length: 2;
-
-  --text-lg-0: var(--text-lg);
-  --text-lg-1: 1;
-  --text-lg-length: 2;
-
-  --text-xl-0: var(--text-xl);
-  --text-xl-1: 1;
-  --text-xl-length: 2;
-
-  --text-xxl-0: var(--text-xxl);
-  --text-xxl-1: 0.9;
-  --text-xxl-length: 2;
-
-  --spacing-gx: var(--gx);
-  --spacing-gy: var(--gy);
-  --spacing-sm: var(--sm);
-  --spacing-md: var(--md);
-  --spacing-lg: var(--lg);
-  --spacing-xl: var(--xl);
-  --spacing-xxl: var(--xxl);
-  --spacing-navh: var(--navh);
-
-  --spacing-gutter: var(--gutter);
-
-  --aspect-5\/7: 5/7;
+	--spacing: 0.1rem;
+	--spacing-gutter: 1rem;
+	--spacing-margin: 2rem;
 }
 
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
-  }
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentColor);
+	}
 }
 
 * {
-  box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 html,
 body {
-  overscroll-behavior: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-smooth: never;
+	overscroll-behavior: none;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-smooth: never;
 }
 
 html,
@@ -86,75 +61,69 @@ h1,
 h2,
 h3,
 h4 {
-  user-select: none; /* supported by Chrome and Opera */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none; /* supported by Chrome and Opera */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
 }
 
 [data-selectable] {
-  user-select: text;
-  -webkit-user-select: text;
-  -khtml-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
+	user-select: text;
+	-webkit-user-select: text;
+	-khtml-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
 }
 
 /* make images not draggable */
 img {
-  user-drag: none;
-  -webkit-user-drag: none;
-  -khtml-user-drag: none;
-  -moz-user-drag: none;
-}
-
-/* basic fluid type */
-html {
-  --fluid-width: 1920;
-  font-size: clamp(12px, calc(((22 / var(--fluid-width)) * 100) * 1vw), 16px);
+	user-drag: none;
+	-webkit-user-drag: none;
+	-khtml-user-drag: none;
+	-moz-user-drag: none;
 }
 
 /* main styles */
 body {
-  @apply font-sans text-base text-white bg-black;
+	@apply font-sans;
 }
 
 main {
-  min-height: 100svh;
+	min-height: 100svh;
 }
 
 /* utilities */
 @layer utilities {
-  .flex-center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+	.flex-center {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
 
-  .contain {
-    @apply mx-auto;
-    max-width: var(--max-w);
-  }
+	.contain {
+		@apply mx-auto;
+		max-width: var(--max-w);
+	}
 }
 
 html,
 body {
-  height: 100%;
-  overflow: hidden;
-  overscroll-behavior-y: none;
+	height: 100%;
+	overflow: hidden;
+	overscroll-behavior-y: none;
 }
 
 #app {
-  height: 100%;
-  overflow-y: auto;
-  overscroll-behavior-y: none;
+	height: 100%;
+	overflow-y: auto;
+	overscroll-behavior-y: none;
 }
 
 .lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
+	overscroll-behavior: contain;
 }
 
 .lenis.lenis-stopped {
-  overflow: clip;
+	overflow: clip;
 }

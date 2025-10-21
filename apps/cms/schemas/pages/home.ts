@@ -3,7 +3,17 @@ import createPage from "../../utils/createPage";
 export default createPage({
 	title: "Home",
 	slug: false,
-	slices: true,
+	slices: false,
+	preview: {
+		select: {
+			title: "title",
+		},
+		prepare(select: any) {
+			return {
+				title: select.title,
+			};
+		},
+	},
 	name: "home",
 	fields: [
 		{

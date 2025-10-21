@@ -19,7 +19,6 @@ export default function App() {
 		<Router
 			root={(props) => (
 				<MetaProvider>
-					{/* <PageTransition> */}
 					<Link rel="robots" type="text/plain" href="/api/robots.txt" />
 
 					<Nav />
@@ -28,9 +27,6 @@ export default function App() {
 					<Suspense>
 						<GlobalLayout>{props.children}</GlobalLayout>
 					</Suspense>
-
-					<Canvas />
-					{/* </PageTransition> */}
 				</MetaProvider>
 			)}
 		>

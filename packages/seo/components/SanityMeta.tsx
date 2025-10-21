@@ -1,11 +1,10 @@
-import { Link, Meta, Title } from "@solidjs/meta";
-// import type { PageMetadata, SeoDefaults } from "@crawl-me-maybe/web";
 import { buildSeoPayload } from "@crawl-me-maybe/web";
 import { getDocumentByType } from "@local/sanity";
+import { Link, Meta, Title } from "@solidjs/meta";
 import { createAsync } from "@solidjs/router";
 import { For, Show } from "solid-js";
-import SchemaMarkup from "./SchemaMarkup";
 import { SANITY_CONFIG } from "../../config";
+import SchemaMarkup from "./SchemaMarkup";
 
 type SanityMetaProps = {
 	pageData?: any;
@@ -34,7 +33,7 @@ export default function SanityMeta({
 			{(defaults) => {
 				const { meta, schemas } = buildSeoPayload({
 					globalDefaults: defaults(),
-					seoFieldName: "ssss",
+					seoFieldName: "metadata",
 					schemaDefaults: schemaDefaults(),
 					pageSeo: pageData,
 					pageSchemaType: pageData?.schemaMarkup?.type,

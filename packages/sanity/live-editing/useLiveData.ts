@@ -25,8 +25,7 @@ let _store: GroqStore | null = null;
 function getStore() {
 	if (_store) return _store;
 
-	const token =
-		"skqo9rdCnlnN8OOGbaqg5S4pREgQUwJ56tZMuFAvi17vrd7AbBWDwoYgO5vvnUGsW1CGQN0PwEzXtMKogQl2ksLgU1xnZVi4dzfrzYNRZrdLoxpR2ibiiQhizHTZYBy70q27gPgGgtzHL1yC3Yh1DRnAndDfxzS4Mfct4iQlLuLMyfUG4GOv";
+	const token = process.env.SANITY_TOKEN;
 
 	// We use a minimal ES class just to inject the Authorization header
 	class ESWithToken extends (SanityEventSource as {
