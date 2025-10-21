@@ -19,9 +19,10 @@ html {
 	--d: calc(16 / var(--design-width));
 	--c: calc(var(--scrollbar) * var(--d));
 	--comp: calc(var(--size) - var(--scrollbar) * var(--d));
+	--x: 15px;
 
 	/* font-size: clamp(0px, calc(var(--size) + 1px - var(--c)), var(--infinity)); */
-	font-size: calc(1.11111vw - var(--scrollbar) * 0.01111);
+	font-size: min(calc(1.11111vw - var(--x) * 0.01111), var(--infinity));
 
 	@media screen and (max-width: 768px) {
 		--design-width: 360;
