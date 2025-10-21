@@ -36,7 +36,7 @@ export default function MediaSelector(props) {
   const videoMember = members.find((member: any) => member.name === 'video')
 
   return (
-    <Stack className={styles} space={3}>
+    <Stack className={styles.stuff} space={3}>
       <TabList space={2}>
         {options.map((option) => (
           <Tab
@@ -50,29 +50,25 @@ export default function MediaSelector(props) {
           />
         ))}
       </TabList>
-      <div className={styles.stuff}>
+      <div>
         {val === 'image' && (
-
-            <MemberField
-              renderInput={renderInput}
-              renderField={renderField}
-              renderItem={renderItem}
-              renderPreview={renderPreview}
-              member={imageMember}
-            />
-
+          <MemberField
+            renderInput={renderInput}
+            renderField={renderField}
+            renderItem={renderItem}
+            renderPreview={renderPreview}
+            member={imageMember}
+          />
         )}
 
         {val === 'video' && (
-          
-            <MemberField
-              renderInput={renderInput}
-              renderField={renderField}
-              renderItem={renderItem}
-              renderPreview={renderPreview}
-              member={videoMember}
-            />
-
+          <MemberField
+            renderInput={renderInput}
+            renderField={renderField}
+            renderItem={renderItem}
+            renderPreview={renderPreview}
+            member={videoMember}
+          />
         )}
       </div>
     </Stack>
