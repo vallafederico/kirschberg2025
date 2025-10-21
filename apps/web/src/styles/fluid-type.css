@@ -35,13 +35,11 @@ html {
 		var(--vh-max-factor)
 	);
 
-	/* Default 1024 → 1440 range */
 	--min-size: 7.104px;
 	--max-size: 10px;
 	--slope: 0.696;
 	--intercept: -0.022px;
 
-	/* One live, fluid formula */
 	font-size: calc(
 		var(--vh-factor) *
 		clamp(
@@ -52,7 +50,6 @@ html {
 	);
 }
 
-/* 540 → 768 */
 @media (min-width: 540px) and (max-width: 768px) {
 	html {
 		--min-size: 7.104px;
@@ -62,7 +59,6 @@ html {
 	}
 }
 
-/* 1024 → 1440 */
 @media (min-width: 1024px) and (max-width: 1440px) {
 	html {
 		--min-size: 7.104px;
@@ -72,7 +68,6 @@ html {
 	}
 }
 
-/* 1440 → 1920 */
 @media (min-width: 1440px) and (max-width: 1920px) {
 	html {
 		--min-size: 10px;
@@ -82,7 +77,6 @@ html {
 	}
 }
 
-/* 1920 → 2600 */
 @media (min-width: 1920px) and (max-width: 2600px) {
 	html {
 		--min-size: 10px;
@@ -92,7 +86,6 @@ html {
 	}
 }
 
-/* ≥2600 */
 @media (min-width: 2600px) {
 	html {
 		--min-size: 12.42px;
