@@ -2,7 +2,6 @@ import Hls from "hls.js";
 import { createEffect, onCleanup } from "solid-js";
 
 interface MuxVideoProps {
-	class: string;
 	src: {
 		asset: {
 			playbackId: string;
