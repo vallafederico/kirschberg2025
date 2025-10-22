@@ -33,7 +33,7 @@ export default function HomeHero({
 						const role = caseStudy?.role ? caseStudy.role.join(", ") : null;
 
 						return (
-							<li class=" w-300 h-full">
+							<li class="w-300 h-full">
 								<div class="mb-12">
 									<h2 class="text-18">{caseStudy.title}</h2>
 									<p class="text-12 font-semibold mt-2 text-gry">
@@ -42,10 +42,12 @@ export default function HomeHero({
 										{role}
 									</p>
 								</div>
-								<Media
-									class="rounded-md overflow-hidden"
-									{...caseStudy?.featuredMedia?.[0]}
-								/>
+								<div class="rounded-md overflow-hidden">
+									<Media
+										class="size-full object-cover"
+										{...caseStudy?.featuredMedia?.[1]}
+									/>
+								</div>
 							</li>
 						);
 					}}

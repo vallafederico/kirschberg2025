@@ -1,25 +1,32 @@
 import { SanityImage } from "@local/sanity";
 import { Show } from "solid-js";
+import MuxVideo from "./MuxVideo";
+
+interface MediaProps {
+	mediaType: "image" | "video";
+	image: any;
+	video: any;
+	class: string;
+	videoProps: {
+		autoplay?: boolean;
+	};
+}
 
 export default function Media({
-	mediaType,
+	mediaType = "image",
 	image,
 	video,
 	class: className,
-}: {
-	mediaType: string;
-	image: any;
-	video: any;
-	class?: string;
-}) {
-	console.log({
-		mediaType,
-		image,
-		video,
-	});
+	videoProps = {},
+}: MediaProps) {
 	return (
-		<Show when={image?.asset}>
-			<SanityImage class={className} desktopWidth={25} src={image} />
-		</Show>
+		<>
+			<Show when={mediaType === "image" && image?.asset}>
+				<SanityImage class={className} desktopWidth={25} src={image} />
+			</Show>
+			<Show when={mediaType === "video" && video?.asset}>
+				<MuxVideo {...videoProps} class={className} src={video} />
+			</Show>
+		</>
 	);
 }
