@@ -15,17 +15,36 @@
 @theme {
 	--font-sans: Inter, Helvetica, sans-serif;
 
-	--text-32: 3.2rem;
+	--color-black: #181818;
+	--color-gry: #767b80;
+	--color-white: #fff;
+
+	--radius-md: 1.2rem;
+
+	--text-32: max(var(--min-font-size), 3.2rem);
 	--text-32--line-height: 1.2;
 	--text-32--font-weight: 900;
+	--text-32--letter-spacing: -0.02em;
 
-	--text-18: 1.8rem;
+	--text-18: max(var(--min-font-size), 1.8rem);
 	--text-18--line-height: 1.2;
-	--text-18--font-weight: 400;
+	--text-18--font-weight: 700;
+	--text-18--letter-spacing: -0.02em;
 
-	--text-16: 1.6rem;
+	--text-16: max(var(--min-font-size), 1.6rem);
 	--text-16--line-height: 1.2;
 	--text-16--font-weight: 400;
+	--text-16--letter-spacing: -0.02em;
+
+	--text-14: max(var(--min-font-size), 1.4rem);
+	--text-14--line-height: 1.2;
+	--text-14--font-weight: 400;
+	--text-14--letter-spacing: -0.02em;
+
+	--text-12: max(var(--min-font-size), 1.2rem);
+	--text-12--line-height: 1.2;
+	--text-12--font-weight: 400;
+	--text-12--letter-spacing: -0.02em;
 
 	--spacing: 0.1rem;
 	--spacing-gutter: 1rem;
@@ -112,6 +131,7 @@ body {
 	height: 100%;
 	overflow: hidden;
 	overscroll-behavior-y: none;
+	@apply bg-white text-black;
 }
 
 #app {

@@ -25,10 +25,10 @@ export default function Home() {
 		<SanityPage fetcher={data}>
 			{([page, caseStudies]) => {
 				return (
-					<div class="flex h-screen flex-col">
+					<>
 						<SanityMeta isHomepage={true} pageData={page} />
 						<HomeHero caseStudies={caseStudies} {...page} />
-					</div>
+					</>
 				);
 			}}
 		</SanityPage>

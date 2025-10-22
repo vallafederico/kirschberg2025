@@ -3,6 +3,7 @@
 	--grid-gutter: 1rem;
 	--grid-columns: 12;
 	--max-scaling-width: 1920px;
+	--min-font-size: 12px;
 }
 
 @media (max-width: 768px) {

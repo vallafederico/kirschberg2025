@@ -1,4 +1,5 @@
 import { For, Show } from "solid-js";
+import Media from "~/components/Media";
 
 interface HomeHeroProps {
 	caseStudies: any[];
@@ -12,37 +13,44 @@ export default function HomeHero({
 	blurb,
 }: HomeHeroProps) {
 	return (
-		<>
-			<header class="w-[40%] text-center mx-auto">
-				<Show when={heading}>
-					<h1 class="text-32">{heading}</h1>
-				</Show>
-				<Show when={blurb}>
-					<p class="text-18 mt-12">{blurb}</p>
-				</Show>
+		<div class="flex h-screen justify-between pb-19 flex-col">
+			<header class="h-full flex-center w-[40%] text-center mx-auto">
+				<div>
+					<Show when={heading}>
+						<h1 class="text-32">{heading}</h1>
+					</Show>
+					<Show when={blurb}>
+						<p class="text-14 lg:text-18 mt-12">{blurb}</p>
+					</Show>
+				</div>
 			</header>
-			<div>
+			<ul class="h-400">
 				<For each={caseStudies}>
 					{(caseStudy) => {
-						console.log(caseStudy);
 						const client = caseStudy?.client
 							? caseStudy.client.map((c) => c.name)?.join(" & ")
 							: null;
 						const role = caseStudy?.role ? caseStudy.role.join(", ") : null;
 
 						return (
-							<div>
-								<h2 class="text-18">{caseStudy.title}</h2>
-								<p class="">
-									{client}
-									<Show when={client && role}>•</Show>
-									{role}
-								</p>
-							</div>
+							<li class=" w-300 h-full">
+								<div class="mb-12">
+									<h2 class="text-18">{caseStudy.title}</h2>
+									<p class="text-12 font-semibold mt-2 text-gry">
+										{client}
+										<Show when={client && role}>•</Show>
+										{role}
+									</p>
+								</div>
+								<Media
+									class="rounded-md overflow-hidden"
+									{...caseStudy?.featuredMedia?.[0]}
+								/>
+							</li>
 						);
 					}}
 				</For>
-			</div>
-		</>
+			</ul>
+		</div>
 	);
 }
