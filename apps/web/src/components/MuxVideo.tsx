@@ -8,10 +8,17 @@ interface MuxVideoProps {
 			playbackId: string;
 		};
 	};
+	loop?: boolean;
 	autoplay?: boolean;
+	class: string;
 }
 
-export default function MuxVideo({ src, autoplay = true }: MuxVideoProps) {
+export default function MuxVideo({
+	src,
+	autoplay = true,
+	loop = true,
+	class: className = "",
+}: MuxVideoProps) {
 	let el!: HTMLVideoElement; // ensure el is assigned before usage
 	let hlsRef: Hls;
 
@@ -36,6 +43,14 @@ export default function MuxVideo({ src, autoplay = true }: MuxVideoProps) {
 	});
 
 	return (
-		<video ref={el} controls={false} autoplay={autoplay} muted playsinline />
+		<video
+			ref={el}
+			controls={false}
+			autoplay={autoplay}
+			muted
+			class={className}
+			playsinline
+			loop={loop}
+		/>
 	);
 }

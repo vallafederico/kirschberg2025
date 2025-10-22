@@ -42,9 +42,9 @@ export default function HomeHero({
 										{role}
 									</p>
 								</div>
-								<div class="rounded-md overflow-hidden">
+								<div class="rounded-md h-300 overflow-hidden">
 									<Media
-										class="size-full object-cover"
+										class="size-full relative -translate-y-1/2 top-1/2 object-cover object-center"
 										{...caseStudy?.featuredMedia?.[1]}
 									/>
 								</div>
