@@ -13,7 +13,7 @@
 @import "./styles/grid.css";
 
 @theme {
-	--font-sans: soh, sans-serif;
+	--font-sans: Inter, Helvetica, sans-serif;
 
 	--text-32: 3.2rem;
 	--text-32--line-height: 1.2;

@@ -1,7 +1,7 @@
 import { getDocumentByType, SanityPage } from "@local/sanity";
 import { SanityMeta } from "@local/seo";
 import { createAsync, query } from "@solidjs/router";
-import { For } from "solid-js";
+import HomeHero from "~/components/slices/HomeHero";
 
 const getHomeData = query(async () => {
 	"use server";
@@ -9,7 +9,7 @@ const getHomeData = query(async () => {
 	return Promise.all([
 		getDocumentByType("home"),
 		getDocumentByType("case-study", {
-			extraQuery: "{...}",
+			extraQuery: "{title,role,featuredMedia,client{name}}",
 		}),
 	]);
 }, "home-data");
@@ -27,19 +27,7 @@ export default function Home() {
 				return (
 					<div class="flex h-screen flex-col">
 						<SanityMeta isHomepage={true} pageData={page} />
-						<header class="w-[40%] text-center mx-auto">
-							<h1 class="text-32">{page.heading}</h1>
-							<p class="text-18 mt-12">{page.blurb}</p>
-						</header>
-						<div>
-							<For each={caseStudies}>
-								{(caseStudy) => (
-									<div>
-										<h2>{caseStudy.title}</h2>
-									</div>
-								)}
-							</For>
-						</div>
+						<HomeHero caseStudies={caseStudies} {...page} />
 					</div>
 				);
 			}}
