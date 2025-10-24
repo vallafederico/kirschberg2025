@@ -24,7 +24,7 @@ export default function HomeHero({
 					</Show>
 				</div>
 			</header>
-			<ul class="h-400">
+			<ul class="flex gap-x-18 items-end">
 				<For each={caseStudies}>
 					{(caseStudy) => {
 						const client = caseStudy?.client
@@ -42,7 +42,7 @@ export default function HomeHero({
 										{role}
 									</p>
 								</div>
-								<div class="rounded-md h-300 overflow-hidden">
+								<div class="rounded-md h-380 overflow-hidden">
 									<Media
 										class="size-full relative -translate-y-1/2 top-1/2 object-cover object-center"
 										{...caseStudy?.featuredMedia?.[1]}

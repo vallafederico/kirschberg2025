@@ -1,8 +1,9 @@
-import { defineConfig } from "@solidjs/start/config";
-import solidSvg from "vite-plugin-solid-svg";
-import glsl from "vite-plugin-glsl";
-import glReloadPlugin from "./vite/vite-plugin-gl-reload";
 import sitemapPlugin from "@crawl-me-maybe/sitemap";
+import { defineConfig } from "@solidjs/start/config";
+import glsl from "vite-plugin-glsl";
+import solidSvg from "vite-plugin-solid-svg";
+import componentDataAttr from "./vite/vite-plugin-component-attrs";
+import glReloadPlugin from "./vite/vite-plugin-gl-reload";
 
 const plugins = [
 	glsl({
@@ -28,6 +29,7 @@ const plugins = [
 			],
 		},
 	}),
+	componentDataAttr(),
 	solidSvg({
 		defaultAsComponent: true,
 		// svgo: {
