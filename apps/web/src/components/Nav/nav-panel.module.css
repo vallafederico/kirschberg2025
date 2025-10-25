@@ -1,0 +1,24 @@
+.nav-panel {
+	--duration: 0.795s;
+	--ease: var(--ease-quint-out);
+
+	display: grid;
+	transition:
+		grid-template-rows var(--duration) var(--ease),
+		content-visibility var(--duration) var(--ease);
+	grid-template-rows: 0fr;
+
+	&[data-open="true"] {
+		& [data-accordion="panel"] {
+			grid-template-rows: 1fr;
+			transition:
+				grid-template-rows var(--duration) var(--ease),
+				content-visibility var(--duration) var(--ease);
+		}
+
+		& [data-accordion="icon"] {
+			transform: rotate(180deg);
+			color: var(--color-black);
+		}
+	}
+}

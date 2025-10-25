@@ -1,15 +1,15 @@
 import "./app.css";
-import { Link, MetaProvider, Title } from "@solidjs/meta";
+import { Link, MetaProvider } from "@solidjs/meta";
 import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
-
 import { Suspense } from "solid-js";
 import Grid from "~/components/Grid";
-import { Nav } from "~/components/Nav";
+import { Nav } from "~/components/Nav/Navbar";
 import { useViewport } from "~/lib/hooks/useViewport";
 import { scroll } from "~/lib/utils/scroll";
 
 import { usePageTransition } from "./animation";
+import ThemeManager from "./components/ThemeManager";
 
 export default function App() {
 	useViewport();
@@ -18,6 +18,7 @@ export default function App() {
 		<Router
 			root={(props) => (
 				<MetaProvider>
+					<ThemeManager />
 					<Link rel="robots" type="text/plain" href="/api/robots.txt" />
 
 					<Nav />

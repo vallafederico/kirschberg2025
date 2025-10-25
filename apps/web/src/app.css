@@ -16,10 +16,9 @@
 	--font-sans: Inter, Helvetica, sans-serif;
 	--font-display: TWKLausanne, Helvetica, sans-serif;
 
-	--color-black: #181818;
+	--color-primary: #fff;
+	--color-inverted: #181818;
 	--color-gry: #767b80;
-	
-	--color-white: #fff;
 
 	--radius-md: 1.2rem;
 	--radius-lg: 1.6rem;
@@ -52,6 +51,11 @@
 	--spacing: 0.1rem;
 	--spacing-gutter: 1rem;
 	--spacing-margin: 2rem;
+}
+
+html[data-theme="dark"] {
+	--color-primary: #141414;
+	--color-inverted: #ffffff;
 }
 
 @layer base {
@@ -134,7 +138,7 @@ body {
 	height: 100%;
 	overflow: hidden;
 	overscroll-behavior-y: none;
-	@apply bg-white text-black;
+	@apply bg-primary text-inverted;
 }
 
 #app {

@@ -14,7 +14,7 @@ export default function HomeHero({
 }: HomeHeroProps) {
 	return (
 		<div class="flex h-screen justify-between pb-19 flex-col">
-			<header class="h-full flex-center w-[40%] text-center mx-auto">
+			<header class="h-full flex-center pt-50 w-[40%] text-center mx-auto">
 				<div>
 					<Show when={heading}>
 						<h1 class="font-display text-32">{heading}</h1>
