@@ -17,7 +17,7 @@ export default function HomeHero({
 			<header class="h-full flex-center w-[40%] text-center mx-auto">
 				<div>
 					<Show when={heading}>
-						<h1 class="text-32">{heading}</h1>
+						<h1 class="font-display text-32">{heading}</h1>
 					</Show>
 					<Show when={blurb}>
 						<p class="text-14 lg:text-18 mt-12">{blurb}</p>

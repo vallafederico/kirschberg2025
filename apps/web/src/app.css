@@ -14,12 +14,15 @@
 
 @theme {
 	--font-sans: Inter, Helvetica, sans-serif;
+	--font-display: TWKLausanne, Helvetica, sans-serif;
 
 	--color-black: #181818;
 	--color-gry: #767b80;
+	
 	--color-white: #fff;
 
 	--radius-md: 1.2rem;
+	--radius-lg: 1.6rem;
 
 	--text-32: max(var(--min-font-size), 3.2rem);
 	--text-32--line-height: 1.2;

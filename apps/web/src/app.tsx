@@ -4,7 +4,6 @@ import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 
 import { Suspense } from "solid-js";
-import Canvas from "~/components/Canvas";
 import Grid from "~/components/Grid";
 import { Nav } from "~/components/Nav";
 import { useViewport } from "~/lib/hooks/useViewport";
@@ -30,7 +29,7 @@ export default function App() {
 				</MetaProvider>
 			)}
 		>
-			<Suspense fallback={<div>loading things</div>}>
+			<Suspense fallback={<div></div>}>
 				<FileRoutes />
 			</Suspense>
 		</Router>

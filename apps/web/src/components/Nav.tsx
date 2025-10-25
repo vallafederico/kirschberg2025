@@ -1,42 +1,19 @@
 import { A } from "@solidjs/router";
-import { For } from "solid-js";
-import { RollingText } from "./animation/RollingText";
-import MobileMenu from "./MobileMenu";
 
 export const Nav = () => {
 	return (
-		<nav class="px-gx pointer-events-none fixed top-0 left-0 z-100 flex w-screen items-center justify-between py-6">
-			<A aria-label="homepage" class="pointer-events-auto z-20" href="/">
-				<p>LOGO</p>
-			</A>
-
-			{/* desktop menu */}
-			<ul class="pointer-events-auto hidden justify-between md:flex">
-				{/* <For each={NAV_LINKS}>
-					{({ to, text }) => (
-						<li>
-							<A href={to}>
-								<RollingText class="px-3">{text}</RollingText>
-							</A>
-						</li>
-					)}
-				</For> */}
-			</ul>
-
-			{/* mobile menu */}
-			<MobileMenu>
-				{/* <ul class="flex flex-col gap-4">
-					<For each={NAV_LINKS}>
-						{({ to, text }) => (
-							<li>
-								<A href={to}>{text}</A>
-							</li>
-						)}
-					</For>
-				</ul> */}
-			</MobileMenu>
+		<nav class="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 z-100 pt-19 flex items-center justify-between py-6">
+			<div class="border-[#0D0D0D]/25 border px-26 py-13 backdrop-blur-[96px] bg-[#0D0D0D]/50 w-450 font-medium text-white text-18 rounded-lg text-center relative">
+				<A href="/" class="pointer-events-auto">
+					Kirschberg
+				</A>
+				<button
+					type="button"
+					class="absolute pointer-events-auto w-72 h-56 flex-center top-1/2 -translate-y-1/2 right-0 cursor-pointer"
+				>
+					<img src="/icons/menu-icon.svg" class="size-15" alt="" />
+				</button>
+			</div>
 		</nav>
 	);
 };
-
-//

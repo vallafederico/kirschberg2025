@@ -3,7 +3,6 @@ export default function componentDataAttr() {
 		name: "vite-plugin-component-data",
 		enforce: "pre",
 		apply: "serve", // dev only
-
 		async transform(code, id) {
 			if (!id.endsWith(".tsx")) return;
 
