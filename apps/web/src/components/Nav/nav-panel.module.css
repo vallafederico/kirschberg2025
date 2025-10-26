@@ -9,12 +9,7 @@
 	grid-template-rows: 0fr;
 
 	&[data-open="true"] {
-		& [data-accordion="panel"] {
-			grid-template-rows: 1fr;
-			transition:
-				grid-template-rows var(--duration) var(--ease),
-				content-visibility var(--duration) var(--ease);
-		}
+		grid-template-rows: 1fr !important;
 
 		& [data-accordion="icon"] {
 			transform: rotate(180deg);

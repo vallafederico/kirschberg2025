@@ -12,6 +12,8 @@
 
 @import "./styles/grid.css";
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 @theme {
 	--font-sans: Inter, Helvetica, sans-serif;
 	--font-display: TWKLausanne, Helvetica, sans-serif;
