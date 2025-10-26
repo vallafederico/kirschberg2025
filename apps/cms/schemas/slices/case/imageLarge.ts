@@ -9,5 +9,10 @@ export default {
 			name: "media",
 			type: "media",
 		},
+		{
+			name: "withBorder",
+			type: "boolean",
+			initialValue: false,
+		},
 	],
 };

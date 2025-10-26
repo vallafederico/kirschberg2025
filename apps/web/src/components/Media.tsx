@@ -5,13 +5,13 @@ import MuxVideo from "./MuxVideo";
 
 interface MediaProps {
 	mediaType: "image" | "video";
-	image: any;
-	video: any;
-	class: string;
-	videoProps: {
+	image?: any;
+	video?: any;
+	class?: string;
+	videoProps?: {
 		autoplay?: boolean;
 	};
-	imageProps: {
+	imageProps?: {
 		desktopWidth?: number;
 		mobileWidth?: number;
 	};

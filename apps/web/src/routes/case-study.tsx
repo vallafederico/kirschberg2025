@@ -19,7 +19,7 @@ export default function CaseStudy(props: RouteSectionProps) {
 	return (
 		<SanityPage
 			element="dialog"
-			class="backdrop-blur-[4px] pt-95 pb-117 relative z-2 bg-[black]/30 size-full"
+			class="lg:backdrop-blur-[4px] lg:pt-95 lg:pb-117 relative z-2 bg-[black]/30 size-full"
 			fetcher={data}
 			open={true}
 			aria-modal={true}
@@ -29,10 +29,10 @@ export default function CaseStudy(props: RouteSectionProps) {
 				return (
 					<>
 						<SanityMeta pageData={caseStudy} />
-						<article class="lg:w-920 rounded-xxl overflow-hidden min-h-[140vh] bg-primary text-inverted mx-auto pb-86 pt-54 px-64 relative">
+						<article class="lg:w-920 lg:rounded-xxl overflow-hidden min-h-[140vh] bg-primary text-inverted mx-auto lg:pb-86 lg:pt-54 lg:px-64 relative pb-20">
 							<CaseStudyHero {...caseStudy} />
 							<CaseStudyIntro {...caseStudy} />
-							<div class="flex flex-col gap-32">
+							<div class="flex max-lg:px-margin-1 flex-col gap-32">
 								<SanityComponents
 									components={caseStudy.slices}
 									componentList={SLICE_LIST}

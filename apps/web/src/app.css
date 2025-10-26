@@ -27,10 +27,44 @@
 	--radius-xl: 2.4rem;
 	--radius-xxl: 3.2rem;
 
+	--ease-quad-in: cubic-bezier(0.26, 0, 0.6, 0.2);
+	--ease-cubic-in: cubic-bezier(0.4, 0, 0.68, 0.06);
+	--ease-quart-in: cubic-bezier(0.52, 0, 0.74, 0);
+	--ease-quint-in: cubic-bezier(0.64, 0, 0.78, 0);
+	--ease-sine-in: cubic-bezier(0.32, 0, 0.6, 0.36);
+	--ease-expo-in: cubic-bezier(0.66, 0, 0.86, 0);
+	--ease-circ-in: cubic-bezier(0.54, 0, 1, 0.44);
+	--ease-back-in: cubic-bezier(0.6, -0.28, 0.735, 0.045);
+
+	--ease-quad-out: cubic-bezier(0.4, 0.8, 0.74, 1);
+	--ease-cubic-out: cubic-bezier(0.34, 1.02, 0.68, 1);
+	--ease-quart-out: cubic-bezier(0.26, 1.04, 0.54, 1);
+	--ease-quint-out: cubic-bezier(0.22, 1.1, 0.48, 1);
+	--ease-sine-out: cubic-bezier(0.4, 0.64, 0.68, 1);
+	--ease-expo-out: cubic-bezier(0.16, 1.08, 0.38, 0.98);
+	--ease-circ-out: cubic-bezier(0, 0.56, 0.46, 1);
+	--ease-back-out: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+	--ease-quad-inout: cubic-bezier(0.48, 0.04, 0.52, 0.96);
+	--ease-cubic-inout: cubic-bezier(0.66, 0, 0.34, 1);
+	--ease-quart-inout: cubic-bezier(0.77, 0, 0.175, 1);
+	--ease-quint-inout: cubic-bezier(0.84, 0, 0.16, 1);
+	--ease-sine-inout: cubic-bezier(0.36, 0, 0.64, 1);
+	--ease-expo-inout: cubic-bezier(0.9, 0, 0.1, 1);
+	--ease-circ-inout: cubic-bezier(0.88, 0.14, 0.12, 0.86);
+	--ease-back-inout: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+	--ease-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
 	--text-32: max(var(--min-font-size), 3.2rem);
 	--text-32--line-height: 1.2;
 	--text-32--font-weight: 900;
 	--text-32--letter-spacing: -0.02em;
+
+	--text-24: max(var(--min-font-size), 2.4rem);
+	--text-24--line-height: 1.2;
+	--text-24--font-weight: 900;
+	--text-24--letter-spacing: -0.02em;
 
 	--text-18: max(var(--min-font-size), 1.8rem);
 	--text-18--line-height: 1.2;
@@ -162,4 +196,43 @@ body {
 
 .lenis.lenis-stopped {
 	overflow: clip;
+}
+
+.portable {
+	p,
+	li {
+		@apply text-18 font-semibold;
+	}
+
+	h2 {
+		@apply text-24 font-extrabold mb-16;
+	}
+
+	h3 {
+		@apply text-18 font-extrabold mb-12;
+	}
+
+	strong {
+		font-weight: 800;
+	}
+
+	em {
+		font-style: italic;
+	}
+
+	a {
+		@apply underline duration-500 ease-quad-out hover:opacity-60;
+	}
+
+	ul,
+	ol {
+		@apply list-none;
+		li {
+			list-style: "";
+
+			&:not(:last-child) {
+				@apply mb-4;
+			}
+		}
+	}
 }

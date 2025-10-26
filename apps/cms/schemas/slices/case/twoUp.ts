@@ -7,8 +7,25 @@ export default {
 	fields: [
 		{
 			name: "images",
+			title: "Media Items",
 			type: "array",
-			of: [{ type: "media" }],
+			of: [
+				{
+					type: "object",
+					preview: createPreview("{Media Item}", null, "media.image"),
+					fields: [
+						{
+							name: "media",
+							type: "media",
+						},
+						{
+							name: "withBorder",
+							type: "boolean",
+							initialValue: false,
+						},
+					],
+				},
+			],
 		},
 	],
 };
