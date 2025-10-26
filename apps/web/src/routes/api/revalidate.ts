@@ -8,6 +8,9 @@ const routeResolver: Record<string, string> = {
 
 const FULL_REBUILD_DOCS = ["header", "footer"];
 
+const REBUILD_URL =
+	"https://api.vercel.com/v1/integrations/deploy/prj_JhaIqA4HKhO0F3q4P72OA1Mtq55N/HTBvm77nwW?buildCache=false";
+
 // Helper: Replace params in a route with values from the body
 function interpolateRoute(route: string, params: Record<string, any>) {
 	return route.replace(/:([a-zA-Z0-9_]+)/g, (_, key) => params[key] ?? "");
@@ -52,16 +55,11 @@ export async function POST({ request }: APIEvent) {
 	let rebuildResponse: Response | undefined;
 
 	// --- 3. Full Rebuild: if _type is in FULL_REBUILD_DOCS, trigger Vercel hook and exit ---
-	if (FULL_REBUILD_DOCS.includes(body._type) && VERCEL_REBUILD_HOOK) {
+	if (FULL_REBUILD_DOCS.includes(body._type) && REBUILD_URL) {
 		try {
-			const rebuildRes = await fetch(VERCEL_REBUILD_HOOK, {
+			const rebuildRes = await fetch(REBUILD_URL, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					...(body?._id ? { sanity_id: body._id } : {}),
-					...(body?._type ? { sanity_type: body._type } : {}),
-					source: "sanity-webhook",
-				}),
 			});
 			triggeredFullRebuild = true;
 			rebuildResponse = rebuildRes;
