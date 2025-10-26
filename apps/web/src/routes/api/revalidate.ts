@@ -16,15 +16,15 @@ function interpolateRoute(route: string, params: Record<string, any>) {
 	return route.replace(/:([a-zA-Z0-9_]+)/g, (_, key) => params[key] ?? "");
 }
 
-// --- 2. Vercel Build Hook URL (set as env var in dashboard) ---
-const VERCEL_REBUILD_HOOK = process.env.VERCEL_REBUILD_HOOK as
-	| string
-	| undefined;
-
 export async function POST({ request }: APIEvent) {
 	// --- 1. Verify Authorization Header ---
 	const authHeader = request.headers.get("Authorization") ?? "";
 	const token = authHeader.replace("Bearer ", "").trim();
+
+	console.log({
+		authHeader,
+		token,
+	});
 
 	if (token !== process.env.SANITY_REVALIDATE_TOKEN) {
 		return new Response(JSON.stringify({ ok: false, error: "unauthorized" }), {
