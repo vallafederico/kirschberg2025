@@ -1,4 +1,6 @@
+import LinkOptions from "../../components/LinkOptions/LinkOptions";
 import LinkTypeSelector from "../../components/LinkTypeSelector";
+import { allPages } from "./link";
 
 export default {
 	name: "body",
@@ -22,9 +24,20 @@ export default {
 						title: "Link",
 						type: "object",
 						components: {
-							input: LinkTypeSelector,
+							input: LinkOptions,
 						},
 						fields: [
+							{
+								name: "url",
+								type: "string",
+								title: "URL",
+								description: "The URL of the link",
+							},
+							{
+								name: "page",
+								type: "reference",
+								to: [...allPages],
+							},
 							{
 								name: "linkType",
 								type: "string",
