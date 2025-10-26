@@ -1,16 +1,27 @@
 import type { APIEvent } from "@solidjs/start/server";
 
+const routeResolver = {
+	home: "/",
+	"case-study": "/case/:slug",
+};
+
 export async function POST({ request }: APIEvent) {
 	// --- 1. Verify Authorization Header ---
-	// const authHeader = request.headers.get("authorization") ?? "";
-	// const token = authHeader.replace("Bearer ", "").trim();
+	const authHeader = request.headers.get("authorization") ?? "";
+	const token = authHeader.replace("Bearer ", "").trim();
 
-	// if (token !== process.env.REVALIDATE_SECRET) {
-	// 	return new Response(JSON.stringify({ ok: false, error: "unauthorized" }), {
-	// 		status: 401,
-	// 		headers: { "Content-Type": "application/json" },
-	// 	});
-	// }
+	console.log("token", token);
+	console.log(
+		"process.env.SANITY_REVALIDATE_TOKEN",
+		process.env.SANITY_REVALIDATE_TOKEN,
+	);
+
+	if (token !== process.env.SANITY_REVALIDATE_TOKEN) {
+		return new Response(JSON.stringify({ ok: false, error: "unauthorized" }), {
+			status: 401,
+			headers: { "Content-Type": "application/json" },
+		});
+	}
 
 	// --- 2. Parse Incoming Webhook Body ---
 	let body: { _id?: string; _type?: string; slug?: string } = {};
