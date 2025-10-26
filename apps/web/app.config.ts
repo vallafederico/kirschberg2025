@@ -57,16 +57,9 @@ export default defineConfig({
 			"/*": { isr: true, swr: true },
 			"/case/*": { isr: true, swr: true },
 		},
-		prerender: {
-			// routes: ["/"],
-			crawlLinks: true /* prerenders all */,
-		},
 	},
 
 	vite: {
 		plugins,
 	},
-	// solid: {
-	//   hot: false,
-	// },
 });

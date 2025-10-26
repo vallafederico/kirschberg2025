@@ -1,20 +1,27 @@
 import type { APIEvent } from "@solidjs/start/server";
 
-const routeResolver = {
+// --- 1. Define routeResolver and FULL_REBUILD_DOCS ---
+const routeResolver: Record<string, string> = {
 	home: "/",
 	"case-study": "/case/:slug",
 };
 
+const FULL_REBUILD_DOCS = ["header", "footer"];
+
+// Helper: Replace params in a route with values from the body
+function interpolateRoute(route: string, params: Record<string, any>) {
+	return route.replace(/:([a-zA-Z0-9_]+)/g, (_, key) => params[key] ?? "");
+}
+
+// --- 2. Vercel Build Hook URL (set as env var in dashboard) ---
+const VERCEL_REBUILD_HOOK = process.env.VERCEL_REBUILD_HOOK as
+	| string
+	| undefined;
+
 export async function POST({ request }: APIEvent) {
 	// --- 1. Verify Authorization Header ---
-	const authHeader = request.headers.get("authorization") ?? "";
+	const authHeader = request.headers.get("Authorization") ?? "";
 	const token = authHeader.replace("Bearer ", "").trim();
-
-	console.log("token", token);
-	console.log(
-		"process.env.SANITY_REVALIDATE_TOKEN",
-		process.env.SANITY_REVALIDATE_TOKEN,
-	);
 
 	if (token !== process.env.SANITY_REVALIDATE_TOKEN) {
 		return new Response(JSON.stringify({ ok: false, error: "unauthorized" }), {
@@ -24,7 +31,7 @@ export async function POST({ request }: APIEvent) {
 	}
 
 	// --- 2. Parse Incoming Webhook Body ---
-	let body: { _id?: string; _type?: string; slug?: string } = {};
+	let body: { _id?: string; _type?: string; [key: string]: any } = {};
 	try {
 		body = await request.json();
 	} catch {
@@ -34,48 +41,102 @@ export async function POST({ request }: APIEvent) {
 		});
 	}
 
-	console.log("body", body);
-	console.log("request.url", request.url);
+	if (!body._type) {
+		return new Response(JSON.stringify({ ok: false, error: "missing type" }), {
+			status: 400,
+			headers: { "Content-Type": "application/json" },
+		});
+	}
 
-	if (!body.slug || !body._type) {
-		return new Response(
-			JSON.stringify({ ok: false, error: "missing slug or type" }),
-			{
-				status: 400,
+	let triggeredFullRebuild = false;
+	let rebuildResponse: Response | undefined;
+
+	// --- 3. Full Rebuild: if _type is in FULL_REBUILD_DOCS, trigger Vercel hook and exit ---
+	if (FULL_REBUILD_DOCS.includes(body._type) && VERCEL_REBUILD_HOOK) {
+		try {
+			const rebuildRes = await fetch(VERCEL_REBUILD_HOOK, {
+				method: "POST",
 				headers: { "Content-Type": "application/json" },
-			},
-		);
-	}
-
-	// --- 3. Determine Which Routes To Invalidate ---
-	const paths = [
-		"/",
-		`/case-study/${body?.slug?.current}`, // Example: /blog/my-post
-	];
-
-	// --- 4. Invalidate Cached Pages (If On Vercel) ---
-	try {
-		// On Vercel, Nitro handles ISR invalidation automatically when using routeRules.isr
-		// So we simply trigger the internal revalidation via fetch if desired
-		for (const path of paths) {
-			// You could call the live path to trigger rebuild if you want:
-			await fetch(new URL(path, request.url).toString(), {
-				method: "HEAD",
-			}).catch(() => {});
+				body: JSON.stringify({
+					...(body?._id ? { sanity_id: body._id } : {}),
+					...(body?._type ? { sanity_type: body._type } : {}),
+					source: "sanity-webhook",
+				}),
+			});
+			triggeredFullRebuild = true;
+			rebuildResponse = rebuildRes;
+		} catch (err) {
+			console.error("[ISR] Error triggering Vercel rebuild hook", err);
+			return new Response(
+				JSON.stringify({
+					ok: false,
+					error: "failed to trigger rebuild",
+					details: String(err),
+				}),
+				{
+					status: 500,
+					headers: { "Content-Type": "application/json" },
+				},
+			);
 		}
-	} catch (err) {
-		console.error("[ISR] Error revalidating:", err);
 	}
 
-	// --- 5. Log For Debug ---
-	console.log(`[ISR] Sanity webhook revalidated: ${paths.join(", ")}`);
+	// --- 4. Determine Which Routes To Invalidate ---
+	const paths: string[] = [];
+	const routePattern = routeResolver[body._type];
+	if (routePattern) {
+		let path = routePattern;
+		// Fill slug if present (support object or string slug)
+		if (routePattern.includes(":slug")) {
+			let slugVal = "";
+			if (body.slug) {
+				// Support both { slug: "value" } and { slug: { current: "value" } }
+				if (typeof body.slug === "string") {
+					slugVal = body.slug;
+				} else if (typeof body.slug === "object" && body.slug.current) {
+					slugVal = body.slug.current;
+				}
+			}
+			path = interpolateRoute(routePattern, { slug: slugVal });
+		}
+		paths.push(path);
+	}
 
-	// --- 6. Respond Cleanly ---
+	// --- 5. Invalidate Cached Pages (If On Vercel) ---
+	if (!triggeredFullRebuild && paths.length) {
+		try {
+			for (const path of paths) {
+				await fetch(new URL(path, request.url).toString(), {
+					method: "HEAD",
+				}).catch(() => {});
+			}
+		} catch (err) {
+			console.error("[ISR] Error revalidating:", err);
+		}
+	}
+
+	// --- 6. Log For Debug ---
+	if (triggeredFullRebuild) {
+		console.log(
+			`[ISR] Triggered full rebuild via Vercel hook for type "${body._type}"`,
+		);
+	} else {
+		console.log(`[ISR] Sanity webhook revalidated: ${paths.join(", ")}`);
+	}
+
+	// --- 7. Respond Cleanly ---
 	return new Response(
 		JSON.stringify({
 			ok: true,
-			message: `Revalidated ${paths.length} routes`,
+			revalidated: !triggeredFullRebuild,
+			triggeredFullRebuild,
+			vercelRebuildStatus: triggeredFullRebuild
+				? rebuildResponse?.status
+				: undefined,
 			paths,
+			message: triggeredFullRebuild
+				? "Triggered Vercel build hook for full rebuild."
+				: `Revalidated ${paths.length} routes`,
 		}),
 		{
 			status: 200,
