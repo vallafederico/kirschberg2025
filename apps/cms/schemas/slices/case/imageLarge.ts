@@ -11,6 +11,7 @@ export default {
 		},
 		{
 			name: "withBorder",
+			description: "Add an opaque, inversely coloredborder to the media item",
 			type: "boolean",
 			initialValue: false,
 		},

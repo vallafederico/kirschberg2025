@@ -13,27 +13,29 @@ export default function CaseStudySubnav({ link }: { link: string }) {
 	useKeypress("Escape", handleClick);
 
 	return (
-		<div class="fixed left-1/2 z-20 -translate-x-1/2 flex gap-12 items-center top-[calc(100lvh-6.5rem)]">
-			<Show when={link}>
+		<div class="absolute pointer-events-none bottom-130 top-0 left-0 right-0 z-20 ">
+			<div class="z-20 h-[calc(100svh)] sticky top-0 flex items-end justify-center pointer-events-none pb-margin-1 gap-12">
+				<Show when={link}>
+					<Button
+						class="shrink-0 pointer-events-auto"
+						link={{
+							url: link,
+							label: "Visit Website",
+							linkType: "external",
+							slug: undefined,
+						}}
+					/>
+				</Show>
 				<Button
-					class="shrink-0"
-					link={{
-						url: link,
-						label: "Visit Website",
-						linkType: "external",
-						slug: undefined,
-					}}
-				/>
-			</Show>
-			<Button
-				class="shrink-0"
-				aria-label="Close Case Study"
-				aria-controls="case-study"
-				variant="circle"
-				onClick={handleClick}
-			>
-				x
-			</Button>
+					class="shrink-0 pointer-events-auto"
+					aria-label="Close Case Study"
+					aria-controls="case-study"
+					variant="circle"
+					onClick={handleClick}
+				>
+					x
+				</Button>
+			</div>
 		</div>
 	);
 }
