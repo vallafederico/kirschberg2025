@@ -1,9 +1,11 @@
-import Header from "./Header";
-import RichText from "./RichText";
-import FormSlice from "./FormSlice";
+import BodyText from "./BodyText";
+import ImageLarge from "./ImageLarge";
+import Quote from "./Quote";
+import TwoUp from "./TwoUp";
 
 export const SLICE_LIST = {
-	header: Header,
-	// richText: RichText,
-	// formSlice: FormSlice,
+	twoUp: TwoUp,
+	imageLarge: ImageLarge,
+	quote: Quote,
+	bodyText: BodyText,
 };

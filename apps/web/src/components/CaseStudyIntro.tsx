@@ -1,3 +1,4 @@
+import { PortableText } from "@local/sanity";
 import type { JSXElement } from "solid-js";
 import { For, Match, Show } from "solid-js";
 
@@ -5,10 +6,12 @@ export default function CaseStudyIntro({
 	role,
 	team,
 	client,
+	description,
 }: {
 	role: string[];
 	team: { name: string; url: string }[];
 	client: { name: string; url: string }[];
+	description: any[];
 }) {
 	const IntroSubsection = ({
 		children,
@@ -18,7 +21,7 @@ export default function CaseStudyIntro({
 		label: string;
 	}) => {
 		return (
-			<div>
+			<div class="w-cols-1">
 				<dt class="text-inverted/50 mb-5">{label}</dt>
 				<dd>{children}</dd>
 			</div>
@@ -26,8 +29,8 @@ export default function CaseStudyIntro({
 	};
 
 	return (
-		<section>
-			<dl class="text-14 w-[80%] flex gap-80 font-medium">
+		<section class="flex items-start gap-94">
+			<dl class="text-14 w-[80%] lg:flex-col flex max-lg:mb-32 gap-32 font-medium">
 				<Show when={role}>
 					<IntroSubsection label="Role">{role.join(", ")}</IntroSubsection>
 				</Show>
@@ -79,6 +82,11 @@ export default function CaseStudyIntro({
 					</IntroSubsection>
 				</Show>
 			</dl>
+			<Show when={description}>
+				<div class="text-18 font-medium">
+					<PortableText value={description} />
+				</div>
+			</Show>
 		</section>
 	);
 }

@@ -3,15 +3,16 @@ import { navStore, setNavStore } from "~/lib/stores/navStore";
 
 export default function NavMenuButton() {
 	let button: HTMLButtonElement | null = null;
+
 	const handleMenuToggle = () => {
 		setNavStore("panelOpen", !navStore.panelOpen);
 	};
 
 	useKeypress("Escape", () => {
+		if (!navStore.panelOpen || !button) return;
+
 		setNavStore("panelOpen", false);
-		if (button) {
-			button.focus();
-		}
+		button.focus();
 	});
 
 	return (

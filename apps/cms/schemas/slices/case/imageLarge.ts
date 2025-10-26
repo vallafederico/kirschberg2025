@@ -1,10 +1,13 @@
+import { createPreview } from "../../../utils/preview";
+
 export default {
-  type: 'object', 
-  name: 'imageLarge',
-  fields: [
-    {
-      name: 'image',
-      type: 'image',
-    },
-  ]
-}
+	type: "object",
+	preview: createPreview("{Media Large}", null, "media.image"),
+	name: "imageLarge",
+	fields: [
+		{
+			name: "media",
+			type: "media",
+		},
+	],
+};

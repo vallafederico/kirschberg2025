@@ -3,7 +3,7 @@ import richText from "./richText";
 import caseSlices from './case'
 
 import { createSliceSet } from "../../utils/create";
-import imageLarge from "./case/imageLarge";
+
 
 const globalPageSlices = [header, richText, ...caseSlices] as any[] 
 

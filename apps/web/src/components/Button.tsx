@@ -38,7 +38,7 @@ export default function Button({
 			class={cx(
 				VARIANT[variant as keyof typeof VARIANT],
 				className,
-				"text-14 border-[#0D0D0D]/25 font-medium bg-[#70706E] text-[white]",
+				"text-14 cursor-pointer border-[#0D0D0D]/25 font-medium bg-[#70706E] text-[white]",
 			)}
 		>
 			{children || label}
