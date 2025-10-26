@@ -2,14 +2,13 @@ import { PortableText, sanityLink } from "@local/sanity";
 import { Show } from "solid-js";
 
 export default function BodyText({ text }: { text: string }) {
-
 	const components = {
 		marks: {
 			inlineLink: ({ value, text }: { value: any; text: string }) => {
 				const isExternal = value.linkType === "external";
 
 				const { attrs } = sanityLink(value);
-				const target = isExternal ? "_blank" : "_self";
+
 				return (
 					<a {...attrs} rel={value.noFollow ? "nofollow" : ""}>
 						{text}
