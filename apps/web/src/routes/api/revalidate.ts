@@ -18,12 +18,17 @@ function interpolateRoute(route: string, params: Record<string, any>) {
 
 export async function POST({ request }: APIEvent) {
 	// --- 1. Verify Authorization Header ---
-	const authHeader = request.headers.get("Authorization") ?? "";
+
+	console.log("request.headers", request.headers);
+
+	const authHeader = request.headers.get("authorization") ?? "";
 	const token = authHeader.replace("Bearer ", "").trim();
 
 	console.log({
 		authHeader,
 		token,
+
+		stuff: process.env.SANITY_REVALIDATE_TOKEN,
 	});
 
 	if (token !== process.env.SANITY_REVALIDATE_TOKEN) {
