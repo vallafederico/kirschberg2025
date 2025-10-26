@@ -28,7 +28,7 @@ export default function TwoUp({ images }: { images: any[] }) {
 				{(media) => (
 					<Media
 						class={cx(
-							"rounded-lg overflow-hiddenw-full h-auto lg:h-full object-cover",
+							"rounded-lg overflow-hidden w-full h-auto lg:h-full object-cover",
 							media()?.withBorder && "border border-inverted/10",
 						)}
 						{...sharedProps}
