@@ -1,7 +1,6 @@
 import "./app.css";
 import { Link, MetaProvider } from "@solidjs/meta";
-import { Router } from "@solidjs/router";
-import { FileRoutes } from "@solidjs/start/router";
+import { Route, Router } from "@solidjs/router";
 import { Suspense } from "solid-js";
 import Grid from "~/components/Grid";
 import { Nav } from "~/components/Nav/Navbar";
@@ -10,6 +9,9 @@ import { scroll } from "~/lib/utils/scroll";
 
 import { usePageTransition } from "./animation";
 import ThemeManager from "./components/ThemeManager";
+import Home from "./routes/(home)";
+import About from "./routes/about";
+import CaseStudy from "./routes/case-study";
 
 export default function App() {
 	useViewport();
@@ -30,9 +32,11 @@ export default function App() {
 				</MetaProvider>
 			)}
 		>
-			<Suspense fallback={<div></div>}>
-				<FileRoutes />
-			</Suspense>
+			<Route path="/" component={Home}>
+				<Route path="/" component={Home} />
+				<Route path="/case/:slug" component={CaseStudy} />
+			</Route>
+			{/* <Route path="/about" component={About} /> */}
 		</Router>
 	);
 }
@@ -40,7 +44,7 @@ export default function App() {
 // ////////////////
 
 const GlobalLayout = ({ children, ...props }: { children: any }) => {
-	usePageTransition();
+	// usePageTransition();
 
 	return <main use:scroll>{children}</main>;
 };

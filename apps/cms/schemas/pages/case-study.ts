@@ -2,8 +2,7 @@ import createPage from "../../utils/createPage";
 
 export default createPage({
 	name: "case-study",
-	prefix: "case",
-	slug: true,
+	prefix: "/case",
 	title: "Case Studies",
 	preview: {
 		select: {
@@ -28,6 +27,10 @@ export default createPage({
 	slices: "caseStudySlices",
 	fields: [
 		{
+			name: "liveLink",
+			type: "url",
+		},
+		{
 			name: "featuredMedia",
 			type: "array",
 			description:
@@ -49,6 +52,7 @@ export default createPage({
 			type: "array",
 			of: [{ type: "string" }],
 		},
+
 		{
 			name: "client",
 			type: "array",

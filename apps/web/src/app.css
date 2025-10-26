@@ -24,6 +24,8 @@
 
 	--radius-md: 1.2rem;
 	--radius-lg: 1.6rem;
+	--radius-xl: 2.4rem;
+	--radius-xxl: 3.2rem;
 
 	--text-32: max(var(--min-font-size), 3.2rem);
 	--text-32--line-height: 1.2;

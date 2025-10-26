@@ -1,3 +1,4 @@
+import { A } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import Media from "~/components/Media";
 
@@ -12,12 +13,58 @@ export default function HomeHero({
 	heading,
 	blurb,
 }: HomeHeroProps) {
+	const ArticleCard = ({
+		slug,
+		title,
+		client,
+		role,
+		featuredMedia,
+	}: {
+		slug: string;
+		title: string;
+		client: string;
+		role: string;
+		featuredMedia: any;
+	}) => {
+		const formatedClient = client
+			? client.map((c) => c.name)?.join(" & ")
+			: null;
+		const formatedRole = role ? role?.join(", ") : null;
+
+		return (
+			<li>
+				<article>
+					<A href={slug?.fullUrl} class="block h-full w-300">
+						<div class="mb-12">
+							<h2 class="text-18">{title}</h2>
+							<p class="text-12 font-semibold mt-2 text-gry">
+								{formatedClient}
+								<Show when={formatedClient && formatedRole}>•</Show>
+								{formatedRole}
+							</p>
+						</div>
+						<div class="rounded-md h-380 overflow-hidden">
+							<Media
+								imageProps={{
+									desktopWidth: 35,
+									mobileWidth: 45,
+								}}
+								class="size-full relative -translate-y-1/2 top-1/2 object-cover object-center"
+								{...featuredMedia?.[1]}
+							/>
+						</div>
+					</A>
+				</article>
+			</li>
+		);
+	};
+
 	return (
-		<div class="flex h-screen justify-between pb-19 flex-col">
+		<div class="flex h-screen fixed justify-between pb-19 flex-col">
 			<header class="h-full flex-center pt-50 px-margin-1 lg:w-[42%] text-center mx-auto">
 				<div class="">
 					<Show when={heading}>
-						<h1 class="font-display  text-32">{heading}</h1>
+						<h1 class="font-display text-32">{heading}</h1>
 					</Show>
 					<Show when={blurb}>
 						<p class="text-14 lg:text-18 mt-12">{blurb}</p>
@@ -27,33 +74,7 @@ export default function HomeHero({
 			<ul class="flex gap-x-18 items-end">
 				<For each={caseStudies}>
 					{(caseStudy) => {
-						const client = caseStudy?.client
-							? caseStudy.client.map((c) => c.name)?.join(" & ")
-							: null;
-						const role = caseStudy?.role ? caseStudy.role.join(", ") : null;
-
-						return (
-							<li class="w-300 h-full">
-								<div class="mb-12">
-									<h2 class="text-18">{caseStudy.title}</h2>
-									<p class="text-12 font-semibold mt-2 text-gry">
-										{client}
-										<Show when={client && role}>•</Show>
-										{role}
-									</p>
-								</div>
-								<div class="rounded-md h-380 overflow-hidden">
-									<Media
-										imageProps={{
-											desktopWidth: 35,
-											mobileWidth: 45,
-										}}
-										class="size-full relative -translate-y-1/2 top-1/2 object-cover object-center"
-										{...caseStudy?.featuredMedia?.[1]}
-									/>
-								</div>
-							</li>
-						);
+						return <ArticleCard {...caseStudy} />;
 					}}
 				</For>
 			</ul>
