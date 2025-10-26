@@ -1,5 +1,5 @@
+import { deepCopy, WalkBuilder } from "walkjs";
 import sanityClient from "../client";
-import { WalkBuilder, deepCopy } from "walkjs";
 
 const leadingSlash = (str: string) => {
 	if (!str || typeof str !== "string") return str;
@@ -17,6 +17,7 @@ const resolveLinks = async (inputData: any, maxDepth = 5) => {
 			const isHomepage = doc._type === "home" || doc._type === "homepage";
 			const values = {
 				// ...node.val,
+				_type: node.parent?.val?._type || "link", // Preserve the _type field
 				label: node.parent?.val?.label,
 				linkType: node.parent?.val?.linkType,
 			};

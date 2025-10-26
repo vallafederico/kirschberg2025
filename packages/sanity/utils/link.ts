@@ -13,19 +13,23 @@ export const sanityLink = (props: SanityLinkProps | undefined) => {
 				target: "_blank",
 			},
 		};
-	const { url, label, linkType, slug, advanced } = props || {};
+	const { url, label, linkType, slug, noFollow, page } = props || {};
 	const isExternal = linkType === "external";
 
 	let rel = undefined as string | undefined;
 	if (isExternal) {
-		if (advanced?.noFollow) {
+		if (noFollow) {
 			rel = "noopener noreferrer";
 		} else {
 			rel = "noopener";
 		}
 	}
 
-	const formattedSlug = isExternal ? undefined : slug?.fullUrl || slug?.current;
+	const slugBase = slug || page;
+
+	const formattedSlug = isExternal
+		? undefined
+		: slugBase?.fullUrl || slugBase?.current;
 
 	return {
 		linkType,

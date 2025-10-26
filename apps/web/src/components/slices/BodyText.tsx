@@ -1,22 +1,18 @@
-import { PortableText } from "@local/sanity";
+import { PortableText, sanityLink } from "@local/sanity";
 import { Show } from "solid-js";
 
 export default function BodyText({ text }: { text: string }) {
+
 	const components = {
 		marks: {
-			link: ({ value, ...rest }: { value: any }) => {
-				const isExternal = ["mailto", "tel", "https", "http"].some((protocol) =>
-					value.url.startsWith(protocol),
-				);
-				console.log(rest);
+			inlineLink: ({ value, text }: { value: any; text: string }) => {
+				const isExternal = value.linkType === "external";
+
+				const { attrs } = sanityLink(value);
 				const target = isExternal ? "_blank" : "_self";
 				return (
-					<a
-						href={value.url}
-						target={target}
-						rel={value.noFollow ? "nofollow" : ""}
-					>
-						{value.text}
+					<a {...attrs} rel={value.noFollow ? "nofollow" : ""}>
+						{text}
 					</a>
 				);
 			},
