@@ -14,10 +14,10 @@ export default function HomeHero({
 }: HomeHeroProps) {
 	return (
 		<div class="flex h-screen justify-between pb-19 flex-col">
-			<header class="h-full flex-center pt-50 px-margin-1 lg:w-[40%] text-center mx-auto">
-				<div>
+			<header class="h-full flex-center pt-50 px-margin-1 lg:w-[42%] text-center mx-auto">
+				<div class="">
 					<Show when={heading}>
-						<h1 class="font-display text-32">{heading}</h1>
+						<h1 class="font-display  text-32">{heading}</h1>
 					</Show>
 					<Show when={blurb}>
 						<p class="text-14 lg:text-18 mt-12">{blurb}</p>

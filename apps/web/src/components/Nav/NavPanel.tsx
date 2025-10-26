@@ -1,5 +1,5 @@
 import { getDocumentByType } from "@local/sanity";
-import { query } from "@solidjs/router";
+import { createAsync, query } from "@solidjs/router";
 import cx from "classix";
 import { navStore } from "~/lib/stores/navStore";
 import NavProjectsCarousel from "./NavProjectsCarousel";
@@ -17,7 +17,8 @@ export default function NavPanel() {
 		>
 			<div class="overflow-hidden">
 				<div class="p-24 flex flex-col gap-y-32">
-					<NavProjectsCarousel />
+					{/* doesnt fucking work from server mismatch trash */}
+					{/* <NavProjectsCarousel /> */}
 
 					<div class="justify-between !font-bold text-inverted/40 flex text-14">
 						<span>

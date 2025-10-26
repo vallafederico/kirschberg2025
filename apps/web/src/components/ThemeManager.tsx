@@ -1,10 +1,10 @@
 import { createEffect } from "solid-js";
 import { isServer } from "solid-js/web";
-import { type Theme, themeStore } from "~/lib/stores/themeStore";
+import { setThemeStore, type Theme } from "~/lib/stores/themeStore";
 
 export default function ThemeManager() {
 	const setTheme = (theme: Theme) => {
-		themeStore.theme = theme;
+		setThemeStore("theme", theme);
 		localStorage.setItem("theme", theme);
 		document.documentElement.setAttribute("data-theme", theme);
 	};
