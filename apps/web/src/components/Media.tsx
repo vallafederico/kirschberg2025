@@ -10,6 +10,10 @@ interface MediaProps {
 	videoProps: {
 		autoplay?: boolean;
 	};
+	imageProps: {
+		desktopWidth?: number;
+		mobileWidth?: number;
+	};
 }
 
 export default function Media({
@@ -18,11 +22,12 @@ export default function Media({
 	video,
 	class: className,
 	videoProps = {},
+	imageProps = {},
 }: MediaProps) {
 	return (
 		<>
 			<Show when={mediaType === "image" && image?.asset}>
-				<SanityImage class={className} desktopWidth={25} src={image} />
+				<SanityImage class={className} {...imageProps} src={image} />
 			</Show>
 			<Show when={mediaType === "video" && video?.asset}>
 				<MuxVideo {...videoProps} class={className} src={video} />

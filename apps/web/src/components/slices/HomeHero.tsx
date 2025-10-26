@@ -44,6 +44,10 @@ export default function HomeHero({
 								</div>
 								<div class="rounded-md h-380 overflow-hidden">
 									<Media
+										imageProps={{
+											desktopWidth: 35,
+											mobileWidth: 45,
+										}}
 										class="size-full relative -translate-y-1/2 top-1/2 object-cover object-center"
 										{...caseStudy?.featuredMedia?.[1]}
 									/>

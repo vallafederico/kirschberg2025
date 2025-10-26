@@ -1,7 +1,7 @@
 import { A } from "@solidjs/router";
-import { navStore, setNavStore } from "~/lib/stores/navStore";
 import { Resizer } from "~/lib/utils/resizer";
 import { setCssVariable } from "~/utils/css";
+import NavMenuButton from "./NavMenuButton";
 import NavPanel from "./NavPanel";
 
 export const Nav = () => {
@@ -15,28 +15,19 @@ export const Nav = () => {
 	};
 
 	Resizer.add(getNavHeight);
-
-	const handleMenuToggle = () => {
-		setNavStore("panelOpen", !navStore.panelOpen);
-	};
+	
 
 	return (
-		<nav class="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 z-100 pt-19 flex items-center justify-between py-6">
+		<div class="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 z-100 pt-19 flex items-center justify-between py-6">
 			<div class="border-[#0D0D0D]/25 dark:border-white/25 dark:bg-white/20  border backdrop-blur-[96px] bg-[#0D0D0D]/50 w-450 font-medium text-inverted text-18 rounded-lg text-center relative">
 				<div ref={el} class="w-full px-26 py-13">
 					<A href="/" class="pointer-events-auto">
 						Kirschberg
 					</A>
-					<button
-						onClick={handleMenuToggle}
-						type="button"
-						class="absolute pointer-events-auto w-72 h-56 flex-center -top-5 right-0 cursor-pointer"
-					>
-						<img src="/icons/menu-icon.svg" class="size-15" alt="" />
-					</button>
+					<NavMenuButton />
 				</div>
 				<NavPanel />
 			</div>
-		</nav>
+		</div>
 	);
 };
