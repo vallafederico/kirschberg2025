@@ -1,19 +1,13 @@
 import { getDocumentByType } from "@local/sanity";
 import { query } from "@solidjs/router";
 import cx from "classix";
-import { useKeypress } from "~/lib/hooks/useKeypress";
-import { navStore, setNavStore } from "~/lib/stores/navStore";
+import { navStore } from "~/lib/stores/navStore";
 import NavProjectsCarousel from "./NavProjectsCarousel";
 import styles from "./nav-panel.module.css";
 
 const year = new Date().getFullYear();
 
 export default function NavPanel() {
-	useKeypress("Escape", () => {
-		setNavStore("panelOpen", false);
-		document.querySelector("button[aria-controls='menu-button']")?.focus(); // move focus back to menu button
-	});
-
 	return (
 		<nav
 			data-open={navStore.panelOpen}

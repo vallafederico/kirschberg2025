@@ -3,17 +3,25 @@ import createPage from "../../utils/createPage";
 export default createPage({
 	name: "case-study",
 	prefix: "case",
+	slug: true,
 	title: "Case Studies",
 	preview: {
 		select: {
 			title: "title",
+			media: "featuredMedia",
 			subtitle: "byline",
 		},
 		prepare(select: any) {
-			const { title, byline, archived } = select;
+			const { title, byline, media } = select;
+
+			const image = media?.find(
+				(item: any) => item.mediaType === "image",
+			)?.image;
+
 			return {
 				title,
 				subtitle: byline,
+				media: image,
 			};
 		},
 	},

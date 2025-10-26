@@ -51,8 +51,13 @@
 	--text-12--letter-spacing: -0.02em;
 
 	--spacing: 0.1rem;
-	--spacing-gutter: 1rem;
-	--spacing-margin: 2rem;
+	--spacing-gutter-1: var(--grid-gutter);
+	--spacing-gutter-2: calc(var(--grid-gutter) * 2);
+	--spacing-gutter-3: calc(var(--grid-gutter) * 3);
+
+	--spacing-margin-1: var(--grid-margin);
+	--spacing-margin-2: calc(var(--grid-margin) * 2);
+	--spacing-margin-3: calc(var(--grid-margin) * 3);
 }
 
 html[data-theme="dark"] {

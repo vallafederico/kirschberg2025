@@ -90,7 +90,7 @@ export const createPage = (opts: PageAttributes) => {
 		});
 	}
 
-	if (slug && !prefix) {
+	if (slug) {
 		allFields.unshift({
 			name: "slug",
 			description: "Click generate to build a URL for this page.",

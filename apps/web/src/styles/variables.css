@@ -8,7 +8,7 @@
 
 @media (max-width: 768px) {
 	:root {
-		--grid-gutter: 0.5rem;
+		--grid-gutter: 1.6rem;
 		--grid-columns: 6;
 	}
 }
