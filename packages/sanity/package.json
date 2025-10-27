@@ -1,5 +1,6 @@
 {
 	"name": "@local/sanity",
+	"sideEffects": false,
 	"type": "module",
 	"main": "./index.ts",
 	"dependencies": {
