@@ -26,7 +26,7 @@ export default function Button({
 	const element = link?.slug || link?.url || href ? A : "button";
 
 	const VARIANT = {
-		primary: "py-16 px-40 rounded-md inline-flex",
+		primary: "py-16 px-40 rounded-md flex-center nline-flex",
 		circle: "rounded-full size-54 flex-center inline-flex",
 	};
 
@@ -38,7 +38,7 @@ export default function Button({
 			class={cx(
 				VARIANT[variant as keyof typeof VARIANT],
 				className,
-				"text-14 cursor-pointer border-[#0D0D0D]/25 font-medium bg-[#70706E] text-[white]",
+				"text-14 cursor-pointer text-center border-[#0D0D0D]/25 font-medium bg-[#70706E] text-[white]",
 			)}
 		>
 			{children || label}

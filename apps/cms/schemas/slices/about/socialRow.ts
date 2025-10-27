@@ -1,5 +1,10 @@
+import { MdLink } from "react-icons/md";
+import { createPreview } from "../../../utils/preview";
+
 export default {
 	name: "socialRow",
+
+	preview: createPreview("{Social Row}"),
 	type: "object",
 	fields: [
 		{
@@ -8,6 +13,8 @@ export default {
 			of: [
 				{
 					type: "object",
+					icon: MdLink,
+					preview: createPreview("name", "url"),
 					fields: [
 						{
 							name: "name",
@@ -15,7 +22,7 @@ export default {
 						},
 						{
 							name: "url",
-							type: "url",
+							type: "string",
 						},
 					],
 				},

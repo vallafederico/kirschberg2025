@@ -18,7 +18,7 @@ export default function AboutPage() {
 				return (
 					<>
 						<SanityMeta pageData={page} />
-						<div class="gap-y-34 flex flex-col">
+						<div class="gap-y-34 pb-50 lg:pb-120 flex flex-col">
 							<SanityComponents
 								components={page.slices}
 								componentList={SLICE_LIST}
