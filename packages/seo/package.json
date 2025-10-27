@@ -1,7 +1,6 @@
 {
 	"name": "@local/seo",
 	"type": "module",
-	"sideEffects": false,
 	"main": "./index.ts",
 	"dependencies": {
 		"@crawl-me-maybe/web": "^0.0.2",
