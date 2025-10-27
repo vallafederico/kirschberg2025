@@ -7,7 +7,7 @@ const sanityClient = createClient({
 	useCdn: false,
 	apiVersion: "2025-01-11",
 	stega: {
-		enabled: true, // only in preview
+		enabled: false, // only in preview
 		studioUrl: "https://kirschberg.sanity.studio",
 	},
 	token: process.env.SANITY_TOKEN,

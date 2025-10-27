@@ -60,6 +60,7 @@ export default function SanityMeta({
 								/>
 							)}
 						</For>
+						<meta charset="utf-8" />
 
 						<Meta name="description" content={meta.description ?? ""} />
 						{meta.robots && <Meta name="robots" content={meta.robots} />}

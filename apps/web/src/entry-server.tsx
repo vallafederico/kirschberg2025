@@ -6,11 +6,9 @@ export default createHandler(() => (
 		document={({ assets, children, scripts }) => (
 			<html lang="en" data-theme="dark">
 				<head>
-					<meta charset="utf-8" />
+					<meta charset="UTF-8" />
 					<meta name="viewport" content="width=device-width, initial-scale=1" />
-					<link rel="icon" href="/favicon.ico" />
-					{/* (*) FIGURE OUT HOW IT WORKS */}
-					{/* <link rel="robots" href="/robots" /> */}
+
 					{assets}
 				</head>
 				<body>

@@ -1,12 +1,12 @@
 .stuff{
 
 
-  & [data-ui="fieldHeaderContentBox"]{
+  /* & [data-ui="fieldHeaderContentBox"]{
     display: none !important;
   }
 
   & div[data-ui="Box"]{
     border: none !important;
     padding-left: 0 !important;
-  }
+  } */
 }

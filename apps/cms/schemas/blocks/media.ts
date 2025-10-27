@@ -37,6 +37,10 @@ export default {
 		{
 			name: "video",
 			type: "mux.video",
+			options: {
+				collapsable: false,
+				collapsed: false,
+			},
 		},
 	],
 };

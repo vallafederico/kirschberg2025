@@ -13,14 +13,14 @@ export default function NavPanel() {
 			data-open={navStore.panelOpen}
 			inert={!navStore.panelOpen ? true : undefined}
 			aria-labelledby="menu-button"
-			class={cx(styles["nav-panel"], "pointer-events-auto")}
+			class={cx(styles["nav-panel"], "pointer-events-auto text-[#fff]")}
 		>
 			<div class="overflow-hidden">
 				<div class="p-24 flex flex-col gap-y-32">
 					{/* doesnt fucking work from server mismatch trash */}
 					{/* <NavProjectsCarousel /> */}
 
-					<div class="justify-between !font-bold text-inverted/40 flex text-14">
+					<div class="justify-between !font-bold flex text-14">
 						<span>
 							Built with{" "}
 							<a href="https://federic.ooo" target="_blank" rel="noopener">

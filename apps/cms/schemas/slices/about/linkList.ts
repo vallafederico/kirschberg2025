@@ -1,5 +1,6 @@
 import { MdCircle } from "react-icons/md";
 import ButtonSelector from "../../../components/ButtonSelector";
+import { createPreview } from "../../../utils/preview";
 
 export default {
 	name: "linkList",
@@ -23,7 +24,9 @@ export default {
 						},
 						{
 							name: "imageSize",
+							title: "Media Size",
 							type: "string",
+							initialValue: "square",
 							components: {
 								input: ButtonSelector,
 							},
@@ -40,10 +43,12 @@ export default {
 							of: [
 								{
 									type: "object",
+									preview: createPreview("title", "description"),
+									icon: MdCircle,
 									fields: [
 										{
-											name: "image",
-											type: "image",
+											name: "media",
+											type: "media",
 										},
 										{
 											name: "title",

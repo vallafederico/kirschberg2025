@@ -8,7 +8,7 @@ export default function AboutListWrapper({
 	heading: string;
 }) {
 	return (
-		<section>
+		<section class="!text-inverted/94">
 			<h2 class="text-24 font-bold mb-40">{heading}</h2>
 			{children}
 			<AnimatedLine class="mt-34" />

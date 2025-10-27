@@ -33,6 +33,8 @@ export default function MediaSelector(props) {
 	const imageMember = members.find((member: any) => member.name === "image");
 	const videoMember = members.find((member: any) => member.name === "video");
 
+	console.log(val);
+
 	return (
 		<Stack className={styles.stuff} space={3}>
 			<TabList space={2}>

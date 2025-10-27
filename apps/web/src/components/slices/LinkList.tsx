@@ -1,7 +1,9 @@
 import { SanityImage } from "@local/sanity";
+import cx from "classix";
 import { For } from "solid-js";
 import AboutListWrapper from "../AboutListWrapper";
 import Arrow from "../Arrow";
+import Media from "../Media";
 
 export default function LinkList({
 	items,
@@ -14,7 +16,7 @@ export default function LinkList({
 		<AboutListWrapper heading={heading}>
 			<ul>
 				{items.map((item) => (
-					<li class="flex not-last:mb-40">
+					<li class="flex not-last:mb-40" data-size={item.imageSize}>
 						<h3 class="w-[34%] pr-20  shrink-0 text-20">{item.label}</h3>
 						<ul class="w-full">
 							<For each={item.items}>
@@ -26,10 +28,16 @@ export default function LinkList({
 												class="flex gap-12 w-full relative"
 												href={subItem?.link || ""}
 											>
-												<SanityImage
-													class="size-64 rounded-md"
-													src={subItem.image}
+												<Media
+													{...subItem.media}
+													class={cx(
+														"overflow-hidden outline -outline-offset-1 outline-inverted/10 rounded-md",
+														item.imageSize === "square"
+															? "size-64"
+															: "w-170 aspect-video",
+													)}
 												/>
+
 												<div class="text-18">
 													<h4 class="font-medium">{subItem.title}</h4>
 													<p class="font-semibold">{subItem.description}</p>
