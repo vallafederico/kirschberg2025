@@ -13,7 +13,7 @@ export default function AboutTextList({
 			<ul>
 				<For each={items}>
 					{(item) => (
-						<li class="flex not-last:mb-48">
+						<li class="flex max-lg:flex-col gap-y-24 not-last:mb-48">
 							<h3 class="w-[34%] pr-20 shrink-0 text-20">{item.title}</h3>
 							<ul class="w-full text-18 font-medium">
 								<For each={item.subItems}>
