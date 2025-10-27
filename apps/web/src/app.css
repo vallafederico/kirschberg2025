@@ -218,7 +218,7 @@ body {
 
 	p,
 	li {
-		@apply text-18 font-semibold not-last:mb-4;
+		@apply text-18 font-semibold not-last:mb-24;
 	}
 
 	h2 {
