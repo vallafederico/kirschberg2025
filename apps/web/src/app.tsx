@@ -10,7 +10,7 @@ import { scroll } from "~/lib/utils/scroll";
 import { usePageTransition } from "./animation";
 import ThemeManager from "./components/ThemeManager";
 import Home from "./routes/(home)";
-import About from "./routes/about";
+import AboutPage from "./routes/about";
 import CaseStudy from "./routes/case-study";
 
 export default function App() {
@@ -36,7 +36,7 @@ export default function App() {
 				<Route path="/" component={Home} />
 				<Route path="/case/:slug" component={CaseStudy} />
 			</Route>
-			{/* <Route path="/about" component={About} /> */}
+			<Route path="/about" component={AboutPage} />
 		</Router>
 	);
 }
