@@ -3,7 +3,6 @@ import { createPreview } from "../../../utils/preview";
 
 export default {
 	name: "socialRow",
-
 	preview: createPreview("{Social Row}"),
 	type: "object",
 	fields: [

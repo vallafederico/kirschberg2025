@@ -38,8 +38,6 @@ export default function LinkTypeSelector(props: any) {
 		(member: any) => member.name === "url",
 	);
 
-	console.log(members);
-
 	return (
 		<Stack className={styles.stuff} space={3}>
 			<TabList space={2}>
