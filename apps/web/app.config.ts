@@ -54,8 +54,8 @@ const plugins = [
 export default defineConfig({
 	server: {
 		routeRules: {
-			"/*": { isr: true, swr: true },
-			"/case/*": { isr: true, swr: true },
+			"/**": { isr: true, swr: true },
+			"/case/**": { isr: true, swr: true },
 		},
 	},
 
