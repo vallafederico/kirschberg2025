@@ -14,7 +14,7 @@ export default function AboutHero({
 			mediaLink: ({ value, text }: { value: any; text: string }) => {
 				return (
 					<a
-						data-text={text}
+					data-text={text}
 						data-media-hover
 						href={value.url}
 						target="_blank"

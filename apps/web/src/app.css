@@ -61,6 +61,11 @@
 	--text-42--font-weight: 900;
 	--text-42--letter-spacing: -0.02em;
 
+	--text-37: max(var(--min-font-size), 3.7rem);
+	--text-37--line-height: 1.2;
+	--text-37--font-weight: 900;
+	--text-37--letter-spacing: -0.02em;
+
 	--text-32: max(var(--min-font-size), 3.2rem);
 	--text-32--line-height: 1.2;
 	--text-32--font-weight: 900;
