@@ -31,17 +31,23 @@ export default function LinkList({
 												class="flex gap-12 w-full relative"
 												href={subItem?.link || ""}
 											>
-												<Media
-													{...subItem.media}
+												<div
 													class={cx(
-														"overflow-hidden outline -outline-offset-1 outline-inverted/10 rounded-md",
+														"overflow-hidden rounded-md shrink-0",
 														item.imageSize === "square"
 															? "size-64"
 															: "w-170 aspect-video",
 													)}
-												/>
+												>
+													<Media
+														{...subItem.media}
+														class={cx(
+															"-outline-offset-1 scale-110 outline-inverted/10 ",
+														)}
+													/>
+												</div>
 
-												<div class="text-18">
+												<div class="text-18 pr-40 lg:pr-60 w-full">
 													<h4 class="font-medium">{subItem.title}</h4>
 													<p class="font-semibold">{subItem.description}</p>
 												</div>
