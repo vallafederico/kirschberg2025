@@ -28,12 +28,12 @@ export default function NavPanel() {
 									current: "/archive",
 								},
 							}}
-							class="bg-[#555555]/50 col-span-2 w-full"
+							class="bg-[#555555]/20 col-span-2 w-full"
 						>
 							Archive
 						</Button>
 						<Button
-							class="bg-[#555555]/50"
+							class="bg-[#555555]/20"
 							link={{
 								linkType: "internal",
 								slug: {
@@ -44,13 +44,13 @@ export default function NavPanel() {
 							About
 						</Button>
 						<Button
-							class="bg-[#555555]/50"
+							class="bg-[#555555]/20"
 							link={{
 								linkType: "external",
 								url: "mailto:info@kirschberg.com",
 							}}
 						>
-							info@kirschberg.co.nz
+							Email
 						</Button>
 					</div>
 

@@ -33,8 +33,7 @@ export default function NavProjectsCarousel() {
 	return (
 		<section style={{ "--duration": `${DURATION}ms` }}>
 			<h2 class="text-20 font-bold mb-24">Latest Projects</h2>
-
-			<ul class="relative h-340 w-full">
+			<ul class="relative max-lg:px-10 h-340 w-full">
 				<For each={projects()}>
 					{(project, index) => {
 						const randomRotation = Math.random() * (8 - -8) + -8; // random between -10 and 10
@@ -48,7 +47,7 @@ export default function NavProjectsCarousel() {
 								classList={{
 									"opacity-0 pointer-events-none": activeIndex() !== index(),
 								}}
-								class="z-[var(--index)] duration-400 ease-quint-out first:relative not-first:absolute w-340  top-0 left-1/2 -translate-x-1/2 text-center"
+								class="z-[var(--index)] duration-400 ease-quint-out first:relative not-first:absolute w-[85vw] lg:w-340 top-0 left-1/2 -translate-x-1/2 text-center"
 							>
 								{/* <A href={project.slug.fullUrl}> */}
 								<Media

@@ -32,7 +32,7 @@ export default function HomeHero({
 		const formatedRole = role ? role?.join(", ") : null;
 
 		return (
-			<li>
+			<li class="shrink-0">
 				<article>
 					<A href={slug?.fullUrl} class="block h-full w-300">
 						<div class="mb-12">
@@ -60,11 +60,13 @@ export default function HomeHero({
 	};
 
 	return (
-		<div class="flex h-screen fixed justify-between pb-19 flex-col w-full">
+		<div class="flex h-screen overflow-hidden  fixed justify-between pb-19 flex-col w-full">
 			<header class="h-full flex-center pt-50 px-margin-1 lg:w-[42%] text-center mx-auto">
 				<div class="">
 					<Show when={heading}>
-						<h1 class="font-display text-32">{heading}</h1>
+						<h1 class="font-display text-[2.6rem] leading-[1.2] lg:text-32">
+							{heading}
+						</h1>
 					</Show>
 					<Show when={blurb}>
 						<p class="text-14 lg:text-18 mt-12">{blurb}</p>
