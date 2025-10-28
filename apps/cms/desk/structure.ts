@@ -1,9 +1,4 @@
-import { setupPages } from "../utils/structure-utils";
-import type {
-	StructureBuilder,
-	StructureResolver,
-	StructureResolverContext,
-} from "sanity/structure";
+import { IoShareSocial } from "react-icons/io5";
 import {
 	MdArchive,
 	MdArticle,
@@ -16,13 +11,14 @@ import {
 	MdSettings,
 	MdSettingsSuggest,
 } from "react-icons/md";
-import {
-	RiLayoutTop2Line,
-	RiLayoutBottom2Line,
-	RiLayoutMasonryFill,
-} from "react-icons/ri";
-import { IoShareSocial } from "react-icons/io5";
+import { RiLayoutBottom2Line, RiLayoutTop2Line } from "react-icons/ri";
 import { TbSettingsSearch } from "react-icons/tb";
+import type {
+	StructureBuilder,
+	StructureResolver,
+	StructureResolverContext,
+} from "sanity/structure";
+import { setupPages } from "../utils/structure-utils";
 
 export const structure: StructureResolver = (
 	S: StructureBuilder,
@@ -44,7 +40,6 @@ export const structure: StructureResolver = (
 			div(),
 			folder("Settings", MdSettings, [
 				singlePage("Header", "settings.header", RiLayoutTop2Line),
-				singlePage("Footer", "settings.footer", RiLayoutBottom2Line),
 				div(),
 				singlePage("Global SEO", "seoDefaults", MdSearch),
 				div(),

@@ -2,6 +2,7 @@ import { getDocumentByType } from "@local/sanity";
 import { createAsync, query } from "@solidjs/router";
 import cx from "classix";
 import { navStore } from "~/lib/stores/navStore";
+import Button from "../Button";
 import NavProjectsCarousel from "./NavProjectsCarousel";
 import styles from "./nav-panel.module.css";
 
@@ -19,8 +20,41 @@ export default function NavPanel() {
 				<div class="p-24 flex flex-col gap-y-32">
 					{/* doesnt fucking work from server mismatch trash */}
 					<NavProjectsCarousel />
+					<div class="grid grid-cols-2 gap-10">
+						<Button
+							link={{
+								linkType: "internal",
+								slug: {
+									current: "/archive",
+								},
+							}}
+							class="bg-[#555555]/50 col-span-2 w-full"
+						>
+							Archive
+						</Button>
+						<Button
+							class="bg-[#555555]/50"
+							link={{
+								linkType: "internal",
+								slug: {
+									current: "/about",
+								},
+							}}
+						>
+							About
+						</Button>
+						<Button
+							class="bg-[#555555]/50"
+							link={{
+								linkType: "external",
+								url: "mailto:info@kirschberg.com",
+							}}
+						>
+							info@kirschberg.co.nz
+						</Button>
+					</div>
 
-					<div class="justify-between !font-bold flex text-14">
+					<div class="justify-between opacity-60 !font-bold flex text-14">
 						<span>
 							Built with{" "}
 							<a href="https://federic.ooo" target="_blank" rel="noopener">

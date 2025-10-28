@@ -25,7 +25,6 @@ export type SanityLinkProps = {
 	slug?: {
 		current: string;
 		fullUrl?: string;
-		docType: string;
 	};
 	advanced?: {
 		noFollow?: boolean;

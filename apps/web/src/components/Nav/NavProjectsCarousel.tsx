@@ -43,7 +43,7 @@ export default function NavProjectsCarousel() {
 								id={`slide-${index()}`}
 								style={{
 									"--index": projects().length - index(),
-									"--rotate": `${randomRotation}deg`,
+									// "--rotate": `${randomRotation}deg`,
 								}}
 								classList={{
 									"opacity-0 pointer-events-none": activeIndex() !== index(),
@@ -74,6 +74,7 @@ export default function NavProjectsCarousel() {
 					{(project, index) => {
 						return (
 							<button
+								aria-current={activeIndex() === index()}
 								aria-label={`View project ${project.title}`}
 								aria-controls={`slide-${index()}`}
 								type="button"

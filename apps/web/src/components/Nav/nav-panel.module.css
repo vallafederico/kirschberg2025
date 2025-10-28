@@ -1,6 +1,6 @@
 .nav-panel {
-	--duration: 0.795s;
-	--ease: var(--ease-quint-out);
+	--duration: 0.995s;
+	--ease: var(--ease-expo-out);
 
 	display: grid;
 	transition:
