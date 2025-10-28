@@ -54,6 +54,16 @@ html {
 	);
 }
 
+/* === 320 → 390 === */
+@media (min-width: 320px) and (max-width: 390px) {
+	html {
+		--min-size: 8.2px;
+		--max-size: 10px;
+		--slope: 2.5714;
+		--intercept: 0.9px;
+	}
+}
+
 /* === 390 → 768 === */
 @media (min-width: 390px) and (max-width: 768px) {
 	html {

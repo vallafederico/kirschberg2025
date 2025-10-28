@@ -22,7 +22,7 @@ export default function NavMenuButton() {
 			ref={button}
 			aria-expanded={navStore.panelOpen}
 			aria-controls="menu-button"
-			class="absolute pointer-events-auto w-72 h-56 flex-center -top-5 right-0 cursor-pointer"
+			class="absolute pointer-events-auto w-72 h-56 flex-center max-lg:-bottom-5 lg:-top-5 right-0 cursor-pointer"
 		>
 			<img src="/icons/menu-icon.svg" class="size-15" alt="" />
 			<span sr-only>Open menu</span>

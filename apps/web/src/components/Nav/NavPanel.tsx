@@ -17,7 +17,7 @@ export default function NavPanel() {
 			class={cx(styles["nav-panel"], "pointer-events-auto text-[#fff]")}
 		>
 			<div class="overflow-hidden">
-				<div class="p-24 flex flex-col gap-y-32">
+				<div class="p-16 lg:p-24 flex flex-col gap-y-32">
 					{/* doesnt fucking work from server mismatch trash */}
 					<NavProjectsCarousel />
 					<div class="grid grid-cols-2 gap-10">
