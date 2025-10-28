@@ -39,7 +39,7 @@ export default function NavProjectsCarousel() {
 	return (
 		<section style={{ "--duration": `${DURATION}ms` }}>
 			<h2 class="text-18 font-bold mb-24">Latest Projects</h2>
-			<ul class="relative max-lg:px-10 h-340 w-full">
+			<ul class="relative max-lg:px-10 h-320 lg:h-340 w-full">
 				<For each={projects()}>
 					{(project, index) => {
 						const randomRotation = Math.random() * (8 - -8) + -8; // random between -10 and 10
@@ -63,7 +63,9 @@ export default function NavProjectsCarousel() {
 
 								<div class="mt-32">
 									<h2 class="text-20 font-bold">{project.title}</h2>
-									<p class="text-18 opacity-50">{project.byline}</p>
+									<p class="text-18 opacity-50 line-clamp-2">
+										{project.byline}
+									</p>
 								</div>
 								{/* </A> */}
 							</li>
