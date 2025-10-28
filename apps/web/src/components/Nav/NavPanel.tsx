@@ -18,7 +18,7 @@ export default function NavPanel() {
 			<div class="overflow-hidden">
 				<div class="p-24 flex flex-col gap-y-32">
 					{/* doesnt fucking work from server mismatch trash */}
-					{/* <NavProjectsCarousel /> */}
+					<NavProjectsCarousel />
 
 					<div class="justify-between !font-bold flex text-14">
 						<span>

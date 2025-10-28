@@ -1,25 +1,25 @@
-import { isServer } from "solid-js/web";
 import gsap from "gsap";
 import { SplitText } from "gsap/dist/SplitText";
+import { isServer } from "solid-js/web";
 
 export interface AnimationDefaults {
-  duration: number;
-  ease: string;
+	duration: number;
+	ease: string;
 }
 
 export interface PageAnimationConfig {
-  in: AnimationDefaults;
-  out: AnimationDefaults;
+	in: AnimationDefaults;
+	out: AnimationDefaults;
 }
 
 const def: AnimationDefaults = {
-  duration: 1.2,
-  ease: "expo.out",
+	duration: 1.2,
+	ease: "expo.out",
 };
 
 if (!isServer) {
-  gsap.defaults(def);
-  gsap.registerPlugin(SplitText);
+	gsap.defaults(def);
+	gsap.registerPlugin(SplitText);
 }
 
 export default gsap;
@@ -28,14 +28,14 @@ export { def };
 
 // Animation constants
 export const A: { page: PageAnimationConfig } = {
-  page: {
-    in: {
-      duration: 1.2,
-      ease: "expo.out",
-    },
-    out: {
-      duration: 0.6,
-      ease: "expo.out",
-    },
-  },
+	page: {
+		in: {
+			duration: 1.2,
+			ease: "expo.out",
+		},
+		out: {
+			duration: 0.6,
+			ease: "expo.out",
+		},
+	},
 };

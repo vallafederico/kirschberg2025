@@ -8,6 +8,7 @@ import { useViewport } from "~/lib/hooks/useViewport";
 import { scroll } from "~/lib/utils/scroll";
 
 import { usePageTransition } from "./animation";
+import Layout from "./components/Layout";
 import ThemeManager from "./components/ThemeManager";
 import Home from "./routes/(home)";
 import AboutPage from "./routes/about";
@@ -23,11 +24,10 @@ export default function App() {
 					<ThemeManager />
 					<Link rel="robots" type="text/plain" href="/api/robots.txt" />
 
-					<Nav />
-					<Grid />
+
 
 					<Suspense>
-						<GlobalLayout>{props.children}</GlobalLayout>
+						<Layout>{props.children}</Layout>
 					</Suspense>
 				</MetaProvider>
 			)}
@@ -40,11 +40,3 @@ export default function App() {
 		</Router>
 	);
 }
-
-// ////////////////
-
-const GlobalLayout = ({ children, ...props }: { children: any }) => {
-	// usePageTransition();
-
-	return <main use:scroll>{children}</main>;
-};

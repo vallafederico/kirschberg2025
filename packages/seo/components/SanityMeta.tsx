@@ -3,7 +3,6 @@ import { getDocumentByType } from "@local/sanity";
 import { Link, Meta, Title } from "@solidjs/meta";
 import { createAsync } from "@solidjs/router";
 import { For, Show } from "solid-js";
-
 import { SANITY_CONFIG } from "../../config";
 import SchemaMarkup from "./SchemaMarkup";
 
@@ -46,8 +45,6 @@ export default function SanityMeta({
 					projectId: SANITY_CONFIG.projectId,
 					dataset: SANITY_CONFIG.dataset,
 				});
-
-				console.log(meta);
 
 				return (
 					<>
