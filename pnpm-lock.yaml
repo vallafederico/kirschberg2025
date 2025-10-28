@@ -223,8 +223,8 @@ importers:
   packages/seo:
     dependencies:
       '@crawl-me-maybe/web':
-        specifier: ^0.0.2
-        version: 0.0.2(@sanity/client@7.12.0)
+        specifier: ^0.0.6
+        version: 0.0.6(@sanity/client@7.12.0)
       '@local/sanity':
         specifier: workspace:*
         version: link:../sanity
@@ -1032,13 +1032,8 @@ packages:
   '@crawl-me-maybe/sitemap@0.0.1':
     resolution: {integrity: sha512-fqRhMCHwhW3ymiVtW0fWLWYyE5sdd1A7FqBIJ35r6b620veC1gn5F9k8ZlaPDNC63ph/DHNcf8ItKpZ726K9AQ==}
 
-  '@crawl-me-maybe/web@0.0.1':
-    resolution: {integrity: sha512-NhDB3rJGGhd8PsvXAN9Yg0nreah7+qBeaMBM6DX7wcvCGUiUSwdyjYb0TGF770M+/c/oNkyzxupOL9R2+tZ9kQ==}
-    peerDependencies:
-      '@sanity/client': ^6.0.0
-
-  '@crawl-me-maybe/web@0.0.2':
-    resolution: {integrity: sha512-Py+2uoK1ACHX0U7WSqnehu36Jv7WOdO1B9vphtj7iDLbGLy16hM6ClDk9KmC1P7ucHE9Dts2b8v84syTi/YGcA==}
+  '@crawl-me-maybe/web@0.0.6':
+    resolution: {integrity: sha512-pWn9yifuS5eEUkIUMNUndSWmY8bLfH3eFBNXGPjFQkGFDHiiaFER7WDK/lZc6r1kG2/nyEJN5UnD5aoUdEuBCw==}
     peerDependencies:
       '@sanity/client': ^6.0.0
 
@@ -9757,21 +9752,11 @@ snapshots:
     dependencies:
       minify-xml: 4.5.2
 
-  '@crawl-me-maybe/web@0.0.1(@sanity/client@7.12.0)':
+  '@crawl-me-maybe/web@0.0.6(@sanity/client@7.12.0)':
     dependencies:
       '@sanity-image/url-builder': 1.0.0
       '@sanity/client': 7.12.0(debug@4.4.3)
       '@sanity/image-url': 1.2.0
-      minify-xml: 4.5.2
-      schema-dts: 1.1.5
-
-  '@crawl-me-maybe/web@0.0.2(@sanity/client@7.12.0)':
-    dependencies:
-      '@crawl-me-maybe/web': 0.0.1(@sanity/client@7.12.0)
-      '@sanity-image/url-builder': 1.0.0
-      '@sanity/client': 7.12.0(debug@4.4.3)
-      '@sanity/image-url': 1.2.0
-      minify-xml: 4.5.2
       schema-dts: 1.1.5
 
   '@csstools/color-helpers@5.1.0': {}

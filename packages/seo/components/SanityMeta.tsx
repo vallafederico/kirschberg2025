@@ -3,6 +3,7 @@ import { getDocumentByType } from "@local/sanity";
 import { Link, Meta, Title } from "@solidjs/meta";
 import { createAsync } from "@solidjs/router";
 import { For, Show } from "solid-js";
+
 import { SANITY_CONFIG } from "../../config";
 import SchemaMarkup from "./SchemaMarkup";
 
@@ -31,12 +32,11 @@ export default function SanityMeta({
 	return (
 		<Show when={seoDefaults()}>
 			{(defaults) => {
-				console.log(defaults());
 				const { meta, schemas } = buildSeoPayload({
-					globalDefaults: defaults(),
+					globalSeoDefaults: defaults(),
 					seoFieldName: "metadata",
 					schemaDefaults: schemaDefaults(),
-					pageSeo: pageData,
+					pageMetadata: pageData,
 					pageSchemaType: pageData?.schemaMarkup?.type,
 					extraSchemaData: {
 						_createdAt: pageData?._createdAt,
