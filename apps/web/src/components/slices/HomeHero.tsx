@@ -43,7 +43,7 @@ export default function HomeHero({
 								{formatedRole}
 							</p>
 						</div>
-						<div class="rounded-md h-380 overflow-hidden">
+						<div class="rounded-md h-340 lg:h-380 overflow-hidden">
 							<Media
 								imageProps={{
 									desktopWidth: 35,
@@ -61,7 +61,7 @@ export default function HomeHero({
 
 	return (
 		<div class="flex h-screen overflow-hidden fixed justify-between max-lg:pt-50 pb-19 flex-col w-full">
-			<header class="h-full flex justify-center lg:items-center items-start pt-50 px-margin-1 lg:w-[42%] text-center mx-auto">
+			<header class="h-full flex justify-center lg:items-center items-start lg:pt-50 px-margin-1 lg:w-[42%] text-center mx-auto">
 				<div class="">
 					<Show when={heading}>
 						<h1 class="font-display text-[2.6rem] leading-[1.2] lg:text-32">

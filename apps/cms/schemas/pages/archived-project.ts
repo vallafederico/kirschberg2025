@@ -9,12 +9,18 @@ export default {
 		},
 		{
 			name: "featuredMedia",
-			type: "array",
-			of: [{ type: "media" }],
+			type: "media",
 		},
-    {
-      name: 'link', 
-      type: 'url'
-    }
+		{
+			name: "link",
+			description:
+				"The link to the archived project, shows up as a button on the tag card beneath the media.",
+			type: "url",
+		},
+		{
+			name: "type",
+			type: "reference",
+			to: [{ type: "archive-tag" }],
+		},
 	],
 };
