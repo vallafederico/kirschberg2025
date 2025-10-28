@@ -60,7 +60,7 @@ export default function HomeHero({
 	};
 
 	return (
-		<div class="flex h-screen fixed justify-between pb-19 flex-col">
+		<div class="flex h-screen fixed justify-between pb-19 flex-col w-full">
 			<header class="h-full flex-center pt-50 px-margin-1 lg:w-[42%] text-center mx-auto">
 				<div class="">
 					<Show when={heading}>
