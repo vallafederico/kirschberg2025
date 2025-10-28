@@ -31,6 +31,7 @@ export default function SanityMeta({
 	return (
 		<Show when={seoDefaults()}>
 			{(defaults) => {
+				console.log(defaults());
 				const { meta, schemas } = buildSeoPayload({
 					globalDefaults: defaults(),
 					seoFieldName: "metadata",
@@ -45,6 +46,8 @@ export default function SanityMeta({
 					projectId: SANITY_CONFIG.projectId,
 					dataset: SANITY_CONFIG.dataset,
 				});
+
+				console.log(meta);
 
 				return (
 					<>
