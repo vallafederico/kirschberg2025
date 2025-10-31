@@ -12,10 +12,8 @@ import {
 	MdSearch,
 	MdSettings,
 	MdSettingsSuggest,
-	MdTag,
 } from "react-icons/md";
-import { RiLayoutBottom2Line, RiLayoutTop2Line } from "react-icons/ri";
-import { TbSettingsSearch } from "react-icons/tb";
+import { RiLayoutTop2Line } from "react-icons/ri";
 import type {
 	StructureBuilder,
 	StructureResolver,
@@ -23,10 +21,7 @@ import type {
 } from "sanity/structure";
 import { setupPages } from "../utils/structure-utils";
 
-export const structure: StructureResolver = (
-	S: StructureBuilder,
-	context: StructureResolverContext,
-) => {
+export const structure: StructureResolver = (S: StructureBuilder) => {
 	const { singlePage, pageList, folder, div } = setupPages(S);
 
 	return S.list()
