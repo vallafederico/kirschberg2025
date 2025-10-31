@@ -1,6 +1,6 @@
 export default {
-	name: "archived-project",
-	title: "Archived Project",
+	name: "archive-item",
+	title: "Archive Item",
 	type: "document",
 	fields: [
 		{

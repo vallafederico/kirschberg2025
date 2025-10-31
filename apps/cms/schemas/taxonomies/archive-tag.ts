@@ -1,7 +1,10 @@
+import { AiFillTag } from "react-icons/ai";
+
 export default {
 	name: "archive-tag",
 	title: "Archive Tag",
 	type: "document",
+	icon: AiFillTag,
 	fields: [
 		{
 			name: "name",

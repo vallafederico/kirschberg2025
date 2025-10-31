@@ -1,15 +1,18 @@
+import { AiFillTag } from "react-icons/ai";
 import { IoShareSocial } from "react-icons/io5";
 import {
 	MdArchive,
 	MdArticle,
 	MdBusiness,
 	MdHome,
+	MdPages,
 	MdPerson,
 	MdPerson2,
 	MdSchema,
 	MdSearch,
 	MdSettings,
 	MdSettingsSuggest,
+	MdTag,
 } from "react-icons/md";
 import { RiLayoutBottom2Line, RiLayoutTop2Line } from "react-icons/ri";
 import { TbSettingsSearch } from "react-icons/tb";
@@ -32,7 +35,10 @@ export const structure: StructureResolver = (
 			singlePage("Home", "home", MdHome),
 			div(),
 			singlePage("About", "about", MdPerson2),
-			singlePage("Archive", "archive", MdArchive),
+			div(),
+			singlePage("Archive Page", "archive", MdPages),
+			pageList("Archived Projects", "archive-item", MdArchive),
+			pageList("Archive Tags", "archive-tag", AiFillTag),
 			div(),
 			pageList("Case Studies", "case-study", MdArticle),
 			pageList("Clients", "client", MdBusiness),
