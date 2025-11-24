@@ -4,13 +4,13 @@ import Grid from "./Grid";
 import { Nav } from "./Nav/Navbar";
 
 export default function Layout({ children }: { children: any }) {
-	usePageTransition();
+  usePageTransition();
 
-	return (
-		<main use:scroll>
-			<Nav />
-			<Grid />
-			{children}
-		</main>
-	);
+  return (
+    <main use:scroll>
+      <Nav />
+      <Grid />
+      {children}
+    </main>
+  );
 }

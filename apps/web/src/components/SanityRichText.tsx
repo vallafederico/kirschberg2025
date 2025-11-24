@@ -3,14 +3,14 @@ import { PortableText, sanityLink } from "@local/sanity";
 export default function SanityRichText({ value }: { value: any }) {
 	const components = {
 		marks: {
-			inlineLink: ({ value, text }: { value: any; text: string }) => {
+			link: ({ value, children }: { value: any; children: any }) => {
 				const isExternal = value.linkType === "external";
 
 				const { attrs } = sanityLink(value);
 
 				return (
 					<a {...attrs} rel={value.noFollow ? "nofollow" : ""}>
-						{text}
+						{children}
 					</a>
 				);
 			},
