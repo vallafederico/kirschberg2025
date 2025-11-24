@@ -2,16 +2,11 @@ import "./app.css";
 import { Link, MetaProvider } from "@solidjs/meta";
 import { Route, Router } from "@solidjs/router";
 import { Suspense } from "solid-js";
-// import Grid from "~/components/Grid";
-// import { Nav } from "~/components/Nav/Navbar";
 import { useViewport } from "~/lib/hooks/useViewport";
-// import { scroll } from "~/lib/utils/scroll";
-
-// import { usePageTransition } from "./animation";
+import { FileRoutes } from "@solidjs/start/router";
 import Layout from "./components/Layout";
 import ThemeManager from "./components/ThemeManager";
 import Home from "./routes/(home)";
-import AboutPage from "./routes/about";
 import CaseStudy from "./routes/case-study";
 
 export default function App() {
@@ -35,7 +30,11 @@ export default function App() {
         <Route path="/case/:slug" component={CaseStudy} />
       </Route>
 
-      <Route path="/about" component={AboutPage} />
+      <Suspense>
+        <FileRoutes />
+      </Suspense>
+
+      {/* <Route path="/about" component={AboutPage} /> */}
     </Router>
   );
 }
