@@ -1,29 +1,31 @@
 import { useBeforeLeave } from "@solidjs/router";
 import { Scroll } from "~/lib/utils/scroll";
+import { setNavStore } from "~/lib/stores/navStore";
 
 let outTransitions = [] as (() => any)[];
 
 export const setOutTransition = (fn: () => any) => {
-	outTransitions.push(fn);
+  outTransitions.push(fn);
 };
 
 export function reset() {
-	outTransitions.length = 0;
-	outTransitions = [];
+  outTransitions.length = 0;
+  outTransitions = [];
 }
 
 export async function animateOut() {
-	console.log("animateOut", outTransitions);
-	await Promise.all(outTransitions.map(async (fn) => await fn()));
+  console.log("animateOut", outTransitions);
+  await Promise.all(outTransitions.map(async (fn) => await fn()));
 
-	reset();
+  reset();
 }
 
 export function usePageTransition() {
-	useBeforeLeave(async (e: any) => {
-		e.preventDefault();
-		await animateOut();
-		Scroll.lenis?.scrollTo(0, { immediate: true });
-		e.retry(true);
-	});
+  useBeforeLeave(async (e: any) => {
+    e.preventDefault();
+    await animateOut();
+    Scroll.lenis?.scrollTo(0, { immediate: true });
+    setNavStore("panelOpen", false);
+    e.retry(true);
+  });
 }
