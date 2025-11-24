@@ -12,8 +12,6 @@ const getAboutData = query(async () => {
 export default function AboutPage() {
   const data = createAsync(() => getAboutData());
 
-  // return <div>about</div>;
-
   return (
     <SanityPage class="px-margin-1 lg:w-grid-5 mx-auto" fetcher={data}>
       {(page) => {
