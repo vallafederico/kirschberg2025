@@ -11,7 +11,6 @@ export { default as SanityImage } from "./components/SanityImage";
 export { default as SanityLink } from "./components/SanityLink";
 export { default as SanityPage } from "./components/SanityPage";
 
-export * from "./live-editing";
 export * from "./robots/sanity-robots-generator";
 export * from "./types";
 export * from "./utils/assets";
