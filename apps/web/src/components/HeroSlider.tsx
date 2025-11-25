@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { createEffect, createSignal, For, Show } from "solid-js";
+import { createEffect, createSignal, For, Show, onMount } from "solid-js";
 import Media from "~/components/Media";
 import { useSmooothy } from "~/lib/hooks/useSmooothy";
 
@@ -90,6 +90,63 @@ export default function HeroSlider(props: HeroSliderProps) {
       // Store parallax values for use in components
       setParallaxValues(parallaxValues);
     },
+  });
+
+  // Handle link clicks while allowing slider to slide
+  createEffect(() => {
+    const sliderInstance = slider();
+    if (!sliderInstance) return;
+
+    const handleLinks = () => {
+      const links = sliderInstance.wrapper.querySelectorAll("a");
+      links.forEach((link: HTMLAnchorElement) => {
+        let startX = 0;
+        let startY = 0;
+        let startTime = 0;
+        let isDragging = false;
+
+        link.style.pointerEvents = "none";
+
+        const handleMouseDown = (e: MouseEvent) => {
+          startX = e.clientX;
+          startY = e.clientY;
+          startTime = Date.now();
+          isDragging = false;
+        };
+
+        const handleMouseMove = (e: MouseEvent) => {
+          if (!startTime) return;
+
+          const deltaX = Math.abs(e.clientX - startX);
+          const deltaY = Math.abs(e.clientY - startY);
+
+          if (deltaX > 5 || deltaY > 5) {
+            isDragging = true;
+          }
+        };
+
+        const handleMouseUp = (e: MouseEvent) => {
+          const deltaTime = Date.now() - startTime;
+
+          if (!isDragging && deltaTime < 200) {
+            link.click();
+          }
+
+          startTime = 0;
+          isDragging = false;
+        };
+
+        // Add listeners to the parent element (article)
+        const parentElement = link.parentElement;
+        if (parentElement) {
+          parentElement.addEventListener("mousedown", handleMouseDown);
+          parentElement.addEventListener("mousemove", handleMouseMove);
+          parentElement.addEventListener("mouseup", handleMouseUp);
+        }
+      });
+    };
+
+    handleLinks();
   });
 
   return (
