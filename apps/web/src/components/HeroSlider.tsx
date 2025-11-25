@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { createEffect, For, Show } from "solid-js";
+import { createEffect, createSignal, For, Show } from "solid-js";
 import Media from "~/components/Media";
 import { useSmooothy } from "~/lib/hooks/useSmooothy";
 
@@ -9,19 +9,41 @@ const ArticleCard = ({
   client,
   role,
   featuredMedia,
+  parallaxValues,
+  index,
 }: {
   slug: { fullUrl: string };
   title: string;
   client: { name: string }[];
   role: string[];
   featuredMedia: any;
+  parallaxValues: any;
+  index: any;
 }) => {
   const formatedClient = client ? client.map((c) => c.name)?.join(" & ") : null;
   const formatedRole = role ? role?.join(", ") : null;
 
+  const [scale, setScale] = createSignal(1);
+
+  createEffect(() => {
+    if (index() && Array.isArray(parallaxValues())) {
+      if (index() === 1) {
+        console.log(parallaxValues()[index()]);
+      }
+      const distance = Math.abs(parallaxValues()[index()]);
+      const scale = 1 - distance * 0.1;
+      setScale(scale);
+    }
+  });
+
   return (
     <li class="shrink-0 px-9">
-      <article>
+      <article
+        style={{
+          transform: `scale(${scale()})`,
+          "transform-origin": "bottom center",
+        }}
+      >
         <A href={slug?.fullUrl} class="pointer-events-none block h-full w-300">
           <div class="mb-12">
             <h2 class="text-18">{title}</h2>
@@ -52,19 +74,27 @@ interface HeroSliderProps {
 }
 
 export default function HeroSlider(props: HeroSliderProps) {
+  const [parallaxValues, setParallaxValues] = createSignal<any>(null);
+
   const { ref, slider } = useSmooothy({
     infinite: true,
-  });
-
-  createEffect(() => {
-    console.log(slider());
+    onUpdate: ({ parallaxValues }: any) => {
+      // Store parallax values for use in components
+      setParallaxValues(parallaxValues);
+    },
   });
 
   return (
-    <ul ref={ref} class="flex w-screen items-end pl-[50vw]">
+    <ul ref={ref} class="flex w-screen items-end pl-[calc(50vw-150px)]">
       <For each={props.caseStudies}>
-        {(caseStudy) => {
-          return <ArticleCard {...caseStudy} />;
+        {(caseStudy, index) => {
+          return (
+            <ArticleCard
+              {...caseStudy}
+              parallaxValues={parallaxValues}
+              index={index}
+            />
+          );
         }}
       </For>
     </ul>
