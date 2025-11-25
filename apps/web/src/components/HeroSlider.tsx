@@ -86,6 +86,7 @@ export default function HeroSlider(props: HeroSliderProps) {
 
   const { ref, slider } = useSmooothy({
     infinite: true,
+    snap: false,
     onUpdate: ({ parallaxValues }: any) => {
       // Store parallax values for use in components
       setParallaxValues(parallaxValues);
@@ -147,6 +148,71 @@ export default function HeroSlider(props: HeroSliderProps) {
     };
 
     handleLinks();
+  });
+
+  // Handle wheel events for mouse scrolling
+  createEffect(() => {
+    const sliderInstance = slider();
+    if (!sliderInstance || !sliderInstance.wrapper) return;
+
+    let accumulatedDelta = 0;
+    let rafId: number | null = null;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Only handle vertical wheel scrolling
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Accumulate wheel delta
+        accumulatedDelta += e.deltaY;
+
+        // Cancel any pending animation
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+        }
+
+        // Update slider position using requestAnimationFrame for smooth updates
+        const updatePosition = () => {
+          if (Math.abs(accumulatedDelta) > 0.1) {
+            // Convert vertical scroll to horizontal slider movement
+            const scrollAmount = accumulatedDelta * 0.0005; // Adjust multiplier for sensitivity
+
+            // Update the target position directly (target is in pixels)
+            const sliderAny = sliderInstance as any;
+            if (typeof sliderAny.target !== "undefined") {
+              sliderAny.target -= scrollAmount; // Negative because scrolling down should move right
+            }
+
+            // Decay accumulated delta
+            accumulatedDelta *= 0.85;
+
+            // Continue animation if there's still delta
+            if (Math.abs(accumulatedDelta) > 0.1) {
+              rafId = requestAnimationFrame(updatePosition);
+            } else {
+              rafId = null;
+              accumulatedDelta = 0;
+            }
+          } else {
+            rafId = null;
+            accumulatedDelta = 0;
+          }
+        };
+
+        rafId = requestAnimationFrame(updatePosition);
+      }
+    };
+
+    const wrapperElement = sliderInstance.wrapper;
+    wrapperElement.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      wrapperElement.removeEventListener("wheel", handleWheel);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
   });
 
   return (
