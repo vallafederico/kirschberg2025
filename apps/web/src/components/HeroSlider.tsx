@@ -27,11 +27,12 @@ const ArticleCard = ({
 
   createEffect(() => {
     if (index() !== undefined && Array.isArray(parallaxValues())) {
-      if (index() === 0) {
-        console.log(parallaxValues()[index()]);
-      }
+      // if (index() === 0) {
+      //   console.log(parallaxValues()[index()]);
+      // }
+
       const distance = Math.abs(parallaxValues()[index()]);
-      const scale = 1 - distance * 0.05;
+      const scale = 1 - distance * 0.1;
       setScale(scale);
     }
   });
