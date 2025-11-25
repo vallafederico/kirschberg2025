@@ -145,7 +145,7 @@ img {
   -moz-user-drag: none;
 }
 
-/* html,
+html,
 body,
 p,
 h1,
@@ -157,7 +157,7 @@ h4 {
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-} */
+}
 
 [data-selectable] {
   user-select: text;
