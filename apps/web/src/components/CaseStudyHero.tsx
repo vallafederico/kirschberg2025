@@ -1,3 +1,4 @@
+import cx from "classix";
 import Media from "./Media";
 
 interface CaseStudyHeroProps {
@@ -11,6 +12,8 @@ export default function CaseStudyHero({
 	featuredMedia,
 	byline,
 }: CaseStudyHeroProps) {
+	const isImage = featuredMedia[0]?.image;
+
 	return (
 		<header class="relative mb-64">
 			<div class="w-full max-h-550 lg:rounded-xxl overflow-hidden">
@@ -19,7 +22,10 @@ export default function CaseStudyHero({
 						desktopWidth: 52,
 						mobileWidth: 95,
 					}}
-					class="w-full relative  object-cover"
+					class={cx(
+						"w-full relative h-full object-cover",
+						isImage && "h-full -translate-y-1/4 ",
+					)}
 					{...(featuredMedia?.[0] || {})}
 				/>
 			</div>
