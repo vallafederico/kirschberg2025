@@ -23,6 +23,7 @@ export default function MuxVideo({
 
 	const playbackId = src.asset?.playbackId;
 	const url = `https://stream.mux.com/${playbackId}.m3u8`;
+	const posterUrl = `https://image.mux.com/${playbackId}/thumbnail.webp`;
 
 	createEffect(() => {
 		if (!el || !playbackId || !Hls.isSupported()) return;
@@ -47,6 +48,7 @@ export default function MuxVideo({
 			controls={false}
 			autoplay={autoplay}
 			muted
+			poster={posterUrl}
 			class={className}
 			playsinline
 			loop={loop}
