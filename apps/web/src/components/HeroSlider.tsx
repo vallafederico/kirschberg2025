@@ -26,12 +26,12 @@ const ArticleCard = ({
   const [scale, setScale] = createSignal(1);
 
   createEffect(() => {
-    if (index() && Array.isArray(parallaxValues())) {
-      if (index() === 1) {
+    if (index() !== undefined && Array.isArray(parallaxValues())) {
+      if (index() === 0) {
         console.log(parallaxValues()[index()]);
       }
       const distance = Math.abs(parallaxValues()[index()]);
-      const scale = 1 - distance * 0.1;
+      const scale = 1 - distance * 0.05;
       setScale(scale);
     }
   });
