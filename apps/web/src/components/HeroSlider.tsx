@@ -24,6 +24,7 @@ const ArticleCard = ({
   const formatedRole = role ? role?.join(", ") : null;
 
   const [scale, setScale] = createSignal(1);
+  const [offset, setOffset] = createSignal(0);
 
   createEffect(() => {
     if (index() !== undefined && Array.isArray(parallaxValues())) {
@@ -31,9 +32,15 @@ const ArticleCard = ({
       //   console.log(parallaxValues()[index()]);
       // }
 
-      const distance = Math.abs(parallaxValues()[index()]);
+      const value = parallaxValues()[index()];
+      const distance = Math.abs(value || 0);
       const scale = 1 - distance * 0.1;
       setScale(scale);
+
+      const sign = value < 0 ? -1 : 1;
+      const scaleDeviation = 1 - scale;
+      const offset = scaleDeviation * -150 * sign;
+      setOffset(offset);
     }
   });
 
@@ -41,7 +48,7 @@ const ArticleCard = ({
     <li class="shrink-0 px-9">
       <article
         style={{
-          transform: `scale(${scale()})`,
+          transform: `scale(${scale()}) translateX(${offset()}px)`,
           "transform-origin": "bottom center",
         }}
       >
