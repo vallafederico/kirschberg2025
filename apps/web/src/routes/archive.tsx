@@ -1,7 +1,16 @@
 import { getDocumentByType, SanityComponents, SanityPage } from "@local/sanity";
 import { SanityMeta } from "@local/seo";
 import { createAsync, query } from "@solidjs/router";
-import { For, Show, createMemo } from "solid-js";
+import {
+  For,
+  Show,
+  createMemo,
+  onMount,
+  createSignal,
+  onCleanup,
+  createEffect,
+} from "solid-js";
+import VirtualScroll from "virtual-scroll";
 import Media from "~/components/Media";
 import { SLICE_LIST } from "~/components/slices";
 
@@ -30,6 +39,107 @@ function createColumns<T>(items: T[], numColumns: number): T[][] {
   return columns;
 }
 
+// Generate random scroll speed and direction for each column
+function getColumnScrollConfig(index: number, numColumns: number) {
+  // Random speed multiplier between 0.5x and 2x
+  const speedMultiplier = 0.5 + Math.random() * 1.5;
+  // Fully random direction
+  const direction = Math.random() > 0.5 ? 1 : -1;
+
+  return {
+    speedMultiplier,
+    direction,
+  };
+}
+
+// Column data structure
+interface ColumnData {
+  ref: HTMLUListElement | undefined;
+  items: any[];
+  config: { speedMultiplier: number; direction: number };
+  singleSetHeight: number;
+  offset: number;
+  targetOffset: number; // Smooth interpolation target
+  currentSetIndex: number; // 0 = showing original, -1 = showing duplicate before, 1 = showing duplicate after
+}
+
+// Scrollable column component
+function ScrollableColumn({
+  items,
+  gap = "gap-4",
+  onMount: onColumnMount,
+}: {
+  items: any[];
+  gap?: string;
+  onMount: (ref: HTMLUListElement, items: any[]) => (() => void) | void;
+}) {
+  let columnRef: HTMLUListElement | undefined;
+  // Structure: [duplicate before] [original] [duplicate after]
+  const [displayItems, setDisplayItems] = createSignal([
+    ...items, // duplicate before
+    ...items, // original
+    ...items, // duplicate after
+  ]);
+  let cleanupFn: (() => void) | void;
+
+  onMount(() => {
+    if (columnRef) {
+      cleanupFn = onColumnMount(columnRef, items);
+    }
+  });
+
+  onCleanup(() => {
+    if (cleanupFn && typeof cleanupFn === "function") {
+      cleanupFn();
+    }
+  });
+
+  return (
+    <div class="h-full w-full overflow-hidden">
+      <ul
+        ref={columnRef}
+        class={`flex flex-col ${gap}`}
+        style={{
+          "will-change": "transform",
+        }}
+      >
+        <For each={displayItems()}>
+          {(item, index) => (
+            <li data-item-index={index()}>
+              <article class="flex flex-col gap-12">
+                <Show when={item.featuredMedia}>
+                  <div class="aspect-[.6/1] overflow-hidden rounded-md">
+                    <Media
+                      {...item.featuredMedia}
+                      imageProps={{
+                        desktopWidth: 100,
+                        mobileWidth: 100,
+                      }}
+                      class="h-full w-full object-cover"
+                    />
+                  </div>
+                </Show>
+                <div class="flex flex-col gap-4">
+                  <Show when={item.link}>
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-14 mt-4 text-blue-600 hover:underline"
+                    >
+                      View Project →
+                    </a>
+                  </Show>
+                </div>
+              </article>
+            </li>
+          )}
+        </For>
+      </ul>
+    </div>
+  );
+}
+
 const getArchiveData = query(async () => {
   "use server";
   const [page, archiveItems] = await Promise.all([
@@ -45,6 +155,178 @@ const getArchiveData = query(async () => {
 
 export default function ArchivePage() {
   const data = createAsync(() => getArchiveData());
+  const [columns, setColumns] = createSignal<ColumnData[]>([]);
+  let virtualScroll: VirtualScroll | null = null;
+
+  // Single virtual-scroll listener for all columns
+  onMount(() => {
+    // Initialize virtual-scroll to handle all scroll events (wheel, touch, trackpad)
+    virtualScroll = new VirtualScroll({
+      el: window,
+      firefoxMultiplier: 50,
+      mouseMultiplier: 0.4, // Reduced from 1 for slower scroll
+      touchMultiplier: 0.8, // Reduced from 2 for slower scroll
+      passive: true,
+    });
+
+    virtualScroll.on((event) => {
+      // Get current columns
+      const currentColumns = columns();
+      if (currentColumns.length === 0) return;
+
+      // event.deltaY is the scroll delta from virtual-scroll
+      const deltaY = event.deltaY;
+
+      // Update all columns based on scroll delta
+      currentColumns.forEach((col: ColumnData) => {
+        if (!col.ref || col.singleSetHeight === 0) return;
+
+        // Apply speed multiplier and direction (reduced for slower scroll)
+        const adjustedDelta =
+          deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
+        col.targetOffset += adjustedDelta;
+
+        // Wrap targetOffset to stay within valid range
+        const setHeight = col.singleSetHeight;
+        if (setHeight > 0) {
+          while (col.targetOffset <= -setHeight * 2) {
+            col.targetOffset += setHeight;
+          }
+          while (col.targetOffset >= 0) {
+            col.targetOffset -= setHeight;
+          }
+        }
+      });
+    });
+
+    // Smooth animation loop using requestAnimationFrame
+    const lerp = (start: number, end: number, factor: number) => {
+      return start + (end - start) * factor;
+    };
+
+    const animate = () => {
+      const currentColumns = columns();
+      currentColumns.forEach((col: ColumnData) => {
+        if (!col.ref || col.singleSetHeight === 0) return;
+
+        const setHeight = col.singleSetHeight;
+
+        // BEFORE lerping, check if offset and target are too far apart
+        // If so, jump offset to be closer (same "cycle")
+        if (setHeight > 0) {
+          const distance = col.targetOffset - col.offset;
+
+          // If distance is more than half a set, take the shorter path
+          if (distance > setHeight / 2) {
+            col.offset += setHeight;
+          } else if (distance < -setHeight / 2) {
+            col.offset -= setHeight;
+          }
+        }
+
+        // Now lerp smoothly - they're guaranteed to be close
+        col.offset = lerp(col.offset, col.targetOffset, 0.08);
+
+        // Update transform
+        col.ref.style.transform = `translateY(${col.offset}px)`;
+      });
+
+      requestAnimationFrame(animate);
+    };
+
+    // Start animation loop
+    requestAnimationFrame(animate);
+
+    onCleanup(() => {
+      if (virtualScroll) {
+        virtualScroll.destroy();
+        virtualScroll = null;
+      }
+    });
+  });
+
+  // Helper to calculate and store column data
+  const registerColumn = (
+    ref: HTMLUListElement,
+    items: any[],
+    config: { speedMultiplier: number; direction: number },
+  ) => {
+    const updateHeights = () => {
+      const children = Array.from(ref.children) as HTMLElement[];
+
+      if (children.length === 0 || items.length === 0) return;
+
+      // Calculate height of one set (original items, not duplicated)
+      // Get the total height from first to last item of the first set, including gaps
+      let oneSetHeight = 0;
+      if (children.length >= items.length) {
+        const firstItem = children[0] as HTMLElement;
+        const lastItem = children[items.length - 1] as HTMLElement;
+        const firstRect = firstItem.getBoundingClientRect();
+        const lastRect = lastItem.getBoundingClientRect();
+        oneSetHeight = lastRect.bottom - firstRect.top;
+      }
+
+      // Fallback: sum of heights if bounding rect method doesn't work
+      if (oneSetHeight === 0 || oneSetHeight < 100) {
+        const heights = children.map((child) => child.offsetHeight);
+        oneSetHeight = heights
+          .slice(0, items.length)
+          .reduce((sum, h) => sum + h, 0);
+      }
+
+      if (oneSetHeight > 0) {
+        // Update or add column data
+        const existingIndex = columns().findIndex(
+          (c: ColumnData) => c.ref === ref,
+        );
+
+        // Add random initial offset within one set's range for visual variety
+        // Random value between 0 and 1, applied to the set height
+        const randomOffsetFactor = Math.random();
+        const initialOffset = -oneSetHeight - (randomOffsetFactor * oneSetHeight);
+
+        const columnData: ColumnData = {
+          ref,
+          items,
+          config,
+          singleSetHeight: oneSetHeight,
+          // Start with random offset within valid range [-oneSetHeight * 2, -oneSetHeight]
+          // This creates visual variety in the initial grid layout
+          offset: initialOffset,
+          targetOffset: initialOffset, // Initialize target to match offset
+          currentSetIndex: 0,
+        };
+
+        // Set initial transform with random offset
+        if (ref) {
+          ref.style.transform = `translateY(${initialOffset}px)`;
+        }
+
+        if (existingIndex >= 0) {
+          const updated = [...columns()];
+          updated[existingIndex] = columnData;
+          setColumns(updated);
+        } else {
+          setColumns([...columns(), columnData]);
+        }
+      }
+    };
+
+    // Try multiple times to ensure heights are calculated
+    setTimeout(updateHeights, 50);
+    setTimeout(updateHeights, 200);
+    setTimeout(updateHeights, 500);
+
+    const resizeObserver = new ResizeObserver(updateHeights);
+    resizeObserver.observe(ref);
+
+    return () => {
+      resizeObserver.disconnect();
+      // Remove column on cleanup
+      setColumns(columns().filter((c: ColumnData) => c.ref !== ref));
+    };
+  };
 
   return (
     <Show when={data()} keyed>
@@ -79,86 +361,38 @@ export default function ArchivePage() {
             {/* Archive items - full width, outside container */}
             <Show when={archiveItems && archiveItems.length > 0}>
               {/* Mobile: 3-column grid */}
-              <div class="px-margin-1 grid grid-cols-3 gap-12 overflow-clip lg:hidden">
+              <div class="px-margin-1 grid grid-cols-3 gap-12 overflow-hidden lg:hidden">
                 <For each={mobileColumns()}>
-                  {(column) => (
-                    <ul class="flex flex-col gap-12">
-                      <For each={column}>
-                        {(item) => (
-                          <li>
-                            <article class="flex flex-col gap-12">
-                              <Show when={item.featuredMedia}>
-                                <div class="aspect-[.6/1] overflow-hidden rounded-md">
-                                  <Media
-                                    {...item.featuredMedia}
-                                    imageProps={{
-                                      desktopWidth: 100,
-                                      mobileWidth: 100,
-                                    }}
-                                    class="h-full w-full object-cover"
-                                  />
-                                </div>
-                              </Show>
-                              <div class="flex flex-col gap-4">
-                                <Show when={item.link}>
-                                  <a
-                                    href={item.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="text-14 mt-4 text-blue-600 hover:underline"
-                                  >
-                                    View Project →
-                                  </a>
-                                </Show>
-                              </div>
-                            </article>
-                          </li>
-                        )}
-                      </For>
-                    </ul>
-                  )}
+                  {(column, index) => {
+                    const config = getColumnScrollConfig(index(), 3);
+                    return (
+                      <div class="h-screen overflow-hidden">
+                        <ScrollableColumn
+                          items={column}
+                          gap="gap-12"
+                          onMount={(ref) => registerColumn(ref, column, config)}
+                        />
+                      </div>
+                    );
+                  }}
                 </For>
               </div>
 
               {/* Desktop: 7-column grid */}
-              <div class="lg:px-margin-1 hidden w-full lg:grid lg:grid-cols-7 lg:gap-12">
+              <div class="lg:px-margin-1 hidden h-screen w-full overflow-hidden lg:grid lg:grid-cols-7 lg:gap-12">
                 <For each={desktopColumns()}>
-                  {(column) => (
-                    <ul class="flex flex-col gap-12">
-                      <For each={column}>
-                        {(item) => (
-                          <li>
-                            <article class="flex flex-col gap-12">
-                              <Show when={item.featuredMedia}>
-                                <div class="aspect-[.6/1] overflow-hidden rounded-md">
-                                  <Media
-                                    {...item.featuredMedia}
-                                    imageProps={{
-                                      desktopWidth: 100,
-                                      mobileWidth: 100,
-                                    }}
-                                    class="h-full w-full object-cover"
-                                  />
-                                </div>
-                              </Show>
-                              <div class="flex flex-col gap-4">
-                                <Show when={item.link}>
-                                  <a
-                                    href={item.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="text-14 mt-4 text-blue-600 hover:underline"
-                                  >
-                                    View Project →
-                                  </a>
-                                </Show>
-                              </div>
-                            </article>
-                          </li>
-                        )}
-                      </For>
-                    </ul>
-                  )}
+                  {(column, index) => {
+                    const config = getColumnScrollConfig(index(), 7);
+                    return (
+                      <div class="h-full overflow-hidden">
+                        <ScrollableColumn
+                          items={column}
+                          gap="gap-4"
+                          onMount={(ref) => registerColumn(ref, column, config)}
+                        />
+                      </div>
+                    );
+                  }}
                 </For>
               </div>
             </Show>

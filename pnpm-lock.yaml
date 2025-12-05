@@ -147,6 +147,9 @@ importers:
       vinxi:
         specifier: ^0.5.8
         version: 0.5.8(@types/node@24.10.1)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.1)
+      virtual-scroll:
+        specifier: ^2.2.1
+        version: 2.2.1
     devDependencies:
       '@sanity/types':
         specifier: ^4.11.0
