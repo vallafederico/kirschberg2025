@@ -12,6 +12,7 @@ import {
 } from "solid-js";
 import VirtualScroll from "virtual-scroll";
 import ArchiveCard from "~/components/ArchiveCard";
+import ArchiveOverlay from "~/components/ArchiveOverlay";
 import { SLICE_LIST } from "~/components/slices";
 
 // Shuffle array using Fisher-Yates algorithm
@@ -69,11 +70,13 @@ function ScrollableColumn({
   gap = "gap-4",
   onMount: onColumnMount,
   ready,
+  onImageClick,
 }: {
   items: any[];
   gap?: string;
   onMount: (ref: HTMLUListElement, items: any[]) => (() => void) | void;
   ready: () => boolean;
+  onImageClick?: (item: any) => void;
 }) {
   let columnRef: HTMLUListElement | undefined;
   // Structure: [duplicate before] [original] [duplicate after]
@@ -106,11 +109,33 @@ function ScrollableColumn({
         // }}
       >
         <For each={displayItems()}>
-          {(item, index) => (
-            <li data-item-index={index()}>
-              <ArchiveCard item={item} index={index()} ready={ready()} />
-            </li>
-          )}
+          {(item, index) => {
+            // Get the correct item from original items array using modulo
+            // displayItems is [items, items, items], so we use index % items.length
+            // to map back to the original item in the column
+            const itemIndex = index() % items.length;
+            const correctItem = items[itemIndex];
+            
+            return (
+              <li data-item-index={index()}>
+                <ArchiveCard
+                  item={correctItem}
+                  index={index()}
+                  ready={ready()}
+                  onImageClick={() => {
+                    // Use the same item we're displaying to ensure consistency
+                    const clickedId = correctItem?._id || "no-id";
+                    const clickedTitle = correctItem?.title || "no-title";
+                    const clickedMedia = correctItem?.featuredMedia;
+                    console.log("[Archive] Clicked item - ID:", clickedId, "Title:", clickedTitle);
+                    console.log("[Archive] Clicked featuredMedia:", clickedMedia);
+                    console.log("[Archive] Clicked image asset ID:", clickedMedia?.image?.asset?._id || clickedMedia?.image?._id || "no-image-id");
+                    onImageClick?.(correctItem);
+                  }}
+                />
+              </li>
+            );
+          }}
         </For>
       </ul>
     </div>
@@ -134,6 +159,10 @@ export default function ArchivePage() {
   const data = createAsync(() => getArchiveData());
   const [columns, setColumns] = createSignal<ColumnData[]>([]);
   const [columnsReady, setColumnsReady] = createSignal(false);
+  const [selectedItem, setSelectedItem] = createSignal<{
+    featuredMedia?: any;
+    link?: string;
+  } | null>(null);
   let virtualScroll: VirtualScroll | null = null;
   let readyTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -166,6 +195,11 @@ export default function ArchivePage() {
     });
 
     virtualScroll.on((event) => {
+      // Close overlay if open when user scrolls
+      if (selectedItem()) {
+        setSelectedItem(null);
+      }
+
       // Get current columns
       const currentColumns = columns();
       if (currentColumns.length === 0) return;
@@ -374,6 +408,7 @@ export default function ArchivePage() {
                           gap="gap-12"
                           ready={columnsReady}
                           onMount={(ref) => registerColumn(ref, column, config)}
+                          onImageClick={(item) => setSelectedItem(item)}
                         />
                       </div>
                     );
@@ -393,6 +428,7 @@ export default function ArchivePage() {
                           gap="gap-4"
                           ready={columnsReady}
                           onMount={(ref) => registerColumn(ref, column, config)}
+                          onImageClick={(item) => setSelectedItem(item)}
                         />
                       </div>
                     );
@@ -400,6 +436,12 @@ export default function ArchivePage() {
                 </For>
               </div>
             </Show>
+
+            {/* Archive Overlay */}
+            <ArchiveOverlay
+              item={selectedItem()}
+              onClose={() => setSelectedItem(null)}
+            />
           </>
         );
       }}

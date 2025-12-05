@@ -9,6 +9,7 @@ interface ArchiveCardProps {
   };
   index?: number;
   ready?: boolean | (() => boolean);
+  onImageClick?: () => void;
 }
 
 export default function ArchiveCard(props: ArchiveCardProps) {
@@ -66,7 +67,19 @@ export default function ArchiveCard(props: ArchiveCardProps) {
     >
       <Show when={props.item.featuredMedia}>
         <div class="aspect-[.6/1] overflow-clip rounded-md">
-          <div class="h-full w-full transition-transform duration-600 ease-out hover:scale-110">
+          <div
+            class="h-full w-full cursor-pointer transition-transform duration-600 ease-out hover:scale-110"
+            onClick={() => props.onImageClick?.()}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                props.onImageClick?.();
+              }
+            }}
+            aria-label="View image in overlay"
+          >
             <Media
               {...props.item.featuredMedia}
               imageProps={{
