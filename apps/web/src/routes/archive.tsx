@@ -68,10 +68,12 @@ function ScrollableColumn({
   items,
   gap = "gap-4",
   onMount: onColumnMount,
+  ready,
 }: {
   items: any[];
   gap?: string;
   onMount: (ref: HTMLUListElement, items: any[]) => (() => void) | void;
+  ready: () => boolean;
 }) {
   let columnRef: HTMLUListElement | undefined;
   // Structure: [duplicate before] [original] [duplicate after]
@@ -106,7 +108,7 @@ function ScrollableColumn({
         <For each={displayItems()}>
           {(item, index) => (
             <li data-item-index={index()}>
-              <ArchiveCard item={item} index={index()} />
+              <ArchiveCard item={item} index={index()} ready={ready()} />
             </li>
           )}
         </For>
@@ -131,7 +133,26 @@ const getArchiveData = query(async () => {
 export default function ArchivePage() {
   const data = createAsync(() => getArchiveData());
   const [columns, setColumns] = createSignal<ColumnData[]>([]);
+  const [columnsReady, setColumnsReady] = createSignal(false);
   let virtualScroll: VirtualScroll | null = null;
+  let readyTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  // Reset columns ready state when data changes
+  createEffect(() => {
+    if (data()) {
+      setColumnsReady(false);
+      // Clear any existing timeout
+      if (readyTimeout) {
+        clearTimeout(readyTimeout);
+        readyTimeout = null;
+      }
+    }
+  });
+
+  // Debug: Log when columnsReady changes
+  createEffect(() => {
+    console.log("[Archive] columnsReady changed to:", columnsReady());
+  });
 
   // Single virtual-scroll listener for all columns
   onMount(() => {
@@ -284,7 +305,20 @@ export default function ArchivePage() {
     // Try multiple times to ensure heights are calculated
     setTimeout(updateHeights, 50);
     setTimeout(updateHeights, 200);
-    setTimeout(updateHeights, 500);
+    setTimeout(() => {
+      updateHeights();
+      // After the last positioning attempt (500ms), wait a bit more then mark as ready
+      // Clear any existing timeout and set a new one
+      if (readyTimeout) {
+        clearTimeout(readyTimeout);
+      }
+      // Wait 100ms after the last positioning attempt to ensure all columns are positioned
+      readyTimeout = setTimeout(() => {
+        console.log("[Archive] Setting columnsReady to true");
+        setColumnsReady(true);
+        readyTimeout = null;
+      }, 100);
+    }, 500);
 
     const resizeObserver = new ResizeObserver(updateHeights);
     resizeObserver.observe(ref);
@@ -338,6 +372,7 @@ export default function ArchivePage() {
                         <ScrollableColumn
                           items={column}
                           gap="gap-12"
+                          ready={columnsReady}
                           onMount={(ref) => registerColumn(ref, column, config)}
                         />
                       </div>
@@ -356,6 +391,7 @@ export default function ArchivePage() {
                         <ScrollableColumn
                           items={column}
                           gap="gap-4"
+                          ready={columnsReady}
                           onMount={(ref) => registerColumn(ref, column, config)}
                         />
                       </div>

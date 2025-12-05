@@ -204,11 +204,8 @@ export default function CaseStudy(props: RouteSectionProps) {
           isDragging = false;
         };
 
-        // Set up drag scroll when content is shown
+        // Open dialog as soon as we have case study data (regardless of authentication)
         createEffect(() => {
-          if (!showContent) return;
-
-          let cleanupFn: (() => void) | undefined;
           let timeoutId: ReturnType<typeof setTimeout>;
 
           // Find the dialog element after it's rendered and open it
@@ -225,7 +222,40 @@ export default function CaseStudy(props: RouteSectionProps) {
               // Ensure dialog is scrollable
               dialog.style.overflowY = "auto";
               dialog.style.maxHeight = "100vh";
+            }
+          };
 
+          // Register cleanup at effect level (must be in reactive context)
+          onCleanup(() => {
+            clearTimeout(timeoutId);
+          });
+
+          // Use requestAnimationFrame to ensure DOM is ready
+          timeoutId = setTimeout(() => {
+            findDialog();
+          }, 100);
+        });
+
+        // Set up drag scroll only when content is shown (after authentication)
+        createEffect(() => {
+          if (!showContent) {
+            // Clean up drag scroll if content is hidden
+            if (dialogLenis) {
+              dialogLenis.destroy();
+              dialogLenis = null;
+            }
+            return;
+          }
+
+          let cleanupFn: (() => void) | undefined;
+          let timeoutId: ReturnType<typeof setTimeout>;
+
+          // Find the dialog element and set up drag scroll
+          const findDialog = () => {
+            const dialog = document.querySelector(
+              "dialog[aria-labelledby='case-title']",
+            ) as HTMLDialogElement;
+            if (dialog) {
               setupDragScroll(dialog);
 
               // Scroll to top using Lenis after a brief delay to ensure it's initialized
@@ -267,13 +297,14 @@ export default function CaseStudy(props: RouteSectionProps) {
 
           // Reset any previous transforms
           gsap.set(articleRef, {
-            clearProps: "transform",
+            clearProps: "transform,opacity",
           });
 
           // Set initial state: positioned out of view from bottom
           gsap.set(articleRef, {
             y: "100vh",
             opacity: 0,
+            immediateRender: true,
           });
 
           // Animate up after a brief delay to ensure everything is loaded
@@ -299,18 +330,40 @@ export default function CaseStudy(props: RouteSectionProps) {
           articleRef = el;
 
           // Trigger animation when ref is set and content should be shown
+          // This handles the case when the article is first rendered after authentication
           if (el && showContent) {
+            // Use multiple requestAnimationFrame calls to ensure DOM is fully ready
+            // This is especially important after authentication when the article is newly rendered
             requestAnimationFrame(() => {
-              animateArticle();
+              requestAnimationFrame(() => {
+                // Double-check that showContent is still true and ref is still valid
+                if (articleRef && showContent) {
+                  animateArticle();
+                }
+              });
             });
           }
         };
 
-        // Track slug and showContent as reactive dependencies
+        // Track slug, showContent, and isAuthenticated as reactive dependencies
         createEffect(() => {
-          // Access slug and showContent to track them reactively
+          // Access reactive values to track them
           const currentSlug = slug;
           const shouldShow = showContent;
+          const authState = isAuthenticated();
+
+          // Only proceed if content should be shown
+          if (!shouldShow) {
+            // If content shouldn't be shown, cleanup any existing animation
+            if (animationInstance) {
+              animationInstance.kill();
+              animationInstance = null;
+            }
+            if (articleRef) {
+              gsap.killTweensOf(articleRef);
+            }
+            return;
+          }
 
           // Cleanup previous animation when slug changes
           if (animationInstance) {
@@ -322,10 +375,16 @@ export default function CaseStudy(props: RouteSectionProps) {
           }
 
           // Trigger animation when content should be shown and ref is available
-          if (articleRef && shouldShow) {
-            // Use requestAnimationFrame to ensure DOM is ready after navigation
+          // Use double requestAnimationFrame to ensure DOM is ready after authentication
+          // This handles the case when showContent changes from false to true
+          if (articleRef) {
             requestAnimationFrame(() => {
-              animateArticle();
+              requestAnimationFrame(() => {
+                // Double-check that showContent is still true and ref is still valid
+                if (articleRef && showContent) {
+                  animateArticle();
+                }
+              });
             });
           }
         });
