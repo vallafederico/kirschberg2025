@@ -208,6 +208,9 @@ export default function CaseStudy(props: RouteSectionProps) {
         createEffect(() => {
           if (!showContent) return;
 
+          let cleanupFn: (() => void) | undefined;
+          let timeoutId: ReturnType<typeof setTimeout>;
+
           // Find the dialog element after it's rendered and open it
           const findDialog = () => {
             const dialog = document.querySelector(
@@ -241,17 +244,16 @@ export default function CaseStudy(props: RouteSectionProps) {
             return undefined;
           };
 
-          // Use requestAnimationFrame to ensure DOM is ready
-          const timeoutId = setTimeout(() => {
-            const cleanup = findDialog();
-            if (cleanup) {
-              onCleanup(cleanup);
-            }
-          }, 100);
-
-          return () => {
+          // Register cleanup at effect level (must be in reactive context)
+          onCleanup(() => {
             clearTimeout(timeoutId);
-          };
+            cleanupFn?.();
+          });
+
+          // Use requestAnimationFrame to ensure DOM is ready
+          timeoutId = setTimeout(() => {
+            cleanupFn = findDialog();
+          }, 100);
         });
 
         const animateArticle = () => {
