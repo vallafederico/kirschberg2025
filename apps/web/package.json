@@ -28,7 +28,8 @@
     "solid-js": "^1.9.10",
     "solid-start-vercel": "^0.3.11",
     "three": "^0.180.0",
-    "vinxi": "^0.5.8"
+    "vinxi": "^0.5.8",
+    "virtual-scroll": "^2.2.1"
   },
   "engines": {
     "node": ">=22"
