@@ -14,6 +14,9 @@ import { SLICE_LIST } from "~/components/slices";
 const getCaseStudyData = query(async (slug: string) => {
   "use server";
 
+  const data = await getDocumentBySlug("case-study", slug);
+  console.log(data);
+
   return await getDocumentBySlug("case-study", slug);
 }, "case-study");
 
