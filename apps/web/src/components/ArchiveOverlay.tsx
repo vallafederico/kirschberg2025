@@ -20,6 +20,7 @@ export default function ArchiveOverlay(props: ArchiveOverlayProps) {
   let closeButtonRef!: HTMLButtonElement;
   let backdropRef!: HTMLDivElement;
   const [isVisible, setIsVisible] = createSignal(false);
+  const [displayedItem, setDisplayedItem] = createSignal<typeof props.item>(null);
 
   // Handle ESC key to close
   useKeypress("Escape", () => {
@@ -49,6 +50,9 @@ export default function ArchiveOverlay(props: ArchiveOverlayProps) {
           displayedMedia?.image?._id ||
           "no-image-id",
       );
+
+      // Update displayed item immediately before animation
+      setDisplayedItem(props.item);
       setIsVisible(true);
 
       // Wait for DOM to be ready before animating
@@ -58,10 +62,6 @@ export default function ArchiveOverlay(props: ArchiveOverlayProps) {
             return;
 
           // Opening animation
-          gsap.set([overlayRef, backdropRef], { autoAlpha: 0 });
-          gsap.set(contentRef, { scale: 0.9, opacity: 0 });
-          gsap.set(closeButtonRef, { opacity: 0 });
-
           gsap.to([overlayRef, backdropRef], {
             autoAlpha: 1,
             duration: 0.4,
@@ -101,10 +101,12 @@ export default function ArchiveOverlay(props: ArchiveOverlayProps) {
           delay: 0.1,
           onComplete: () => {
             setIsVisible(false);
+            setDisplayedItem(null);
           },
         });
       } else {
         setIsVisible(false);
+        setDisplayedItem(null);
       }
     }
   });
@@ -159,14 +161,14 @@ export default function ArchiveOverlay(props: ArchiveOverlayProps) {
     <Show when={props.item || isVisible()}>
       <div
         ref={overlayRef}
-        class="fixed inset-0 z-50 flex items-center justify-center"
+        class="fixed inset-0 z-50 flex items-center justify-center opacity-0 invisible"
         style={{ "pointer-events": props.item ? "auto" : "none" }}
         onClick={handleWrapperClick}
       >
         {/* Backdrop */}
         <div
           ref={backdropRef}
-          class="fixed inset-0 bg-black/80 backdrop-blur-sm"
+          class="fixed inset-0 bg-black/80 backdrop-blur-sm opacity-0 invisible"
           style={{ "pointer-events": props.item ? "auto" : "none" }}
           onClick={handleBackdropClick}
         />
@@ -174,15 +176,16 @@ export default function ArchiveOverlay(props: ArchiveOverlayProps) {
         {/* Content */}
         <div
           ref={contentRef}
-          class="px-margin-1 relative z-10 flex min-h-0 items-center justify-center"
+          class="px-margin-1 relative z-10 flex min-h-0 items-center justify-center opacity-0"
+          style={{ transform: "scale(0.9)" }}
           onClick={handleContentClick}
         >
-          <div class="relative flex max-h-[90vh] w-full max-w-7xl flex-col items-center gap-8">
+          <div class="relative flex max-h-[90vh] w-full max-w-7xl flex-col items-center gap-27">
             {/* Image */}
-            <Show when={props.item?.featuredMedia}>
+            <Show when={displayedItem()?.featuredMedia}>
               <div class="relative aspect-4/6 max-h-[60vh] w-full overflow-hidden rounded-md">
                 <Media
-                  {...props.item!.featuredMedia}
+                  {...displayedItem()!.featuredMedia}
                   imageProps={{
                     desktopWidth: 100,
                     mobileWidth: 100,
@@ -192,10 +195,25 @@ export default function ArchiveOverlay(props: ArchiveOverlayProps) {
               </div>
             </Show>
 
+            {/* Small horizontal rectangle */}
+            <div
+              class="flex w-full items-center justify-start gap-12 rounded-lg border p-8"
+              style={{
+                background: "#55555533",
+                "border-color": "#0D0D0D1A",
+              }}
+            >
+              <div class="size-55 rounded-md bg-black"></div>
+              <div class="flex flex-col gap-4">
+                <p class="text-14 font-bold">Photograph</p>
+                <p class="text-14">Desert of Palm Springs</p>
+              </div>
+            </div>
+
             {/* Link if available */}
-            <Show when={props.item?.link}>
+            <Show when={displayedItem()?.link}>
               <a
-                href={props.item!.link}
+                href={displayedItem()!.link}
                 target="_blank"
                 rel="noopener noreferrer"
                 class="text-16 text-white underline transition-opacity hover:opacity-80"
@@ -210,7 +228,7 @@ export default function ArchiveOverlay(props: ArchiveOverlayProps) {
         <button
           ref={closeButtonRef}
           onClick={handleClose}
-          class="fixed bottom-7 left-1/2 z-20 flex h-8 min-h-8 w-8 min-w-8 -translate-x-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+          class="fixed bottom-7 left-1/2 z-20 flex h-8 min-h-8 w-8 min-w-8 -translate-x-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 opacity-0"
           aria-label="Close overlay"
         >
           <svg

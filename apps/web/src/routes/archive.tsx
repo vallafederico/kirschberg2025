@@ -1,6 +1,6 @@
 import { getDocumentByType, SanityComponents, SanityPage } from "@local/sanity";
 import { SanityMeta } from "@local/seo";
-import { createAsync, query } from "@solidjs/router";
+import { createAsync, query, useSearchParams } from "@solidjs/router";
 import {
   For,
   Show,
@@ -157,9 +157,11 @@ const getArchiveData = query(async () => {
 
 export default function ArchivePage() {
   const data = createAsync(() => getArchiveData());
+  const [searchParams, setSearchParams] = useSearchParams();
   const [columns, setColumns] = createSignal<ColumnData[]>([]);
   const [columnsReady, setColumnsReady] = createSignal(false);
   const [selectedItem, setSelectedItem] = createSignal<{
+    _id?: string;
     featuredMedia?: any;
     link?: string;
   } | null>(null);
@@ -183,6 +185,32 @@ export default function ArchivePage() {
     console.log("[Archive] columnsReady changed to:", columnsReady());
   });
 
+  // Handle query param on mount - open overlay if item param exists
+  createEffect(() => {
+    const archiveData = data();
+    const itemId = searchParams.item;
+
+    if (archiveData?.archiveItems && itemId) {
+      const item = archiveData.archiveItems.find((i: any) => i._id === itemId);
+      if (item) {
+        console.log("[Archive] Opening overlay from URL param:", itemId);
+        setSelectedItem(item);
+      }
+    }
+  });
+
+  // Update URL when selected item changes
+  createEffect(() => {
+    const item = selectedItem();
+    if (item?._id) {
+      // Add item to query params
+      setSearchParams({ item: item._id });
+    } else {
+      // Remove item from query params
+      setSearchParams({ item: undefined });
+    }
+  });
+
   // Single virtual-scroll listener for all columns
   onMount(() => {
     // Initialize virtual-scroll to handle all scroll events (wheel, touch, trackpad)
@@ -195,8 +223,8 @@ export default function ArchivePage() {
     });
 
     virtualScroll.on((event) => {
-      // Close overlay if open when user scrolls
-      if (selectedItem()) {
+      // Close overlay if open when user scrolls (only if not triggered by initial load)
+      if (selectedItem() && columnsReady()) {
         setSelectedItem(null);
       }
 
