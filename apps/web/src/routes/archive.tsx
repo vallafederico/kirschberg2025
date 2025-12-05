@@ -186,16 +186,8 @@ export default function ArchivePage() {
           deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
         col.targetOffset += adjustedDelta;
 
-        // Wrap targetOffset to stay within valid range
-        const setHeight = col.singleSetHeight;
-        if (setHeight > 0) {
-          while (col.targetOffset <= -setHeight * 2) {
-            col.targetOffset += setHeight;
-          }
-          while (col.targetOffset >= 0) {
-            col.targetOffset -= setHeight;
-          }
-        }
+        // Don't wrap here - let the animation loop handle it
+        // This prevents jumps when targetOffset wraps but offset hasn't caught up
       });
     });
 
@@ -211,20 +203,21 @@ export default function ArchivePage() {
 
         const setHeight = col.singleSetHeight;
 
-        // BEFORE lerping, check if offset and target are too far apart
-        // If so, jump offset to be closer (same "cycle")
+        // Wrap both offset and targetOffset to stay in a reasonable range
+        // This prevents them from growing infinitely
         if (setHeight > 0) {
-          const distance = col.targetOffset - col.offset;
-
-          // If distance is more than half a set, take the shorter path
-          if (distance > setHeight / 2) {
+          // Normalize targetOffset to be within [-setHeight * 2, 0]
+          while (col.targetOffset <= -setHeight * 2) {
+            col.targetOffset += setHeight;
             col.offset += setHeight;
-          } else if (distance < -setHeight / 2) {
+          }
+          while (col.targetOffset >= 0) {
+            col.targetOffset -= setHeight;
             col.offset -= setHeight;
           }
         }
 
-        // Now lerp smoothly - they're guaranteed to be close
+        // Smoothly lerp towards target
         col.offset = lerp(col.offset, col.targetOffset, 0.08);
 
         // Update transform
