@@ -101,9 +101,9 @@ function ScrollableColumn({
       <ul
         ref={columnRef}
         class={`flex flex-col ${gap}`}
-        style={{
-          "will-change": "transform",
-        }}
+        // style={{
+        //   "will-change": "transform",
+        // }}
       >
         <For each={displayItems()}>
           {(item, index) => (
@@ -273,7 +273,7 @@ export default function ArchivePage() {
         // Add random initial offset within one set's range for visual variety
         // Random value between 0 and 1, applied to the set height
         const randomOffsetFactor = Math.random();
-        const initialOffset = -oneSetHeight - (randomOffsetFactor * oneSetHeight);
+        const initialOffset = -oneSetHeight - randomOffsetFactor * oneSetHeight;
 
         const columnData: ColumnData = {
           ref,

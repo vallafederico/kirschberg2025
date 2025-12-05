@@ -35,15 +35,19 @@ export default function ArchiveCard(props: ArchiveCardProps) {
       hasAnimated = true;
       console.log("[ArchiveCard] Starting animation");
 
-      // Generate small random delay (0 to 0.3 seconds)
-      const randomDelay = Math.random() * 0.3;
+      // Create staggered delay based on index with random variation
+      // Base delay: 0.1s per index position
+      // Random variation: 0 to 0.4s for organic feel
+      const baseDelay = (props.index ?? 0) * 0.1;
+      const randomVariation = Math.random() * 0.4;
+      const totalDelay = baseDelay + randomVariation;
 
       // Animate to visible after positioning is complete
       gsap.to(articleRef, {
         autoAlpha: 1,
         duration: 0.6,
         ease: "power2.out",
-        delay: randomDelay,
+        delay: totalDelay,
       });
     }
   });
