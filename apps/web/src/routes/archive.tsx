@@ -79,7 +79,7 @@ export default function ArchivePage() {
             {/* Archive items - full width, outside container */}
             <Show when={archiveItems && archiveItems.length > 0}>
               {/* Mobile: 3-column grid */}
-              <div class="px-margin-1 grid w-full grid-cols-3 gap-12 lg:hidden">
+              <div class="px-margin-1 grid grid-cols-3 gap-12 overflow-clip lg:hidden">
                 <For each={mobileColumns()}>
                   {(column) => (
                     <ul class="flex flex-col gap-12">
