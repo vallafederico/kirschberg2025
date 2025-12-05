@@ -47,8 +47,9 @@ export default function ArchivePage() {
   const data = createAsync(() => getArchiveData());
 
   return (
-    <SanityPage class="px-margin-1 lg:w-grid-5 mx-auto" fetcher={data}>
-      {({ page, archiveItems }) => {
+    <Show when={data()} keyed>
+      {(archiveData) => {
+        const { page, archiveItems } = archiveData;
         // Mobile: 3 columns, Desktop: 7 columns
         const mobileColumns = createMemo(() => {
           if (!archiveItems || archiveItems.length === 0) return [] as any[][];
@@ -62,27 +63,23 @@ export default function ArchivePage() {
         return (
           <>
             {page && <SanityMeta pageData={page} />}
-            <div class="flex w-full flex-col gap-y-34 pb-50 lg:pb-120">
-              {page?.slices && (
-                <SanityComponents
-                  components={page.slices}
-                  componentList={SLICE_LIST}
-                />
-              )}
-            </div>
 
-            {/* Archive items - full width */}
+            {/* Page content - centered container */}
+            {/* <div class="px-margin-1 lg:w-grid-5 mx-auto">
+              <div class="flex w-full flex-col gap-y-34 pb-50 lg:pb-120">
+                {page?.slices && (
+                  <SanityComponents
+                    components={page.slices}
+                    componentList={SLICE_LIST}
+                  />
+                )}
+              </div>
+            </div> */}
+
+            {/* Archive items - full width, outside container */}
             <Show when={archiveItems && archiveItems.length > 0}>
               {/* Mobile: 3-column grid */}
-              <div
-                class="relative grid w-screen grid-cols-3 gap-12 lg:hidden"
-                style={{
-                  left: "calc(-50vw + 50%)",
-                  width: "100vw",
-                  "margin-left": "calc(-1 * var(--grid-margin))",
-                  "margin-right": "calc(-1 * var(--grid-margin))",
-                }}
-              >
+              <div class="px-margin-1 grid w-full grid-cols-3 gap-12 lg:hidden">
                 <For each={mobileColumns()}>
                   {(column) => (
                     <ul class="flex flex-col gap-12">
@@ -124,15 +121,7 @@ export default function ArchivePage() {
               </div>
 
               {/* Desktop: 7-column grid */}
-              <div
-                class="relative hidden w-screen lg:grid lg:grid-cols-7 lg:gap-12"
-                style={{
-                  left: "calc(-50vw + 50%)",
-                  width: "100vw",
-                  "margin-left": "calc(-1 * var(--grid-margin))",
-                  "margin-right": "calc(-1 * var(--grid-margin))",
-                }}
-              >
+              <div class="lg:px-margin-1 hidden w-full lg:grid lg:grid-cols-7 lg:gap-12">
                 <For each={desktopColumns()}>
                   {(column) => (
                     <ul class="flex flex-col gap-12">
@@ -176,6 +165,6 @@ export default function ArchivePage() {
           </>
         );
       }}
-    </SanityPage>
+    </Show>
   );
 }
