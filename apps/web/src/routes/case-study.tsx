@@ -8,13 +8,14 @@ import {
   useSubmission,
   type RouteSectionProps,
 } from "@solidjs/router";
-import { Show, createSignal, createEffect } from "solid-js";
+import { Show, createSignal, createEffect, onCleanup } from "solid-js";
 import { parseCookies, setCookie } from "vinxi/http";
 import CaseStudyHero from "~/components/CaseStudyHero";
 import CaseStudyIntro from "~/components/CaseStudyIntro";
 import CaseStudySubnav from "~/components/CaseStudySubnav";
 import { SLICE_LIST } from "~/components/slices";
 import gsap, { A } from "~/lib/gsap";
+import Lenis from "lenis";
 
 const getCaseStudyData = query(async (slug: string) => {
   "use server";
@@ -78,9 +79,8 @@ export default function CaseStudy(props: RouteSectionProps) {
   return (
     <SanityPage
       element="dialog"
-      class="relative z-2 size-full bg-[black]/30 lg:pt-95 lg:pb-117"
+      class="relative z-2 size-full overflow-y-auto bg-[black]/30 lg:pt-95 lg:pb-117"
       fetcher={data}
-      open={true}
       aria-modal={true}
       aria-labelledby="case-title"
     >
@@ -95,6 +95,165 @@ export default function CaseStudy(props: RouteSectionProps) {
         let articleRef: HTMLElement | undefined;
         let animationInstance: GSAPAnimation | null = null;
 
+        // Click and drag scrolling for desktop with Lenis smooth scroll
+        let isDragging = false;
+        let startY = 0;
+        let startScrollY = 0;
+        let dialogLenis: Lenis | null = null;
+
+        const handleMouseDown = (e: MouseEvent) => {
+          // Only enable on desktop (lg breakpoint)
+          if (window.innerWidth < 1024) return;
+
+          // Don't start drag if clicking on interactive elements
+          const target = e.target as HTMLElement;
+          if (
+            target.tagName === "A" ||
+            target.tagName === "BUTTON" ||
+            target.closest("a") ||
+            target.closest("button") ||
+            target.closest("[data-selectable]")
+          ) {
+            return;
+          }
+
+          isDragging = true;
+          startY = e.clientY;
+
+          // Get current scroll position from Lenis or scroll container
+          if (dialogLenis) {
+            startScrollY = dialogLenis.scroll;
+          } else {
+            const dialog = document.querySelector(
+              "dialog[aria-labelledby='case-title']",
+            ) as HTMLElement;
+            startScrollY = dialog?.scrollTop || 0;
+          }
+
+          // Prevent text selection while dragging
+          e.preventDefault();
+
+          // Change cursor
+          document.body.style.cursor = "grabbing";
+          document.body.style.userSelect = "none";
+        };
+
+        const handleMouseMove = (e: MouseEvent) => {
+          if (!isDragging) return;
+
+          const deltaY = startY - e.clientY;
+          const newScrollY = startScrollY + deltaY;
+
+          // Use Lenis for smooth scrolling (without immediate flag for smoothness)
+          if (dialogLenis) {
+            dialogLenis.scrollTo(newScrollY, {
+              duration: 0.8, // Short duration for responsive feel while still smooth
+            });
+          } else {
+            // Fallback to direct scroll if Lenis not available
+            const dialog = document.querySelector(
+              "dialog[aria-labelledby='case-title']",
+            ) as HTMLElement;
+            if (dialog) {
+              dialog.scrollTop = newScrollY;
+            }
+          }
+        };
+
+        const handleMouseUp = () => {
+          if (!isDragging) return;
+
+          isDragging = false;
+          document.body.style.cursor = "";
+          document.body.style.userSelect = "";
+        };
+
+        const setupDragScroll = (dialogElement: HTMLElement) => {
+          // Create a Lenis instance for the dialog to enable smooth scrolling
+          dialogLenis = new Lenis({
+            wrapper: dialogElement,
+            autoResize: true,
+          });
+
+          // Connect Lenis to GSAP ticker
+          gsap.ticker.add((time: number) => {
+            dialogLenis?.raf(time * 1000);
+          });
+
+          dialogElement.addEventListener("mousedown", handleMouseDown);
+          window.addEventListener("mousemove", handleMouseMove);
+          window.addEventListener("mouseup", handleMouseUp);
+          window.addEventListener("mouseleave", handleMouseUp);
+        };
+
+        const cleanupDragScroll = (dialogElement: HTMLElement) => {
+          dialogElement.removeEventListener("mousedown", handleMouseDown);
+          window.removeEventListener("mousemove", handleMouseMove);
+          window.removeEventListener("mouseup", handleMouseUp);
+          window.removeEventListener("mouseleave", handleMouseUp);
+
+          // Clean up Lenis instance
+          if (dialogLenis) {
+            dialogLenis.destroy();
+            dialogLenis = null;
+          }
+
+          // Reset cursor and selection
+          document.body.style.cursor = "";
+          document.body.style.userSelect = "";
+          isDragging = false;
+        };
+
+        // Set up drag scroll when content is shown
+        createEffect(() => {
+          if (!showContent) return;
+
+          // Find the dialog element after it's rendered and open it
+          const findDialog = () => {
+            const dialog = document.querySelector(
+              "dialog[aria-labelledby='case-title']",
+            ) as HTMLDialogElement;
+            if (dialog) {
+              // Open the dialog if it's not already open
+              if (!dialog.open) {
+                dialog.showModal();
+              }
+
+              // Ensure dialog is scrollable
+              dialog.style.overflowY = "auto";
+              dialog.style.maxHeight = "100vh";
+
+              setupDragScroll(dialog);
+
+              // Scroll to top using Lenis after a brief delay to ensure it's initialized
+              setTimeout(() => {
+                if (dialogLenis) {
+                  dialogLenis.scrollTo(0, { immediate: true });
+                } else {
+                  dialog.scrollTop = 0;
+                }
+              }, 50);
+
+              return () => {
+                cleanupDragScroll(dialog);
+              };
+            }
+            return undefined;
+          };
+
+          // Use requestAnimationFrame to ensure DOM is ready
+          const timeoutId = setTimeout(() => {
+            const cleanup = findDialog();
+            if (cleanup) {
+              onCleanup(cleanup);
+            }
+          }, 100);
+
+          return () => {
+            clearTimeout(timeoutId);
+          };
+        });
+
         const animateArticle = () => {
           if (!articleRef || !showContent) return;
 
@@ -104,9 +263,14 @@ export default function CaseStudy(props: RouteSectionProps) {
             animationInstance = null;
           }
 
+          // Reset any previous transforms
+          gsap.set(articleRef, {
+            clearProps: "transform",
+          });
+
           // Set initial state: positioned out of view from bottom
           gsap.set(articleRef, {
-            y: "100%",
+            y: "100vh",
             opacity: 0,
           });
 
@@ -171,7 +335,6 @@ export default function CaseStudy(props: RouteSectionProps) {
             <Show when={showContent}>
               <article
                 ref={setArticleRef}
-                key={`case-study-${slug}`}
                 class="lg:rounded-xxl bg-primary text-inverted relative z-2 mx-auto min-h-[140vh] pb-20 lg:w-920 lg:px-64 lg:pt-54 lg:pb-86"
               >
                 <CaseStudyHero {...caseStudy} />

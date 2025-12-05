@@ -44,8 +44,8 @@ export default function CaseStudySubnav({ link }: { link: string }) {
 	});
 
 	return (
-		<div class="absolute pointer-events-none bottom-130 top-0 left-0 right-0 z-20 ">
-			<div class="z-20 h-[calc(100svh)] sticky top-0 flex items-end justify-center pointer-events-none pb-margin-1 gap-12">
+		<div class="fixed pointer-events-none bottom-0 left-0 right-0 z-20">
+			<div class="z-20 flex items-end justify-center pointer-events-none pb-margin-1 gap-12">
 				<Show when={link}>
 					<div ref={(el) => (visitWebsiteRef = el)}>
 						<Button
