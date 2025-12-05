@@ -11,7 +11,7 @@ import {
   createEffect,
 } from "solid-js";
 import VirtualScroll from "virtual-scroll";
-import Media from "~/components/Media";
+import ArchiveCard from "~/components/ArchiveCard";
 import { SLICE_LIST } from "~/components/slices";
 
 // Shuffle array using Fisher-Yates algorithm
@@ -106,32 +106,7 @@ function ScrollableColumn({
         <For each={displayItems()}>
           {(item, index) => (
             <li data-item-index={index()}>
-              <article class="flex flex-col gap-12">
-                <Show when={item.featuredMedia}>
-                  <div class="aspect-[.6/1] overflow-hidden rounded-md">
-                    <Media
-                      {...item.featuredMedia}
-                      imageProps={{
-                        desktopWidth: 100,
-                        mobileWidth: 100,
-                      }}
-                      class="h-full w-full object-cover"
-                    />
-                  </div>
-                </Show>
-                <div class="flex flex-col gap-4">
-                  <Show when={item.link}>
-                    <a
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="text-14 mt-4 text-blue-600 hover:underline"
-                    >
-                      View Project →
-                    </a>
-                  </Show>
-                </div>
-              </article>
+              <ArchiveCard item={item} index={index()} />
             </li>
           )}
         </For>
