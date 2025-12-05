@@ -14,6 +14,7 @@ import CaseStudyHero from "~/components/CaseStudyHero";
 import CaseStudyIntro from "~/components/CaseStudyIntro";
 import CaseStudySubnav from "~/components/CaseStudySubnav";
 import { SLICE_LIST } from "~/components/slices";
+import gsap, { A } from "~/lib/gsap";
 
 const getCaseStudyData = query(async (slug: string) => {
   "use server";
@@ -62,14 +63,12 @@ export default function CaseStudy(props: RouteSectionProps) {
 
   const navigate = useNavigate();
 
-  // Initialize authentication from server cookie
   createEffect(() => {
     if (authStatus()?.isAuthenticated) {
       setIsAuthenticated(true);
     }
   });
 
-  // Watch submission result and update authentication state
   createEffect(() => {
     if (submission.result?.success) {
       setIsAuthenticated(true);
@@ -88,18 +87,93 @@ export default function CaseStudy(props: RouteSectionProps) {
       {(caseStudy: any) => {
         const hasPassword = Boolean(
           caseStudy.password &&
-          typeof caseStudy.password === "string" &&
-          caseStudy.password.trim() !== ""
+            typeof caseStudy.password === "string" &&
+            caseStudy.password.trim() !== "",
         );
 
         const showContent = !hasPassword || isAuthenticated();
+        let articleRef: HTMLElement | undefined;
+        let animationInstance: GSAPAnimation | null = null;
+
+        const animateArticle = () => {
+          if (!articleRef || !showContent) return;
+
+          // Kill any existing animation
+          if (animationInstance) {
+            animationInstance.kill();
+            animationInstance = null;
+          }
+
+          // Set initial state: positioned out of view from bottom
+          gsap.set(articleRef, {
+            y: "100%",
+            opacity: 0,
+          });
+
+          // Animate up after a brief delay to ensure everything is loaded
+          animationInstance = gsap.to(articleRef, {
+            y: 0,
+            opacity: 1,
+            ease: A.page.in.ease,
+            duration: A.page.in.duration,
+            delay: 0.1,
+          });
+        };
+
+        const setArticleRef = (el: HTMLElement | undefined) => {
+          // Cleanup previous animation when ref changes
+          if (animationInstance) {
+            animationInstance.kill();
+            animationInstance = null;
+          }
+          if (articleRef) {
+            gsap.killTweensOf(articleRef);
+          }
+
+          articleRef = el;
+
+          // Trigger animation when ref is set and content should be shown
+          if (el && showContent) {
+            requestAnimationFrame(() => {
+              animateArticle();
+            });
+          }
+        };
+
+        // Track slug and showContent as reactive dependencies
+        createEffect(() => {
+          // Access slug and showContent to track them reactively
+          const currentSlug = slug;
+          const shouldShow = showContent;
+
+          // Cleanup previous animation when slug changes
+          if (animationInstance) {
+            animationInstance.kill();
+            animationInstance = null;
+          }
+          if (articleRef) {
+            gsap.killTweensOf(articleRef);
+          }
+
+          // Trigger animation when content should be shown and ref is available
+          if (articleRef && shouldShow) {
+            // Use requestAnimationFrame to ensure DOM is ready after navigation
+            requestAnimationFrame(() => {
+              animateArticle();
+            });
+          }
+        });
 
         return (
           <>
             <SanityMeta pageData={caseStudy} />
 
             <Show when={showContent}>
-              <article class="lg:rounded-xxl bg-primary text-inverted relative z-2 mx-auto min-h-[140vh] pb-20 lg:w-920 lg:px-64 lg:pt-54 lg:pb-86">
+              <article
+                ref={setArticleRef}
+                key={`case-study-${slug}`}
+                class="lg:rounded-xxl bg-primary text-inverted relative z-2 mx-auto min-h-[140vh] pb-20 lg:w-920 lg:px-64 lg:pt-54 lg:pb-86"
+              >
                 <CaseStudyHero {...caseStudy} />
                 <CaseStudyIntro {...caseStudy} />
                 <div class="max-lg:px-margin-1 flex flex-col gap-32">
@@ -113,35 +187,43 @@ export default function CaseStudy(props: RouteSectionProps) {
             </Show>
 
             <Show when={hasPassword && !showContent}>
-              <div class="relative z-2 flex items-center justify-center min-h-full">
-                <div class="lg:rounded-xxl bg-primary text-inverted relative z-2 mx-auto lg:w-920 lg:px-64 lg:py-54 max-lg:px-margin-1 py-40">
+              <div class="relative z-2 flex min-h-full items-center justify-center">
+                <div class="lg:rounded-xxl bg-primary text-inverted max-lg:px-margin-1 relative z-2 mx-auto py-40 lg:w-920 lg:px-64 lg:py-54">
                   <div class="flex flex-col items-center gap-32">
-                    <h2 class="text-32 font-display font-medium">Password Protection</h2>
-                    <p class="text-16 opacity-80 text-center">
-                      This case study is password protected. Please enter the password to
-                      continue.
+                    <h2 class="text-32 font-display font-medium">
+                      Password Protection
+                    </h2>
+                    <p class="text-16 text-center opacity-80">
+                      This case study is password protected. Please enter the
+                      password to continue.
                     </p>
                     <form
                       action={verifyPassword}
                       method="post"
-                      class="flex flex-col gap-16 w-full max-w-[400px]"
+                      class="flex w-full max-w-[400px] flex-col gap-16"
                     >
-                      <input type="hidden" name="correctPassword" value={caseStudy.password} />
+                      <input
+                        type="hidden"
+                        name="correctPassword"
+                        value={caseStudy.password}
+                      />
                       <input type="hidden" name="slug" value={slug} />
                       <input
                         type="password"
                         name="password"
                         placeholder="Enter password"
-                        class="px-24 py-16 rounded-md bg-[#70706E] border border-[#0D0D0D]/25 text-[white] placeholder:text-[white]/60 focus:outline-none focus:ring-2 focus:ring-[white]/20"
+                        class="rounded-md border border-[#0D0D0D]/25 bg-[#70706E] px-24 py-16 text-[white] placeholder:text-[white]/60 focus:ring-2 focus:ring-[white]/20 focus:outline-none"
                         autofocus
                         required
                       />
                       <Show when={submission.result?.error}>
-                        <p class="text-14 text-red-400">{submission.result?.error}</p>
+                        <p class="text-14 text-red-400">
+                          {submission.result?.error}
+                        </p>
                       </Show>
                       <button
                         type="submit"
-                        class="py-16 px-40 rounded-md flex-center inline-flex text-14 cursor-pointer text-center border border-[#0D0D0D]/25 font-medium bg-[#70706E] text-[white] hover:bg-[#70706E]/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex-center text-14 inline-flex cursor-pointer rounded-md border border-[#0D0D0D]/25 bg-[#70706E] px-40 py-16 text-center font-medium text-[white] transition-colors hover:bg-[#70706E]/80 disabled:cursor-not-allowed disabled:opacity-50"
                         disabled={submission.pending}
                       >
                         {submission.pending ? "Checking..." : "Submit"}

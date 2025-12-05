@@ -21,7 +21,7 @@ export default function Button({
 	href,
 	...props
 }: ButtonProps) {
-	const { attrs, label } = sanityLink(link);
+	const { attrs, label, isExternal } = sanityLink(link);
 
 	const element = link?.slug || link?.url || href ? A : "button";
 
@@ -35,6 +35,7 @@ export default function Button({
 			component={element}
 			{...attrs}
 			{...props}
+			target={isExternal ? "_blank" : attrs.target}
 			class={cx(
 				VARIANT[variant as keyof typeof VARIANT],
 				className,

@@ -39,7 +39,7 @@ export const sanityLink = (props: SanityLinkProps | undefined) => {
 		slug: isExternal ? undefined : formattedSlug,
 		attrs: {
 			rel,
-			_target: isExternal ? "_blank" : undefined,
+			target: isExternal ? "_blank" : undefined,
 			href: isExternal ? url : formattedSlug,
 		},
 	};
