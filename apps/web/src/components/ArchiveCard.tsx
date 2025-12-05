@@ -1,4 +1,4 @@
-import { Show, onMount, onCleanup, createEffect } from "solid-js";
+import { Show, onCleanup, createEffect } from "solid-js";
 import gsap from "~/lib/gsap";
 import Media from "~/components/Media";
 
@@ -65,15 +65,17 @@ export default function ArchiveCard(props: ArchiveCardProps) {
       style={{ "will-change": "opacity, visibility" }}
     >
       <Show when={props.item.featuredMedia}>
-        <div class="aspect-[.6/1] overflow-hidden rounded-md">
-          <Media
-            {...props.item.featuredMedia}
-            imageProps={{
-              desktopWidth: 100,
-              mobileWidth: 100,
-            }}
-            class="h-full w-full object-cover"
-          />
+        <div class="aspect-[.6/1] overflow-clip rounded-md">
+          <div class="h-full w-full transition-transform duration-600 ease-out hover:scale-110">
+            <Media
+              {...props.item.featuredMedia}
+              imageProps={{
+                desktopWidth: 100,
+                mobileWidth: 100,
+              }}
+              class="h-full w-full object-cover"
+            />
+          </div>
         </div>
       </Show>
       <div class="flex flex-col gap-4">
