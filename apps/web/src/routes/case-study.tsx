@@ -9,6 +9,7 @@ import {
   type RouteSectionProps,
 } from "@solidjs/router";
 import { Show, createSignal, createEffect } from "solid-js";
+import { parseCookies, setCookie } from "vinxi/http";
 import CaseStudyHero from "~/components/CaseStudyHero";
 import CaseStudyIntro from "~/components/CaseStudyIntro";
 import CaseStudySubnav from "~/components/CaseStudySubnav";
@@ -20,13 +21,32 @@ const getCaseStudyData = query(async (slug: string) => {
   return await getDocumentBySlug("case-study", slug);
 }, "case-study");
 
+const checkAuthentication = query(async (slug: string) => {
+  "use server";
+
+  const cookies = parseCookies();
+  const authCookie = cookies[`case-study-auth-${slug}`];
+
+  return { isAuthenticated: authCookie === "true" };
+}, "case-study-auth");
+
 const verifyPassword = action(async (formData: FormData) => {
   "use server";
 
   const password = formData.get("password") as string;
   const correctPassword = formData.get("correctPassword") as string;
+  const slug = formData.get("slug") as string;
 
   if (password === correctPassword) {
+    // Set cookie to remember authentication for 30 days
+    setCookie(`case-study-auth-${slug}`, "true", {
+      maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+
     return { success: true };
   }
 
@@ -36,10 +56,18 @@ const verifyPassword = action(async (formData: FormData) => {
 export default function CaseStudy(props: RouteSectionProps) {
   const slug = props.params.slug;
   const data = createAsync(() => getCaseStudyData(slug));
+  const authStatus = createAsync(() => checkAuthentication(slug));
   const submission = useSubmission(verifyPassword);
   const [isAuthenticated, setIsAuthenticated] = createSignal(false);
 
   const navigate = useNavigate();
+
+  // Initialize authentication from server cookie
+  createEffect(() => {
+    if (authStatus()?.isAuthenticated) {
+      setIsAuthenticated(true);
+    }
+  });
 
   // Watch submission result and update authentication state
   createEffect(() => {
@@ -99,6 +127,7 @@ export default function CaseStudy(props: RouteSectionProps) {
                       class="flex flex-col gap-16 w-full max-w-[400px]"
                     >
                       <input type="hidden" name="correctPassword" value={caseStudy.password} />
+                      <input type="hidden" name="slug" value={slug} />
                       <input
                         type="password"
                         name="password"
