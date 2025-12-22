@@ -1,4 +1,11 @@
-import { Show, onCleanup, createEffect, onMount, createSignal, createMemo } from "solid-js";
+import {
+  Show,
+  onCleanup,
+  createEffect,
+  onMount,
+  createSignal,
+  createMemo,
+} from "solid-js";
 import { isServer } from "solid-js/web";
 import gsap from "~/lib/gsap";
 import Media from "~/components/Media";
@@ -30,7 +37,7 @@ export default function ArchiveCard(props: ArchiveCardProps) {
   // Wait for columns to be ready before animating (client-only, after mount)
   createEffect(() => {
     if (isServer || !isMounted() || !articleRef || hasAnimated) return;
-    
+
     // Handle both function and boolean values
     const isReady =
       typeof props.ready === "function"
@@ -110,9 +117,7 @@ export default function ArchiveCard(props: ArchiveCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             class="text-14 mt-4 text-blue-600 hover:underline"
-          >
-            View Project →
-          </a>
+          ></a>
         </Show>
       </div>
     </article>

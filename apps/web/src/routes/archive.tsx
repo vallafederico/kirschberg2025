@@ -192,6 +192,11 @@ export default function ArchivePage() {
   let gridWrapperRef: HTMLDivElement | null = null;
   let dragUpdateFrame: number | null = null;
 
+  // Momentum scrolling state
+  let lastDragY = 0;
+  let lastDragTime = 0;
+  const verticalMomentum = new Map<number, number>(); // column index -> velocity
+
   // Reset columns ready state when data changes
   createEffect(() => {
     if (data()) {
@@ -250,6 +255,9 @@ export default function ArchivePage() {
       // Don't handle scroll if dragging
       if (isDragging) return;
 
+      // Clear any existing momentum when scrolling starts
+      verticalMomentum.clear();
+
       // Close overlay if open when user scrolls (only if not triggered by initial load)
       if (selectedItem() && columnsReady()) {
         setSelectedItem(null);
@@ -259,10 +267,19 @@ export default function ArchivePage() {
       const currentColumns = columns();
       if (currentColumns.length === 0) return;
 
+      // Sync targetOffset to current visual offset before applying scroll
+      // This ensures smooth transition from any previous action (drag, momentum)
+      currentColumns.forEach((col: ColumnData) => {
+        if (col.ref) {
+          col.targetOffset = col.offset;
+        }
+      });
+
       // event.deltaY is the scroll delta from virtual-scroll
       const deltaY = event.deltaY;
 
       // Update all columns based on scroll delta
+      // All actions modify targetOffset directly - lerp ensures smoothness
       currentColumns.forEach((col: ColumnData) => {
         if (!col.ref || col.singleSetHeight === 0) return;
 
@@ -293,10 +310,26 @@ export default function ArchivePage() {
       isDragging = true;
       dragStartX = e.clientX;
       dragStartY = e.clientY;
+      lastDragY = e.clientY;
+      lastDragTime = performance.now();
 
-      // Get current offsets from first column (all columns share horizontal offset)
+      // Clear any existing momentum
+      verticalMomentum.clear();
+
+      // Get current columns and sync positions to eliminate any lag
+      // This ensures we start dragging from the actual visual position with no jump
       const currentColumns = columns();
       if (currentColumns.length > 0) {
+        // Sync all columns: set targetOffset to current visual offset
+        // This eliminates any lerp lag and ensures smooth transition
+        currentColumns.forEach((col: ColumnData) => {
+          if (col.ref) {
+            col.targetOffset = col.offset; // Sync target to visual
+            col.targetOffsetX = col.offsetX; // Sync target to visual
+          }
+        });
+
+        // Now capture the synced positions as drag start
         dragStartOffsetX = currentColumns[0].targetOffsetX || 0;
         dragStartOffsetY = currentColumns[0].targetOffset || 0;
       }
@@ -317,6 +350,28 @@ export default function ArchivePage() {
       dragUpdateFrame = requestAnimationFrame(() => {
         const deltaX = e.clientX - dragStartX;
         const deltaY = dragStartY - e.clientY;
+
+        // Track velocity for momentum scrolling
+        const currentTime = performance.now();
+        const timeDelta = currentTime - lastDragTime;
+        if (timeDelta > 0) {
+          const velocityY = (lastDragY - e.clientY) / timeDelta; // pixels per ms
+          lastDragY = e.clientY;
+          lastDragTime = currentTime;
+
+          // Store velocity for each column (will be applied on drag end)
+          const currentColumns = columns();
+          currentColumns.forEach((col, index) => {
+            if (col.ref && col.singleSetHeight > 0) {
+              const adjustedVelocity =
+                velocityY *
+                col.config.speedMultiplier *
+                col.config.direction *
+                0.5;
+              verticalMomentum.set(index, adjustedVelocity);
+            }
+          });
+        }
 
         const currentColumns = columns();
         if (currentColumns.length === 0) {
@@ -348,12 +403,14 @@ export default function ArchivePage() {
         currentColumns.forEach((col: ColumnData) => {
           if (!col.ref) return;
 
-          // If we wrapped horizontally, update current offset too to prevent jump
+          // If we wrapped horizontally, update both offset and targetOffset to prevent jump
           if (wrapAdjustment !== 0) {
             col.offsetX += wrapAdjustment;
+            col.targetOffsetX += wrapAdjustment;
           }
 
           // Horizontal dragging - all columns move together
+          // All actions modify targetOffsetX directly - lerp ensures smoothness
           col.targetOffsetX = newTargetX;
 
           // Vertical dragging - each column moves independently with its speed multiplier
@@ -385,6 +442,10 @@ export default function ArchivePage() {
         cancelAnimationFrame(dragUpdateFrame);
         dragUpdateFrame = null;
       }
+
+      // Momentum is already stored in verticalMomentum map
+      // It will be applied in the animation loop
+
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
     };
@@ -407,9 +468,26 @@ export default function ArchivePage() {
       isDragging = true;
       dragStartX = e.touches[0].clientX;
       dragStartY = e.touches[0].clientY;
+      lastDragY = e.touches[0].clientY;
+      lastDragTime = performance.now();
 
+      // Clear any existing momentum
+      verticalMomentum.clear();
+
+      // Get current columns and sync positions to eliminate any lag
+      // This ensures we start dragging from the actual visual position with no jump
       const currentColumns = columns();
       if (currentColumns.length > 0) {
+        // Sync all columns: set targetOffset to current visual offset
+        // This eliminates any lerp lag and ensures smooth transition
+        currentColumns.forEach((col: ColumnData) => {
+          if (col.ref) {
+            col.targetOffset = col.offset; // Sync target to visual
+            col.targetOffsetX = col.offsetX; // Sync target to visual
+          }
+        });
+
+        // Now capture the synced positions as drag start
         dragStartOffsetX = currentColumns[0].targetOffsetX || 0;
         dragStartOffsetY = currentColumns[0].targetOffset || 0;
       }
@@ -429,6 +507,28 @@ export default function ArchivePage() {
       dragUpdateFrame = requestAnimationFrame(() => {
         const deltaX = e.touches[0].clientX - dragStartX;
         const deltaY = dragStartY - e.touches[0].clientY;
+
+        // Track velocity for momentum scrolling
+        const currentTime = performance.now();
+        const timeDelta = currentTime - lastDragTime;
+        if (timeDelta > 0) {
+          const velocityY = (lastDragY - e.touches[0].clientY) / timeDelta; // pixels per ms
+          lastDragY = e.touches[0].clientY;
+          lastDragTime = currentTime;
+
+          // Store velocity for each column (will be applied on drag end)
+          const currentColumns = columns();
+          currentColumns.forEach((col, index) => {
+            if (col.ref && col.singleSetHeight > 0) {
+              const adjustedVelocity =
+                velocityY *
+                col.config.speedMultiplier *
+                col.config.direction *
+                0.5;
+              verticalMomentum.set(index, adjustedVelocity);
+            }
+          });
+        }
 
         const currentColumns = columns();
         if (currentColumns.length === 0) {
@@ -459,12 +559,14 @@ export default function ArchivePage() {
         currentColumns.forEach((col: ColumnData) => {
           if (!col.ref) return;
 
-          // If we wrapped horizontally, update current offset too to prevent jump
+          // If we wrapped horizontally, update both offset and targetOffset to prevent jump
           if (wrapAdjustment !== 0) {
             col.offsetX += wrapAdjustment;
+            col.targetOffsetX += wrapAdjustment;
           }
 
-          // Horizontal dragging
+          // Horizontal dragging - all columns move together
+          // All actions modify targetOffsetX directly - lerp ensures smoothness
           col.targetOffsetX = newTargetX;
 
           // Vertical dragging - clamp to valid range
@@ -574,12 +676,47 @@ export default function ArchivePage() {
 
       // Update each column vertically
       // Each column has 3 copies of items, so we can seamlessly loop by resetting position
-      currentColumns.forEach((col: ColumnData) => {
+      currentColumns.forEach((col: ColumnData, index: number) => {
         if (!col.ref || col.singleSetHeight === 0) return;
 
         const setHeight = col.singleSetHeight;
 
-        // Smoothly lerp - target is already clamped in drag handlers
+        // Apply momentum scrolling (only when not actively dragging)
+        if (!isDragging && verticalMomentum.has(index)) {
+          const momentum = verticalMomentum.get(index)!;
+          const frameTime = 16.67; // ~60fps, 16.67ms per frame
+          // Scale momentum for more natural feel (multiply by 0.8 to reduce intensity)
+          const momentumDelta = momentum * frameTime * 0.8;
+
+          // Apply momentum to target
+          col.targetOffset += momentumDelta;
+
+          // Apply friction (reduce momentum by 3% per frame for longer scroll)
+          const newMomentum = momentum * 0.97;
+
+          // Clear momentum if it's too small
+          if (Math.abs(newMomentum) < 0.005) {
+            verticalMomentum.delete(index);
+          } else {
+            verticalMomentum.set(index, newMomentum);
+          }
+        }
+
+        // Check and wrap target BEFORE lerping to prevent items from disappearing
+        // Valid range: [-2*setHeight, 0] to stay within the 3 copies
+        if (setHeight > 0) {
+          if (col.targetOffset <= -setHeight * 2) {
+            // Target too far up, wrap to bottom (seamless because of 3 copies)
+            col.targetOffset += setHeight;
+            col.offset += setHeight;
+          } else if (col.targetOffset > 0) {
+            // Target too far down, wrap to top (seamless because of 3 copies)
+            col.targetOffset -= setHeight;
+            col.offset -= setHeight;
+          }
+        }
+
+        // Smoothly lerp after wrapping check
         col.offset = lerp(col.offset, col.targetOffset, 0.08);
 
         // Update transform using translate3d for hardware acceleration
@@ -765,7 +902,7 @@ export default function ArchivePage() {
                 >
                   <For each={[0, 1, 2]}>
                     {() => (
-                      <div class="px-margin-1 grid h-full w-1/3 grid-cols-3 gap-12">
+                      <div class="grid h-full w-1/3 grid-cols-3 gap-12 pr-6 pl-6">
                         <For each={mobileColumns()}>
                           {(column, index) => {
                             const config = getColumnScrollConfig(index(), 3);
@@ -808,7 +945,7 @@ export default function ArchivePage() {
                 >
                   <For each={[0, 1, 2]}>
                     {() => (
-                      <div class="lg:px-margin-1 grid h-full w-1/3 grid-cols-7 gap-12">
+                      <div class="grid h-full w-1/3 grid-cols-7 gap-12 pr-6 pl-6">
                         <For each={desktopColumns()}>
                           {(column, index) => {
                             const config = getColumnScrollConfig(index(), 7);
