@@ -61,6 +61,9 @@ interface ColumnData {
   singleSetHeight: number;
   offset: number;
   targetOffset: number; // Smooth interpolation target
+  offsetX: number; // Horizontal offset
+  targetOffsetX: number; // Horizontal target offset
+  singleSetWidth: number; // Width of one column set
   currentSetIndex: number; // 0 = showing original, -1 = showing duplicate before, 1 = showing duplicate after
 }
 
@@ -104,9 +107,7 @@ function ScrollableColumn({
       <ul
         ref={columnRef}
         class={`flex flex-col ${gap}`}
-        // style={{
-        //   "will-change": "transform",
-        // }}
+        style={{ "will-change": "transform" }}
       >
         <For each={displayItems()}>
           {(item, index) => {
@@ -115,7 +116,7 @@ function ScrollableColumn({
             // to map back to the original item in the column
             const itemIndex = index() % items.length;
             const correctItem = items[itemIndex];
-            
+
             return (
               <li data-item-index={index()}>
                 <ArchiveCard
@@ -127,9 +128,22 @@ function ScrollableColumn({
                     const clickedId = correctItem?._id || "no-id";
                     const clickedTitle = correctItem?.title || "no-title";
                     const clickedMedia = correctItem?.featuredMedia;
-                    console.log("[Archive] Clicked item - ID:", clickedId, "Title:", clickedTitle);
-                    console.log("[Archive] Clicked featuredMedia:", clickedMedia);
-                    console.log("[Archive] Clicked image asset ID:", clickedMedia?.image?.asset?._id || clickedMedia?.image?._id || "no-image-id");
+                    console.log(
+                      "[Archive] Clicked item - ID:",
+                      clickedId,
+                      "Title:",
+                      clickedTitle,
+                    );
+                    console.log(
+                      "[Archive] Clicked featuredMedia:",
+                      clickedMedia,
+                    );
+                    console.log(
+                      "[Archive] Clicked image asset ID:",
+                      clickedMedia?.image?.asset?._id ||
+                        clickedMedia?.image?._id ||
+                        "no-image-id",
+                    );
                     onImageClick?.(correctItem);
                   }}
                 />
@@ -167,6 +181,16 @@ export default function ArchivePage() {
   } | null>(null);
   let virtualScroll: VirtualScroll | null = null;
   let readyTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  // Drag state for omnidirectional dragging
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragStartOffsetX = 0;
+  let dragStartOffsetY = 0;
+  let gridContainerRef: HTMLDivElement | null = null;
+  let gridWrapperRef: HTMLDivElement | null = null;
+  let dragUpdateFrame: number | null = null;
 
   // Reset columns ready state when data changes
   createEffect(() => {
@@ -223,6 +247,9 @@ export default function ArchivePage() {
     });
 
     virtualScroll.on((event) => {
+      // Don't handle scroll if dragging
+      if (isDragging) return;
+
       // Close overlay if open when user scrolls (only if not triggered by initial load)
       if (selectedItem() && columnsReady()) {
         setSelectedItem(null);
@@ -249,6 +276,266 @@ export default function ArchivePage() {
       });
     });
 
+    // Drag handlers for omnidirectional dragging
+    const handleMouseDown = (e: MouseEvent) => {
+      // Don't start drag if clicking on interactive elements
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "A" ||
+        target.tagName === "BUTTON" ||
+        target.closest("a") ||
+        target.closest("button") ||
+        target.closest("[data-selectable]")
+      ) {
+        return;
+      }
+
+      isDragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+
+      // Get current offsets from first column (all columns share horizontal offset)
+      const currentColumns = columns();
+      if (currentColumns.length > 0) {
+        dragStartOffsetX = currentColumns[0].targetOffsetX || 0;
+        dragStartOffsetY = currentColumns[0].targetOffset || 0;
+      }
+
+      e.preventDefault();
+      document.body.style.cursor = "grabbing";
+      document.body.style.userSelect = "none";
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+
+      // Throttle updates using requestAnimationFrame
+      if (dragUpdateFrame !== null) {
+        cancelAnimationFrame(dragUpdateFrame);
+      }
+
+      dragUpdateFrame = requestAnimationFrame(() => {
+        const deltaX = e.clientX - dragStartX;
+        const deltaY = dragStartY - e.clientY;
+
+        const currentColumns = columns();
+        if (currentColumns.length === 0) {
+          dragUpdateFrame = null;
+          return;
+        }
+
+        const firstCol = currentColumns[0];
+        const setWidth = firstCol?.singleSetWidth || 0;
+
+        // Calculate new target positions
+        let newTargetX = dragStartOffsetX + deltaX;
+        let wrapAdjustment = 0;
+
+        // Clamp horizontal target to valid range and calculate wrap adjustment
+        if (setWidth > 0) {
+          if (newTargetX <= -setWidth * 2) {
+            wrapAdjustment = setWidth;
+            newTargetX += wrapAdjustment;
+            dragStartOffsetX += wrapAdjustment; // Update drag start to match wrap
+          } else if (newTargetX > 0) {
+            wrapAdjustment = -setWidth;
+            newTargetX += wrapAdjustment;
+            dragStartOffsetX += wrapAdjustment; // Update drag start to match wrap
+          }
+        }
+
+        // Apply drag to all columns
+        currentColumns.forEach((col: ColumnData) => {
+          if (!col.ref) return;
+
+          // If we wrapped horizontally, update current offset too to prevent jump
+          if (wrapAdjustment !== 0) {
+            col.offsetX += wrapAdjustment;
+          }
+
+          // Horizontal dragging - all columns move together
+          col.targetOffsetX = newTargetX;
+
+          // Vertical dragging - each column moves independently with its speed multiplier
+          const adjustedDeltaY =
+            deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
+          let newTargetY = dragStartOffsetY + adjustedDeltaY;
+
+          // Clamp vertical target to valid range
+          const setHeight = col.singleSetHeight;
+          if (setHeight > 0) {
+            if (newTargetY <= -setHeight * 2) {
+              newTargetY += setHeight;
+            } else if (newTargetY > 0) {
+              newTargetY -= setHeight;
+            }
+          }
+          col.targetOffset = newTargetY;
+        });
+
+        dragUpdateFrame = null;
+      });
+    };
+
+    const handleMouseUp = () => {
+      if (!isDragging) return;
+
+      isDragging = false;
+      if (dragUpdateFrame !== null) {
+        cancelAnimationFrame(dragUpdateFrame);
+        dragUpdateFrame = null;
+      }
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+
+    // Touch handlers
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "A" ||
+        target.tagName === "BUTTON" ||
+        target.closest("a") ||
+        target.closest("button") ||
+        target.closest("[data-selectable]")
+      ) {
+        return;
+      }
+
+      isDragging = true;
+      dragStartX = e.touches[0].clientX;
+      dragStartY = e.touches[0].clientY;
+
+      const currentColumns = columns();
+      if (currentColumns.length > 0) {
+        dragStartOffsetX = currentColumns[0].targetOffsetX || 0;
+        dragStartOffsetY = currentColumns[0].targetOffset || 0;
+      }
+
+      e.preventDefault();
+      document.body.style.userSelect = "none";
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging || e.touches.length !== 1) return;
+
+      // Throttle updates using requestAnimationFrame
+      if (dragUpdateFrame !== null) {
+        cancelAnimationFrame(dragUpdateFrame);
+      }
+
+      dragUpdateFrame = requestAnimationFrame(() => {
+        const deltaX = e.touches[0].clientX - dragStartX;
+        const deltaY = dragStartY - e.touches[0].clientY;
+
+        const currentColumns = columns();
+        if (currentColumns.length === 0) {
+          dragUpdateFrame = null;
+          return;
+        }
+
+        const firstCol = currentColumns[0];
+        const setWidth = firstCol?.singleSetWidth || 0;
+
+        // Calculate new target positions
+        let newTargetX = dragStartOffsetX + deltaX;
+        let wrapAdjustment = 0;
+
+        // Clamp horizontal target to valid range and calculate wrap adjustment
+        if (setWidth > 0) {
+          if (newTargetX <= -setWidth * 2) {
+            wrapAdjustment = setWidth;
+            newTargetX += wrapAdjustment;
+            dragStartOffsetX += wrapAdjustment;
+          } else if (newTargetX > 0) {
+            wrapAdjustment = -setWidth;
+            newTargetX += wrapAdjustment;
+            dragStartOffsetX += wrapAdjustment;
+          }
+        }
+
+        currentColumns.forEach((col: ColumnData) => {
+          if (!col.ref) return;
+
+          // If we wrapped horizontally, update current offset too to prevent jump
+          if (wrapAdjustment !== 0) {
+            col.offsetX += wrapAdjustment;
+          }
+
+          // Horizontal dragging
+          col.targetOffsetX = newTargetX;
+
+          // Vertical dragging - clamp to valid range
+          const adjustedDeltaY =
+            deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
+          let newTargetY = dragStartOffsetY + adjustedDeltaY;
+          const setHeight = col.singleSetHeight;
+          if (setHeight > 0) {
+            if (newTargetY <= -setHeight * 2) {
+              newTargetY += setHeight;
+            } else if (newTargetY > 0) {
+              newTargetY -= setHeight;
+            }
+          }
+          col.targetOffset = newTargetY;
+        });
+
+        dragUpdateFrame = null;
+      });
+
+      e.preventDefault();
+    };
+
+    const handleTouchEnd = () => {
+      if (!isDragging) return;
+
+      isDragging = false;
+      if (dragUpdateFrame !== null) {
+        cancelAnimationFrame(dragUpdateFrame);
+        dragUpdateFrame = null;
+      }
+      document.body.style.userSelect = "";
+    };
+
+    // Add event listeners to grid containers
+    const addDragListeners = () => {
+      const container = gridContainerRef || gridWrapperRef;
+      if (!container) return;
+
+      container.addEventListener("mousedown", handleMouseDown);
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      window.addEventListener("mouseleave", handleMouseUp);
+
+      container.addEventListener("touchstart", handleTouchStart, {
+        passive: false,
+      });
+      window.addEventListener("touchmove", handleTouchMove, { passive: false });
+      window.addEventListener("touchend", handleTouchEnd);
+      window.addEventListener("touchcancel", handleTouchEnd);
+    };
+
+    // Remove event listeners
+    const removeDragListeners = () => {
+      const container = gridContainerRef || gridWrapperRef;
+      if (!container) return;
+
+      container.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mouseleave", handleMouseUp);
+
+      container.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchcancel", handleTouchEnd);
+    };
+
+    // Set up drag listeners after a short delay to ensure grid is rendered
+    setTimeout(addDragListeners, 100);
+
     // Smooth animation loop using requestAnimationFrame
     const lerp = (start: number, end: number, factor: number) => {
       return start + (end - start) * factor;
@@ -256,30 +543,47 @@ export default function ArchivePage() {
 
     const animate = () => {
       const currentColumns = columns();
+      if (currentColumns.length === 0) {
+        requestAnimationFrame(animate);
+        return;
+      }
+
+      // Get the first column's width for horizontal wrapping
+      const firstCol = currentColumns[0];
+      const setWidth = firstCol?.singleSetWidth || 0;
+
+      // Apply horizontal transform to the grid container (all columns move together)
+      // We have 3 copies of the grid: [left] [center] [right]
+      // Valid range: [-2*setWidth, 0] to stay within the 3 copies
+      if (gridContainerRef && setWidth > 0) {
+        let sharedOffsetX = firstCol?.targetOffsetX || 0;
+        let sharedOffset = firstCol?.offsetX || 0;
+
+        // Smoothly lerp - target is already clamped in drag handlers
+        sharedOffset = lerp(sharedOffset, sharedOffsetX, 0.08);
+
+        // Apply transform using translate3d for hardware acceleration
+        gridContainerRef.style.transform = `translate3d(${sharedOffset}px, 0, 0)`;
+
+        // Update all columns' offsetX to match
+        currentColumns.forEach((col) => {
+          col.offsetX = sharedOffset;
+          col.targetOffsetX = sharedOffsetX;
+        });
+      }
+
+      // Update each column vertically
+      // Each column has 3 copies of items, so we can seamlessly loop by resetting position
       currentColumns.forEach((col: ColumnData) => {
         if (!col.ref || col.singleSetHeight === 0) return;
 
         const setHeight = col.singleSetHeight;
 
-        // Wrap both offset and targetOffset to stay in a reasonable range
-        // This prevents them from growing infinitely
-        if (setHeight > 0) {
-          // Normalize targetOffset to be within [-setHeight * 2, 0]
-          while (col.targetOffset <= -setHeight * 2) {
-            col.targetOffset += setHeight;
-            col.offset += setHeight;
-          }
-          while (col.targetOffset >= 0) {
-            col.targetOffset -= setHeight;
-            col.offset -= setHeight;
-          }
-        }
-
-        // Smoothly lerp towards target
+        // Smoothly lerp - target is already clamped in drag handlers
         col.offset = lerp(col.offset, col.targetOffset, 0.08);
 
-        // Update transform
-        col.ref.style.transform = `translateY(${col.offset}px)`;
+        // Update transform using translate3d for hardware acceleration
+        col.ref.style.transform = `translate3d(0, ${col.offset}px, 0)`;
       });
 
       requestAnimationFrame(animate);
@@ -293,6 +597,7 @@ export default function ArchivePage() {
         virtualScroll.destroy();
         virtualScroll = null;
       }
+      removeDragListeners();
     });
   });
 
@@ -337,21 +642,39 @@ export default function ArchivePage() {
         const randomOffsetFactor = Math.random();
         const initialOffset = -oneSetHeight - randomOffsetFactor * oneSetHeight;
 
+        // Calculate grid width (one set = full viewport width)
+        let oneSetWidth = 0;
+        if (gridWrapperRef) {
+          const gridRect = gridWrapperRef.getBoundingClientRect();
+          oneSetWidth = gridRect.width; // One set is the full viewport width
+        }
+
+        // Calculate initial horizontal offset to center on middle copy
+        const initialOffsetX = oneSetWidth > 0 ? -oneSetWidth : 0;
+
         const columnData: ColumnData = {
           ref,
           items,
           config,
           singleSetHeight: oneSetHeight,
+          singleSetWidth: oneSetWidth,
           // Start with random offset within valid range [-oneSetHeight * 2, -oneSetHeight]
           // This creates visual variety in the initial grid layout
           offset: initialOffset,
           targetOffset: initialOffset, // Initialize target to match offset
+          offsetX: initialOffsetX,
+          targetOffsetX: initialOffsetX,
           currentSetIndex: 0,
         };
 
-        // Set initial transform with random offset
+        // Set initial transform with random offset using translate3d
         if (ref) {
-          ref.style.transform = `translateY(${initialOffset}px)`;
+          ref.style.transform = `translate3d(0, ${initialOffset}px, 0)`;
+        }
+
+        // Set initial horizontal transform on grid container (only once, when first column is registered)
+        if (gridContainerRef && existingIndex < 0 && oneSetWidth > 0) {
+          gridContainerRef.style.transform = `translate3d(${initialOffsetX}px, 0, 0)`;
         }
 
         if (existingIndex >= 0) {
@@ -424,44 +747,90 @@ export default function ArchivePage() {
 
             {/* Archive items - full width, outside container */}
             <Show when={archiveItems && archiveItems.length > 0}>
-              {/* Mobile: 3-column grid */}
-              <div class="px-margin-1 grid grid-cols-3 gap-12 overflow-hidden lg:hidden">
-                <For each={mobileColumns()}>
-                  {(column, index) => {
-                    const config = getColumnScrollConfig(index(), 3);
-                    return (
-                      <div class="h-screen overflow-hidden">
-                        <ScrollableColumn
-                          items={column}
-                          gap="gap-12"
-                          ready={columnsReady}
-                          onMount={(ref) => registerColumn(ref, column, config)}
-                          onImageClick={(item) => setSelectedItem(item)}
-                        />
-                      </div>
-                    );
+              {/* Mobile: 3-column grid with horizontal duplication */}
+              <div
+                ref={(el) => {
+                  gridWrapperRef = el;
+                }}
+                class="relative h-screen w-full overflow-hidden lg:hidden"
+                style={{ cursor: isDragging ? "grabbing" : "grab" }}
+              >
+                {/* Three copies of the grid for seamless horizontal looping */}
+                <div
+                  ref={(el) => {
+                    gridContainerRef = el;
                   }}
-                </For>
+                  class="absolute top-0 left-0 flex h-full w-[300%]"
+                  style={{ "will-change": "transform" }}
+                >
+                  <For each={[0, 1, 2]}>
+                    {() => (
+                      <div class="px-margin-1 grid h-full w-1/3 grid-cols-3 gap-12">
+                        <For each={mobileColumns()}>
+                          {(column, index) => {
+                            const config = getColumnScrollConfig(index(), 3);
+                            return (
+                              <div class="h-full overflow-hidden">
+                                <ScrollableColumn
+                                  items={column}
+                                  gap="gap-12"
+                                  ready={columnsReady}
+                                  onMount={(ref) =>
+                                    registerColumn(ref, column, config)
+                                  }
+                                  onImageClick={(item) => setSelectedItem(item)}
+                                />
+                              </div>
+                            );
+                          }}
+                        </For>
+                      </div>
+                    )}
+                  </For>
+                </div>
               </div>
 
-              {/* Desktop: 7-column grid */}
-              <div class="lg:px-margin-1 hidden h-screen w-full overflow-hidden lg:grid lg:grid-cols-7 lg:gap-12">
-                <For each={desktopColumns()}>
-                  {(column, index) => {
-                    const config = getColumnScrollConfig(index(), 7);
-                    return (
-                      <div class="h-full overflow-hidden">
-                        <ScrollableColumn
-                          items={column}
-                          gap="gap-4"
-                          ready={columnsReady}
-                          onMount={(ref) => registerColumn(ref, column, config)}
-                          onImageClick={(item) => setSelectedItem(item)}
-                        />
-                      </div>
-                    );
+              {/* Desktop: 7-column grid with horizontal duplication */}
+              <div
+                ref={(el) => {
+                  gridWrapperRef = el;
+                }}
+                class="relative hidden h-screen w-full overflow-hidden lg:block"
+                style={{ cursor: isDragging ? "grabbing" : "grab" }}
+              >
+                {/* Three copies of the grid for seamless horizontal looping */}
+                <div
+                  ref={(el) => {
+                    gridContainerRef = el;
                   }}
-                </For>
+                  class="absolute top-0 left-0 flex h-full w-[300%]"
+                  style={{ "will-change": "transform" }}
+                >
+                  <For each={[0, 1, 2]}>
+                    {() => (
+                      <div class="lg:px-margin-1 grid h-full w-1/3 grid-cols-7 gap-12">
+                        <For each={desktopColumns()}>
+                          {(column, index) => {
+                            const config = getColumnScrollConfig(index(), 7);
+                            return (
+                              <div class="h-full overflow-hidden">
+                                <ScrollableColumn
+                                  items={column}
+                                  gap="gap-4"
+                                  ready={columnsReady}
+                                  onMount={(ref) =>
+                                    registerColumn(ref, column, config)
+                                  }
+                                  onImageClick={(item) => setSelectedItem(item)}
+                                />
+                              </div>
+                            );
+                          }}
+                        </For>
+                      </div>
+                    )}
+                  </For>
+                </div>
               </div>
             </Show>
 

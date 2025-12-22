@@ -1,4 +1,5 @@
-import { Show, onCleanup, createEffect } from "solid-js";
+import { Show, onCleanup, createEffect, onMount, createSignal, createMemo } from "solid-js";
+import { isServer } from "solid-js/web";
 import gsap from "~/lib/gsap";
 import Media from "~/components/Media";
 
@@ -15,10 +16,21 @@ interface ArchiveCardProps {
 export default function ArchiveCard(props: ArchiveCardProps) {
   let articleRef!: HTMLElement;
   let hasAnimated = false;
+  const [isMounted, setIsMounted] = createSignal(false);
 
-  // Wait for columns to be ready before animating
+  // Memoize link to ensure stable reference - normalize undefined to null for consistent rendering
+  const link = createMemo(() => props.item?.link || null);
+
+  // Mark as mounted after hydration
+  onMount(() => {
+    if (isServer) return;
+    setIsMounted(true);
+  });
+
+  // Wait for columns to be ready before animating (client-only, after mount)
   createEffect(() => {
-    if (!articleRef || hasAnimated) return;
+    if (isServer || !isMounted() || !articleRef || hasAnimated) return;
+    
     // Handle both function and boolean values
     const isReady =
       typeof props.ready === "function"
@@ -92,9 +104,9 @@ export default function ArchiveCard(props: ArchiveCardProps) {
         </div>
       </Show>
       <div class="flex flex-col gap-4">
-        <Show when={props.item.link}>
+        <Show when={!isServer && isMounted() && link()}>
           <a
-            href={props.item.link}
+            href={link()!}
             target="_blank"
             rel="noopener noreferrer"
             class="text-14 mt-4 text-blue-600 hover:underline"
