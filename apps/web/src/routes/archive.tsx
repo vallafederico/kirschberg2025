@@ -195,7 +195,8 @@ export default function ArchivePage() {
   // Momentum scrolling state
   let lastDragY = 0;
   let lastDragTime = 0;
-  const verticalMomentum = new Map<number, number>(); // column index -> velocity
+  const verticalMomentum = new Map<HTMLUListElement, number>(); // column ref -> velocity
+  const dragStartOffsetsY = new Map<HTMLUListElement, number>(); // column ref -> starting Y offset
 
   // Reset columns ready state when data changes
   createEffect(() => {
@@ -316,22 +317,56 @@ export default function ArchivePage() {
       // Clear any existing momentum
       verticalMomentum.clear();
 
-      // Get current columns and sync positions to eliminate any lag
-      // This ensures we start dragging from the actual visual position with no jump
+      // Get current columns and read actual visual positions from DOM
+      // This ensures we start dragging from the exact visual position with no jump
       const currentColumns = columns();
       if (currentColumns.length > 0) {
-        // Sync all columns: set targetOffset to current visual offset
-        // This eliminates any lerp lag and ensures smooth transition
+        const firstCol = currentColumns[0];
+
+        // Read horizontal position from grid container
+        if (gridContainerRef) {
+          const transform = window.getComputedStyle(gridContainerRef).transform;
+          if (transform && transform !== "none") {
+            const matrix = new DOMMatrix(transform);
+            const actualX = matrix.m41; // translateX value
+            firstCol.targetOffsetX = actualX;
+            firstCol.offsetX = actualX;
+            dragStartOffsetX = actualX;
+            // Sync all columns' horizontal offset
+            currentColumns.forEach((col) => {
+              col.targetOffsetX = actualX;
+              col.offsetX = actualX;
+            });
+          } else {
+            dragStartOffsetX = firstCol.targetOffsetX || 0;
+          }
+        } else {
+          dragStartOffsetX = firstCol.targetOffsetX || 0;
+        }
+
+        // Read vertical positions from each column's ref and store starting position
         currentColumns.forEach((col: ColumnData) => {
           if (col.ref) {
-            col.targetOffset = col.offset; // Sync target to visual
-            col.targetOffsetX = col.offsetX; // Sync target to visual
+            const transform = window.getComputedStyle(col.ref).transform;
+            if (transform && transform !== "none") {
+              const matrix = new DOMMatrix(transform);
+              const actualY = matrix.m42; // translateY value
+              col.targetOffset = actualY;
+              col.offset = actualY;
+              // Store starting position for this column using ref as key
+              dragStartOffsetsY.set(col.ref, actualY);
+            } else {
+              // Fallback to stored value
+              dragStartOffsetsY.set(col.ref, col.targetOffset || 0);
+            }
           }
         });
 
-        // Now capture the synced positions as drag start
-        dragStartOffsetX = currentColumns[0].targetOffsetX || 0;
-        dragStartOffsetY = currentColumns[0].targetOffset || 0;
+        // Keep dragStartOffsetY for backward compatibility (use first column)
+        const firstColRef = currentColumns[0]?.ref;
+        dragStartOffsetY = firstColRef
+          ? dragStartOffsetsY.get(firstColRef) || 0
+          : 0;
       }
 
       e.preventDefault();
@@ -361,14 +396,14 @@ export default function ArchivePage() {
 
           // Store velocity for each column (will be applied on drag end)
           const currentColumns = columns();
-          currentColumns.forEach((col, index) => {
+          currentColumns.forEach((col) => {
             if (col.ref && col.singleSetHeight > 0) {
               const adjustedVelocity =
                 velocityY *
                 col.config.speedMultiplier *
                 col.config.direction *
                 0.5;
-              verticalMomentum.set(index, adjustedVelocity);
+              verticalMomentum.set(col.ref, adjustedVelocity);
             }
           });
         }
@@ -414,9 +449,13 @@ export default function ArchivePage() {
           col.targetOffsetX = newTargetX;
 
           // Vertical dragging - each column moves independently with its speed multiplier
+          // Use each column's own starting position (keyed by ref)
+          const colStartY = col.ref
+            ? (dragStartOffsetsY.get(col.ref) ?? dragStartOffsetY)
+            : dragStartOffsetY;
           const adjustedDeltaY =
             deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
-          let newTargetY = dragStartOffsetY + adjustedDeltaY;
+          let newTargetY = colStartY + adjustedDeltaY;
 
           // Clamp vertical target to valid range
           const setHeight = col.singleSetHeight;
@@ -474,22 +513,56 @@ export default function ArchivePage() {
       // Clear any existing momentum
       verticalMomentum.clear();
 
-      // Get current columns and sync positions to eliminate any lag
-      // This ensures we start dragging from the actual visual position with no jump
+      // Get current columns and read actual visual positions from DOM
+      // This ensures we start dragging from the exact visual position with no jump
       const currentColumns = columns();
       if (currentColumns.length > 0) {
-        // Sync all columns: set targetOffset to current visual offset
-        // This eliminates any lerp lag and ensures smooth transition
+        const firstCol = currentColumns[0];
+
+        // Read horizontal position from grid container
+        if (gridContainerRef) {
+          const transform = window.getComputedStyle(gridContainerRef).transform;
+          if (transform && transform !== "none") {
+            const matrix = new DOMMatrix(transform);
+            const actualX = matrix.m41; // translateX value
+            firstCol.targetOffsetX = actualX;
+            firstCol.offsetX = actualX;
+            dragStartOffsetX = actualX;
+            // Sync all columns' horizontal offset
+            currentColumns.forEach((col) => {
+              col.targetOffsetX = actualX;
+              col.offsetX = actualX;
+            });
+          } else {
+            dragStartOffsetX = firstCol.targetOffsetX || 0;
+          }
+        } else {
+          dragStartOffsetX = firstCol.targetOffsetX || 0;
+        }
+
+        // Read vertical positions from each column's ref and store starting position
         currentColumns.forEach((col: ColumnData) => {
           if (col.ref) {
-            col.targetOffset = col.offset; // Sync target to visual
-            col.targetOffsetX = col.offsetX; // Sync target to visual
+            const transform = window.getComputedStyle(col.ref).transform;
+            if (transform && transform !== "none") {
+              const matrix = new DOMMatrix(transform);
+              const actualY = matrix.m42; // translateY value
+              col.targetOffset = actualY;
+              col.offset = actualY;
+              // Store starting position for this column using ref as key
+              dragStartOffsetsY.set(col.ref, actualY);
+            } else {
+              // Fallback to stored value
+              dragStartOffsetsY.set(col.ref, col.targetOffset || 0);
+            }
           }
         });
 
-        // Now capture the synced positions as drag start
-        dragStartOffsetX = currentColumns[0].targetOffsetX || 0;
-        dragStartOffsetY = currentColumns[0].targetOffset || 0;
+        // Keep dragStartOffsetY for backward compatibility (use first column)
+        const firstColRef = currentColumns[0]?.ref;
+        dragStartOffsetY = firstColRef
+          ? dragStartOffsetsY.get(firstColRef) || 0
+          : 0;
       }
 
       e.preventDefault();
@@ -518,14 +591,14 @@ export default function ArchivePage() {
 
           // Store velocity for each column (will be applied on drag end)
           const currentColumns = columns();
-          currentColumns.forEach((col, index) => {
+          currentColumns.forEach((col) => {
             if (col.ref && col.singleSetHeight > 0) {
               const adjustedVelocity =
                 velocityY *
                 col.config.speedMultiplier *
                 col.config.direction *
                 0.5;
-              verticalMomentum.set(index, adjustedVelocity);
+              verticalMomentum.set(col.ref, adjustedVelocity);
             }
           });
         }
@@ -566,13 +639,17 @@ export default function ArchivePage() {
           }
 
           // Horizontal dragging - all columns move together
-          // All actions modify targetOffsetX directly - lerp ensures smoothness
+          // All actions modify targetOffsetX directly
           col.targetOffsetX = newTargetX;
 
-          // Vertical dragging - clamp to valid range
+          // Vertical dragging - each column moves independently with its speed multiplier
+          // Use each column's own starting position (keyed by ref)
+          const colStartY = col.ref
+            ? (dragStartOffsetsY.get(col.ref) ?? dragStartOffsetY)
+            : dragStartOffsetY;
           const adjustedDeltaY =
             deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
-          let newTargetY = dragStartOffsetY + adjustedDeltaY;
+          let newTargetY = colStartY + adjustedDeltaY;
           const setHeight = col.singleSetHeight;
           if (setHeight > 0) {
             if (newTargetY <= -setHeight * 2) {
@@ -638,11 +715,7 @@ export default function ArchivePage() {
     // Set up drag listeners after a short delay to ensure grid is rendered
     setTimeout(addDragListeners, 100);
 
-    // Smooth animation loop using requestAnimationFrame
-    const lerp = (start: number, end: number, factor: number) => {
-      return start + (end - start) * factor;
-    };
-
+    // Animation loop - no lerping, direct value assignment
     const animate = () => {
       const currentColumns = columns();
       if (currentColumns.length === 0) {
@@ -659,15 +732,21 @@ export default function ArchivePage() {
       // Valid range: [-2*setWidth, 0] to stay within the 3 copies
       if (gridContainerRef && setWidth > 0) {
         let sharedOffsetX = firstCol?.targetOffsetX || 0;
-        let sharedOffset = firstCol?.offsetX || 0;
 
-        // Smoothly lerp - target is already clamped in drag handlers
-        sharedOffset = lerp(sharedOffset, sharedOffsetX, 0.08);
+        // Check and wrap horizontal target if needed
+        if (sharedOffsetX <= -setWidth * 2) {
+          sharedOffsetX += setWidth;
+        } else if (sharedOffsetX > 0) {
+          sharedOffsetX -= setWidth;
+        }
+
+        // Set offset directly to target (no lerping)
+        const sharedOffset = sharedOffsetX;
 
         // Apply transform using translate3d for hardware acceleration
         gridContainerRef.style.transform = `translate3d(${sharedOffset}px, 0, 0)`;
 
-        // Update all columns' offsetX to match
+        // Update all columns' offsetX and targetOffsetX to match (they're always in sync now)
         currentColumns.forEach((col) => {
           col.offsetX = sharedOffset;
           col.targetOffsetX = sharedOffsetX;
@@ -682,8 +761,8 @@ export default function ArchivePage() {
         const setHeight = col.singleSetHeight;
 
         // Apply momentum scrolling (only when not actively dragging)
-        if (!isDragging && verticalMomentum.has(index)) {
-          const momentum = verticalMomentum.get(index)!;
+        if (!isDragging && col.ref && verticalMomentum.has(col.ref)) {
+          const momentum = verticalMomentum.get(col.ref)!;
           const frameTime = 16.67; // ~60fps, 16.67ms per frame
           // Scale momentum for more natural feel (multiply by 0.8 to reduce intensity)
           const momentumDelta = momentum * frameTime * 0.8;
@@ -696,28 +775,26 @@ export default function ArchivePage() {
 
           // Clear momentum if it's too small
           if (Math.abs(newMomentum) < 0.005) {
-            verticalMomentum.delete(index);
+            verticalMomentum.delete(col.ref);
           } else {
-            verticalMomentum.set(index, newMomentum);
+            verticalMomentum.set(col.ref, newMomentum);
           }
         }
 
-        // Check and wrap target BEFORE lerping to prevent items from disappearing
+        // Check and wrap target to prevent items from disappearing
         // Valid range: [-2*setHeight, 0] to stay within the 3 copies
         if (setHeight > 0) {
           if (col.targetOffset <= -setHeight * 2) {
             // Target too far up, wrap to bottom (seamless because of 3 copies)
             col.targetOffset += setHeight;
-            col.offset += setHeight;
           } else if (col.targetOffset > 0) {
             // Target too far down, wrap to top (seamless because of 3 copies)
             col.targetOffset -= setHeight;
-            col.offset -= setHeight;
           }
         }
 
-        // Smoothly lerp after wrapping check
-        col.offset = lerp(col.offset, col.targetOffset, 0.08);
+        // Set offset directly to target (no lerping)
+        col.offset = col.targetOffset;
 
         // Update transform using translate3d for hardware acceleration
         col.ref.style.transform = `translate3d(0, ${col.offset}px, 0)`;
