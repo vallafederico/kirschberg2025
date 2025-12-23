@@ -84,12 +84,14 @@ function ScrollableColumn({
   onMount: onColumnMount,
   ready,
   onImageClick,
+  dragThresholdExceeded,
 }: {
   items: any[];
   gap?: string;
   onMount: (ref: HTMLUListElement, items: any[]) => (() => void) | void;
   ready: () => boolean;
   onImageClick?: (item: any) => void;
+  dragThresholdExceeded: () => boolean;
 }) {
   let columnRef: HTMLUListElement | undefined;
   // Structure: [duplicate before] [original] [duplicate after]
@@ -135,7 +137,7 @@ function ScrollableColumn({
                   ready={ready()}
                   onImageClick={() => {
                     // Only trigger click if drag threshold was not exceeded
-                    if (dragThresholdExceeded) {
+                    if (dragThresholdExceeded()) {
                       console.log("[Archive] Ignoring click - was a drag");
                       return;
                     }
@@ -209,6 +211,9 @@ export default function ArchivePage() {
   let gridContainerRef: HTMLDivElement | null = null;
   let gridWrapperRef: HTMLDivElement | null = null;
   let dragUpdateFrame: number | null = null;
+
+  // Getter function for dragThresholdExceeded to pass to ScrollableColumn
+  const getDragThresholdExceeded = () => dragThresholdExceeded;
 
   // Momentum scrolling state
   let lastDragX = 0;
@@ -1138,6 +1143,7 @@ export default function ArchivePage() {
                                     registerColumn(ref, column, config, gridCopyIndex, index())
                                   }
                                   onImageClick={(item) => setSelectedItem(item)}
+                                  dragThresholdExceeded={getDragThresholdExceeded}
                                 />
                               </div>
                             );
@@ -1181,6 +1187,7 @@ export default function ArchivePage() {
                                     registerColumn(ref, column, config, gridCopyIndex, index())
                                   }
                                   onImageClick={(item) => setSelectedItem(item)}
+                                  dragThresholdExceeded={getDragThresholdExceeded}
                                 />
                               </div>
                             );
