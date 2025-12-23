@@ -65,6 +65,16 @@ interface ColumnData {
   targetOffsetX: number; // Horizontal target offset
   singleSetWidth: number; // Width of one column set
   currentSetIndex: number; // 0 = showing original, -1 = showing duplicate before, 1 = showing duplicate after
+  gridCopyIndex: number; // Which grid copy this column belongs to
+  positionIndex: number; // Position within grid copy (0-6)
+}
+
+// Grid copy data structure - each grid copy (left, center, right) behaves as a unit
+interface GridCopyData {
+  index: number; // 0, 1, 2 for left, center, right
+  offsetY: number; // Shared vertical offset for this grid copy
+  targetOffsetY: number; // Shared vertical target for this grid copy
+  config: { speedMultiplier: number; direction: number }; // Shared config for this grid copy
 }
 
 // Scrollable column component
@@ -173,6 +183,7 @@ export default function ArchivePage() {
   const data = createAsync(() => getArchiveData());
   const [searchParams, setSearchParams] = useSearchParams();
   const [columns, setColumns] = createSignal<ColumnData[]>([]);
+  const [gridCopies, setGridCopies] = createSignal<GridCopyData[]>([]);
   const [columnsReady, setColumnsReady] = createSignal(false);
   const [selectedItem, setSelectedItem] = createSignal<{
     _id?: string;
@@ -253,8 +264,50 @@ export default function ArchivePage() {
     });
 
     virtualScroll.on((event) => {
-      // TEMP: Disable all vertical scrolling for horizontal testing
-      return;
+      // Don't handle scroll if dragging
+      if (isDragging) return;
+
+      // Clear existing momentum when scrolling starts
+      verticalMomentum.clear();
+
+      // Close overlay if open when user scrolls (only if not triggered by initial load)
+      if (selectedItem() && columnsReady()) {
+        setSelectedItem(null);
+      }
+
+      // Get current grid copies
+      const currentGridCopies = gridCopies();
+      if (currentGridCopies.length === 0) return;
+
+      // event.deltaY is the scroll delta from virtual-scroll
+      const deltaY = event.deltaY;
+
+      // Apply scrolling to individual columns for varied speeds
+      // But ensure columns in same positions across grid copies behave identically
+      const currentColumns = columns();
+      currentColumns.forEach((col: ColumnData) => {
+        if (!col.ref) return;
+
+        const adjustedDelta = deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
+        col.targetOffset += adjustedDelta;
+
+        // Add consistent randomization based on column position within grid
+        const positionPhase = col.targetOffset * 0.002;
+        const randomWobble = (Math.sin(positionPhase + randomSeed + col.positionIndex) * 0.3 +
+                             Math.sin(positionPhase * 1.7 + randomSeed * 2 + col.positionIndex) * 0.2) * 2;
+        col.targetOffset += randomWobble;
+
+        // Don't wrap here - let the animation loop handle it
+      });
+
+      // Update columns state
+      setColumns([...currentColumns]);
+
+      // Update grid copies state
+      setGridCopies([...currentGridCopies]);
+
+      // Update grid copies state
+      setGridCopies([...currentGridCopies]);
     });
 
     // Drag handlers for omnidirectional dragging
@@ -349,27 +402,7 @@ export default function ArchivePage() {
         const deltaX = e.clientX - dragStartX;
         const deltaY = dragStartY - e.clientY;
 
-        // Track velocity for momentum scrolling
-        const currentTime = performance.now();
-        const timeDelta = currentTime - lastDragTime;
-        if (timeDelta > 0) {
-          const velocityY = (lastDragY - e.clientY) / timeDelta; // pixels per ms
-          lastDragY = e.clientY;
-          lastDragTime = currentTime;
-
-          // Store velocity for each column (will be applied on drag end)
-          const currentColumns = columns();
-          currentColumns.forEach((col) => {
-            if (col.ref && col.singleSetHeight > 0) {
-              const adjustedVelocity =
-                velocityY *
-                col.config.speedMultiplier *
-                col.config.direction *
-                0.5;
-              verticalMomentum.set(col.ref, adjustedVelocity);
-            }
-          });
-        }
+        // Vertical momentum disabled during drag - only scroll wheel momentum
 
         const currentColumns = columns();
         if (currentColumns.length === 0) {
@@ -411,25 +444,8 @@ export default function ArchivePage() {
           // All actions modify targetOffsetX directly - lerp ensures smoothness
           col.targetOffsetX = newTargetX;
 
-          // Vertical dragging - each column moves independently with its speed multiplier
-          // Use each column's own starting position (keyed by ref)
-          const colStartY = col.ref
-            ? (dragStartOffsetsY.get(col.ref) ?? dragStartOffsetY)
-            : dragStartOffsetY;
-          const adjustedDeltaY =
-            deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
-          let newTargetY = colStartY + adjustedDeltaY;
-
-          // Clamp vertical target to valid range
-          const setHeight = col.singleSetHeight;
-          if (setHeight > 0) {
-            if (newTargetY <= -setHeight * 2) {
-              newTargetY += setHeight;
-            } else if (newTargetY > 0) {
-              newTargetY -= setHeight;
-            }
-          }
-          col.targetOffset = newTargetY;
+          // Vertical movement is handled by grid copies, not individual columns during drag
+          // This ensures grid copies stay synchronized
         });
 
         dragUpdateFrame = null;
@@ -544,27 +560,7 @@ export default function ArchivePage() {
         const deltaX = e.touches[0].clientX - dragStartX;
         const deltaY = dragStartY - e.touches[0].clientY;
 
-        // Track velocity for momentum scrolling
-        const currentTime = performance.now();
-        const timeDelta = currentTime - lastDragTime;
-        if (timeDelta > 0) {
-          const velocityY = (lastDragY - e.touches[0].clientY) / timeDelta; // pixels per ms
-          lastDragY = e.touches[0].clientY;
-          lastDragTime = currentTime;
-
-          // Store velocity for each column (will be applied on drag end)
-          const currentColumns = columns();
-          currentColumns.forEach((col) => {
-            if (col.ref && col.singleSetHeight > 0) {
-              const adjustedVelocity =
-                velocityY *
-                col.config.speedMultiplier *
-                col.config.direction *
-                0.5;
-              verticalMomentum.set(col.ref, adjustedVelocity);
-            }
-          });
-        }
+        // Vertical momentum disabled during drag - only scroll wheel momentum
 
         const currentColumns = columns();
         if (currentColumns.length === 0) {
@@ -605,24 +601,8 @@ export default function ArchivePage() {
           // All actions modify targetOffsetX directly
           col.targetOffsetX = newTargetX;
 
-          // TEMP: Disable vertical dragging for horizontal testing
-          // // Vertical dragging - each column moves independently with its speed multiplier
-          // // Use each column's own starting position (keyed by ref)
-          // const colStartY = col.ref
-          //   ? (dragStartOffsetsY.get(col.ref) ?? dragStartOffsetY)
-          //   : dragStartOffsetY;
-          // const adjustedDeltaY =
-          //   deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
-          // let newTargetY = colStartY + adjustedDeltaY;
-          // const setHeight = col.singleSetHeight;
-          // if (setHeight > 0) {
-          //   if (newTargetY <= -setHeight * 2) {
-          //     newTargetY += setHeight;
-          //   } else if (newTargetY > 0) {
-          //     newTargetY -= setHeight;
-          //   }
-          // }
-          // col.targetOffset = newTargetY;
+          // Vertical movement is handled by grid copies, not individual columns during drag
+          // This ensures grid copies stay synchronized
         });
 
         dragUpdateFrame = null;
@@ -716,64 +696,79 @@ export default function ArchivePage() {
         gridContainerRef.style.transform = `translate3d(${sharedOffset}px, 0, 0)`;
 
         // Update all columns' offsetX and targetOffsetX to match (they're always in sync now)
+        // Also update grid copies' offsets if we wrapped
         currentColumns.forEach((col) => {
           // If we wrapped, update both offset and targetOffset to prevent jump
           if (wrapAdjustment !== 0) {
             col.offsetX += wrapAdjustment;
+            // Also update the corresponding grid copy's offset
+            const gridCopy = gridCopies().find(gc => Math.abs(gc.offsetY - col.offset) < 1);
+            if (gridCopy) {
+              gridCopy.offsetY += wrapAdjustment;
+              gridCopy.targetOffsetY += wrapAdjustment;
+            }
           }
           col.offsetX = sharedOffset;
           col.targetOffsetX = sharedOffsetX;
         });
       }
 
-      // Update each column vertically
-      // Each column has 3 copies of items, so we can seamlessly loop by resetting position
-      currentColumns.forEach((col: ColumnData, index: number) => {
-        if (!col.ref || col.singleSetHeight === 0) return;
+      // Update individual columns with their own scrolling and wrapping
+      const setHeight = currentColumns[0]?.singleSetHeight || 0;
+      if (setHeight === 0) return;
 
-        const setHeight = col.singleSetHeight;
+      // Apply momentum to columns by position (all columns in same position share momentum)
+      if (!isDragging) {
+        // Group by position index
+        const columnsByPosition: { [key: number]: ColumnData[] } = {};
+        currentColumns.forEach(col => {
+          if (!col.ref) return;
+          if (!columnsByPosition[col.positionIndex]) {
+            columnsByPosition[col.positionIndex] = [];
+          }
+          columnsByPosition[col.positionIndex].push(col);
+        });
 
-        // TEMP: Disable momentum scrolling for horizontal testing
-        // // Apply momentum scrolling (only when not actively dragging)
-        // if (!isDragging && col.ref && verticalMomentum.has(col.ref)) {
-        //   const momentum = verticalMomentum.get(col.ref)!;
-        //   const frameTime = 16.67; // ~60fps, 16.67ms per frame
-        //   // Scale momentum for more natural feel (multiply by 0.8 to reduce intensity)
-        //   const momentumDelta = momentum * frameTime * 0.8;
+        // Apply momentum to each position group
+        Object.keys(columnsByPosition).forEach(posKey => {
+          const position = parseInt(posKey);
+          const positionColumns = columnsByPosition[position];
+          const momentumKey = `momentum-pos-${position}`;
 
-        //   // Apply momentum to target
-        //   col.targetOffset += momentumDelta;
+          if (verticalMomentum.has(momentumKey)) {
+            const momentum = verticalMomentum.get(momentumKey)!;
+            const frameTime = 16.67;
+            const momentumDelta = momentum * frameTime * 0.8;
 
-        //   // Apply friction (reduce momentum by 3% per frame for longer scroll)
-        //   const newMomentum = momentum * 0.97;
+            positionColumns.forEach(col => {
+              col.targetOffset += momentumDelta;
+            });
 
-        //   // Clear momentum if it's too small
-        //   if (Math.abs(newMomentum) < 0.005) {
-        //     verticalMomentum.delete(col.ref);
-        //   } else {
-        //     verticalMomentum.set(col.ref, newMomentum);
-        //   }
-        // }
+            const newMomentum = momentum * 0.97;
+            if (Math.abs(newMomentum) < 0.005) {
+              verticalMomentum.delete(momentumKey);
+            } else {
+              verticalMomentum.set(momentumKey, newMomentum);
+            }
+          }
+        });
+      }
 
-        // TEMP: Disable vertical wrapping for horizontal testing
-        // // Check and wrap target to prevent items from disappearing
-        // // Valid range: [-2*setHeight, 0] to stay within the 3 copies
-        // if (setHeight > 0) {
-        //   if (col.targetOffset <= -setHeight * 2) {
-        //     // Target too far up, wrap to bottom (seamless because of 3 copies)
-        //     col.targetOffset += setHeight;
-        //   } else if (col.targetOffset > 0) {
-        //     // Target too far down, wrap to top (seamless because of 3 copies)
-        //     col.targetOffset -= setHeight;
-        //   }
-        // }
+      // Apply vertical wrapping to individual columns
+      currentColumns.forEach((col: ColumnData) => {
+        if (col.targetOffset <= -setHeight * 2) {
+          col.targetOffset += setHeight;
+        } else if (col.targetOffset > 0) {
+          col.targetOffset -= setHeight;
+        }
+        col.offset = col.targetOffset;
+      });
 
-        // TEMP: Disable vertical animation for horizontal testing
-        // // Set offset directly to target (no lerping)
-        // col.offset = col.targetOffset;
-
-        // // Update transform using translate3d for hardware acceleration
-        // col.ref.style.transform = `translate3d(0, ${col.offset}px, 0)`;
+      // Apply transforms to all columns
+      currentColumns.forEach((col: ColumnData) => {
+        if (col.ref) {
+          col.ref.style.transform = `translate3d(0, ${col.offset}px, 0)`;
+        }
       });
 
       requestAnimationFrame(animate);
@@ -791,11 +786,23 @@ export default function ArchivePage() {
     });
   });
 
+  // Shared config for all grid copies - same randomization for seamless wrapping
+  let sharedGridConfig: { speedMultiplier: number; direction: number } | null = null;
+
+  // Shared configs for columns - ensures columns in same positions across grid copies behave identically
+  let columnConfigs: Array<{ speedMultiplier: number; direction: number }> = [];
+
+  // Shared scroll state for consistent randomization
+  let sharedScrollOffset = 0;
+  let randomSeed = Math.random() * 1000;
+
   // Helper to calculate and store column data
   const registerColumn = (
     ref: HTMLUListElement,
     items: any[],
     config: { speedMultiplier: number; direction: number },
+    gridCopyIndex: number,
+    columnIndex: number,
   ) => {
     const updateHeights = () => {
       const children = Array.from(ref.children) as HTMLElement[];
@@ -822,13 +829,30 @@ export default function ArchivePage() {
       }
 
       if (oneSetHeight > 0) {
-        // Update or add column data
-        const existingIndex = columns().findIndex(
-          (c: ColumnData) => c.ref === ref,
-        );
+        // Get or create grid copy data
+        const currentGridCopies = gridCopies();
+        let gridCopy = currentGridCopies.find(gc => gc.index === gridCopyIndex);
 
-        // TEMP: Disable random initial offset for horizontal testing
-        const initialOffset = -oneSetHeight;
+        if (!gridCopy) {
+          // Create shared config for all grid copies if not exists
+          if (!sharedGridConfig) {
+            sharedGridConfig = {
+              speedMultiplier: 0.5 + Math.random() * 1.5,
+              direction: Math.random() > 0.5 ? 1 : -1,
+            };
+          }
+
+          // All grid copies use the SAME config and initial offset for seamless wrapping
+          const initialOffsetY = -oneSetHeight;
+
+          gridCopy = {
+            index: gridCopyIndex,
+            offsetY: initialOffsetY,
+            targetOffsetY: initialOffsetY,
+            config: sharedGridConfig, // Same config for all grid copies
+          };
+          setGridCopies([...currentGridCopies, gridCopy]);
+        }
 
         // Calculate grid width (one set = full viewport width)
         let oneSetWidth = 0;
@@ -840,30 +864,44 @@ export default function ArchivePage() {
         // Calculate initial horizontal offset to center on middle copy
         const initialOffsetX = oneSetWidth > 0 ? -oneSetWidth : 0;
 
+        // Ensure we have a config for this column position
+        if (!columnConfigs[columnIndex]) {
+          columnConfigs[columnIndex] = {
+            speedMultiplier: 0.3 + Math.random() * 0.7,
+            direction: Math.random() > 0.5 ? 1 : -1,
+          };
+        }
+
         const columnData: ColumnData = {
           ref,
           items,
-          config,
+          config: columnConfigs[columnIndex], // Use shared config for this column position
           singleSetHeight: oneSetHeight,
           singleSetWidth: oneSetWidth,
-          // Start with random offset within valid range [-oneSetHeight * 2, -oneSetHeight]
-          // This creates visual variety in the initial grid layout
-          offset: initialOffset,
-          targetOffset: initialOffset, // Initialize target to match offset
+          // Start with grid copy's offset, but will scroll independently
+          offset: gridCopy.offsetY,
+          targetOffset: gridCopy.targetOffsetY,
           offsetX: initialOffsetX,
           targetOffsetX: initialOffsetX,
           currentSetIndex: 0,
+          gridCopyIndex: gridCopyIndex,
+          positionIndex: columnIndex, // Store position within grid
         };
 
-        // Set initial transform with random offset using translate3d
+        // Set initial transform using grid copy's offset
         if (ref) {
-          ref.style.transform = `translate3d(0, ${initialOffset}px, 0)`;
+          ref.style.transform = `translate3d(0, ${gridCopy.offsetY}px, 0)`;
         }
 
         // Set initial horizontal transform on grid container (only once, when first column is registered)
-        if (gridContainerRef && existingIndex < 0 && oneSetWidth > 0) {
+        if (gridContainerRef && columns().length === 0 && oneSetWidth > 0) {
           gridContainerRef.style.transform = `translate3d(${initialOffsetX}px, 0, 0)`;
         }
+
+        // Update or add column data
+        const existingIndex = columns().findIndex(
+          (c: ColumnData) => c.ref === ref,
+        );
 
         if (existingIndex >= 0) {
           const updated = [...columns()];
@@ -952,7 +990,7 @@ export default function ArchivePage() {
                   style={{ "will-change": "transform" }}
                 >
                   <For each={[0, 1, 2]}>
-                    {() => (
+                    {(gridCopyIndex) => (
                       <div class="grid h-full w-1/3 grid-cols-3 gap-12 pr-6 pl-6">
                         <For each={mobileColumns()}>
                           {(column, index) => {
@@ -964,7 +1002,7 @@ export default function ArchivePage() {
                                   gap="gap-12"
                                   ready={columnsReady}
                                   onMount={(ref) =>
-                                    registerColumn(ref, column, config)
+                                    registerColumn(ref, column, config, gridCopyIndex, index())
                                   }
                                   onImageClick={(item) => setSelectedItem(item)}
                                 />
@@ -995,7 +1033,7 @@ export default function ArchivePage() {
                   style={{ "will-change": "transform" }}
                 >
                   <For each={[0, 1, 2]}>
-                    {() => (
+                    {(gridCopyIndex) => (
                       <div class="grid h-full w-1/3 grid-cols-7 gap-12 pr-6 pl-6">
                         <For each={desktopColumns()}>
                           {(column, index) => {
@@ -1007,7 +1045,7 @@ export default function ArchivePage() {
                                   gap="gap-4"
                                   ready={columnsReady}
                                   onMount={(ref) =>
-                                    registerColumn(ref, column, config)
+                                    registerColumn(ref, column, config, gridCopyIndex, index())
                                   }
                                   onImageClick={(item) => setSelectedItem(item)}
                                 />
