@@ -14,6 +14,7 @@ import VirtualScroll from "virtual-scroll";
 import ArchiveCard from "~/components/ArchiveCard";
 import ArchiveOverlay from "~/components/ArchiveOverlay";
 import { SLICE_LIST } from "~/components/slices";
+import { lerp } from "~/lib/utils/math";
 
 // Shuffle array using Fisher-Yates algorithm
 function shuffleArray<T>(array: T[]): T[] {
@@ -510,7 +511,7 @@ export default function ArchivePage() {
 
           if (firstCol) {
             const colStartY = dragStartOffsetsY.get(firstCol.ref) || dragStartOffsetY;
-            const adjustedDeltaY = deltaY * firstCol.config.speedMultiplier * firstCol.config.direction * 0.5;
+            const adjustedDeltaY = deltaY * firstCol.config.speedMultiplier * firstCol.config.direction * 1.0;
             const newTargetY = colStartY + adjustedDeltaY;
 
             positionColumns.forEach(col => {
@@ -728,7 +729,7 @@ export default function ArchivePage() {
 
           if (firstCol) {
             const colStartY = dragStartOffsetsY.get(firstCol.ref) || dragStartOffsetY;
-            const adjustedDeltaY = deltaY * firstCol.config.speedMultiplier * firstCol.config.direction * 0.5;
+            const adjustedDeltaY = deltaY * firstCol.config.speedMultiplier * firstCol.config.direction * 1.0;
             const newTargetY = colStartY + adjustedDeltaY;
 
             positionColumns.forEach(col => {
@@ -797,7 +798,10 @@ export default function ArchivePage() {
     // Set up drag listeners after a short delay to ensure grid is rendered
     setTimeout(addDragListeners, 100);
 
-    // Animation loop - no lerping, direct value assignment
+    // Lerp factor for smooth animations (0.1 = smooth, 0.2 = faster, 0.05 = slower)
+    const LERP_FACTOR = 0.12;
+
+    // Animation loop with smooth lerping
     const animate = () => {
       const currentColumns = columns();
       if (currentColumns.length === 0) {
@@ -813,25 +817,31 @@ export default function ArchivePage() {
       // We have 3 copies of the grid: [left] [center] [right]
       // Valid range: [-2*setWidth, 0] to stay within the 3 copies
       if (gridContainerRef && setWidth > 0) {
-        let sharedOffsetX = firstCol?.targetOffsetX || 0;
+        let sharedTargetOffsetX = firstCol?.targetOffsetX || 0;
         let wrapAdjustment = 0;
 
         // Check and wrap horizontal target if needed
-        if (sharedOffsetX <= -setWidth * 2) {
+        if (sharedTargetOffsetX <= -setWidth * 2) {
           wrapAdjustment = setWidth;
-          sharedOffsetX += wrapAdjustment;
+          sharedTargetOffsetX += wrapAdjustment;
           dragStartOffsetX += wrapAdjustment; // Update drag start to match wrap
-        } else if (sharedOffsetX > 0) {
+        } else if (sharedTargetOffsetX > 0) {
           wrapAdjustment = -setWidth;
-          sharedOffsetX += wrapAdjustment;
+          sharedTargetOffsetX += wrapAdjustment;
           dragStartOffsetX += wrapAdjustment; // Update drag start to match wrap
         }
 
-        // Set offset directly to target (no lerping)
-        const sharedOffset = sharedOffsetX;
+        // If we wrapped, update current offset immediately to prevent visual jump
+        let currentOffsetX = firstCol?.offsetX || 0;
+        if (wrapAdjustment !== 0) {
+          currentOffsetX += wrapAdjustment;
+        }
+
+        // Lerp horizontal offset towards target for smooth animation
+        const sharedOffsetX = lerp(currentOffsetX, sharedTargetOffsetX, LERP_FACTOR);
 
         // Apply transform using translate3d for hardware acceleration
-        gridContainerRef.style.transform = `translate3d(${sharedOffset}px, 0, 0)`;
+        gridContainerRef.style.transform = `translate3d(${sharedOffsetX}px, 0, 0)`;
 
         // Update all columns' offsetX and targetOffsetX to match (they're always in sync now)
         // Also update grid copies' offsets if we wrapped
@@ -846,8 +856,8 @@ export default function ArchivePage() {
               gridCopy.targetOffsetY += wrapAdjustment;
             }
           }
-          col.offsetX = sharedOffset;
-          col.targetOffsetX = sharedOffsetX;
+          col.offsetX = sharedOffsetX;
+          col.targetOffsetX = sharedTargetOffsetX;
         });
       }
 
@@ -896,10 +906,16 @@ export default function ArchivePage() {
       currentColumns.forEach((col: ColumnData) => {
         if (col.targetOffset <= -setHeight * 2) {
           col.targetOffset += setHeight;
+          // When wrapping, also adjust current offset to prevent visual jump
+          col.offset += setHeight;
         } else if (col.targetOffset > 0) {
           col.targetOffset -= setHeight;
+          // When wrapping, also adjust current offset to prevent visual jump
+          col.offset -= setHeight;
         }
-        col.offset = col.targetOffset;
+        
+        // Lerp vertical offset towards target for smooth animation
+        col.offset = lerp(col.offset, col.targetOffset, LERP_FACTOR);
       });
 
       // Apply transforms to all columns
