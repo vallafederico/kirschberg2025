@@ -62,24 +62,12 @@ export function useKeypress(
 			eventType,
 			handler as EventListenerOrEventListenerObject,
 		);
-	});
 
-	onCleanup(() => {
-		target.removeEventListener(
-			eventType,
-			handler as EventListenerOrEventListenerObject,
-		);
-	});
-
-	target.addEventListener(
-		eventType,
-		handler as EventListenerOrEventListenerObject,
-	);
-
-	onCleanup(() => {
-		target.removeEventListener(
-			eventType,
-			handler as EventListenerOrEventListenerObject,
-		);
+		onCleanup(() => {
+			target.removeEventListener(
+				eventType,
+				handler as EventListenerOrEventListenerObject,
+			);
+		});
 	});
 }
