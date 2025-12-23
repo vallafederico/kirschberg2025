@@ -32,7 +32,7 @@ export default function MuxVideo({
 			const hls = new Hls();
 			hls.loadSource(url);
 			hls.attachMedia(el);
-			hlsRef = hls;
+			hlsRef = hls;ort
 		}
 	});
 
