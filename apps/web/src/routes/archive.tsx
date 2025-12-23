@@ -134,6 +134,12 @@ function ScrollableColumn({
                   index={index()}
                   ready={ready()}
                   onImageClick={() => {
+                    // Only trigger click if drag threshold was not exceeded
+                    if (dragThresholdExceeded) {
+                      console.log("[Archive] Ignoring click - was a drag");
+                      return;
+                    }
+
                     // Use the same item we're displaying to ensure consistency
                     const clickedId = correctItem?._id || "no-id";
                     const clickedTitle = correctItem?.title || "no-title";
@@ -195,6 +201,7 @@ export default function ArchivePage() {
 
   // Drag state for omnidirectional dragging
   let isDragging = false;
+  let dragThresholdExceeded = false;
   let dragStartX = 0;
   let dragStartY = 0;
   let dragStartOffsetX = 0;
@@ -204,10 +211,14 @@ export default function ArchivePage() {
   let dragUpdateFrame: number | null = null;
 
   // Momentum scrolling state
+  let lastDragX = 0;
   let lastDragY = 0;
   let lastDragTime = 0;
-  const verticalMomentum = new Map<HTMLUListElement, number>(); // column ref -> velocity
+  const verticalMomentum = new Map<string, number>(); // position index -> velocity
   const dragStartOffsetsY = new Map<HTMLUListElement, number>(); // column ref -> starting Y offset
+
+  // Drag threshold for distinguishing clicks from drags
+  const DRAG_THRESHOLD = 10; // pixels
 
   // Reset columns ready state when data changes
   createEffect(() => {
@@ -325,8 +336,10 @@ export default function ArchivePage() {
       }
 
       isDragging = true;
+      dragThresholdExceeded = false;
       dragStartX = e.clientX;
       dragStartY = e.clientY;
+      lastDragX = e.clientX;
       lastDragY = e.clientY;
       lastDragTime = performance.now();
 
@@ -402,7 +415,41 @@ export default function ArchivePage() {
         const deltaX = e.clientX - dragStartX;
         const deltaY = dragStartY - e.clientY;
 
-        // Vertical momentum disabled during drag - only scroll wheel momentum
+        // Check if drag threshold exceeded (distinguish clicks from drags)
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        if (distance > DRAG_THRESHOLD && !dragThresholdExceeded) {
+          dragThresholdExceeded = true;
+        }
+
+        // Track velocity for vertical momentum
+        const currentTime = performance.now();
+        const timeDelta = currentTime - lastDragTime;
+        if (timeDelta > 0) {
+          const velocityY = (lastDragY - e.clientY) / timeDelta;
+          lastDragY = e.clientY;
+          lastDragTime = currentTime;
+
+          // Store momentum for each column position
+          const currentColumns = columns();
+          const columnsByPosition: { [key: number]: ColumnData[] } = {};
+          currentColumns.forEach(col => {
+            if (!columnsByPosition[col.positionIndex]) {
+              columnsByPosition[col.positionIndex] = [];
+            }
+            columnsByPosition[col.positionIndex].push(col);
+          });
+
+          Object.keys(columnsByPosition).forEach(posKey => {
+            const position = parseInt(posKey);
+            const positionColumns = columnsByPosition[position];
+            const firstCol = positionColumns[0];
+
+            if (firstCol && firstCol.singleSetHeight > 0) {
+              const adjustedVelocity = velocityY * firstCol.config.speedMultiplier * firstCol.config.direction * 0.5;
+              verticalMomentum.set(`momentum-pos-${position}`, adjustedVelocity);
+            }
+          });
+        }
 
         const currentColumns = columns();
         if (currentColumns.length === 0) {
@@ -413,7 +460,7 @@ export default function ArchivePage() {
         const firstCol = currentColumns[0];
         const setWidth = firstCol?.singleSetWidth || 0;
 
-        // Calculate new target positions
+        // Calculate new horizontal target positions
         let newTargetX = dragStartOffsetX + deltaX;
         let wrapAdjustment = 0;
 
@@ -422,30 +469,49 @@ export default function ArchivePage() {
           if (newTargetX <= -setWidth * 2) {
             wrapAdjustment = setWidth;
             newTargetX += wrapAdjustment;
-            dragStartOffsetX += wrapAdjustment; // Update drag start to match wrap
+            dragStartOffsetX += wrapAdjustment;
           } else if (newTargetX > 0) {
             wrapAdjustment = -setWidth;
             newTargetX += wrapAdjustment;
-            dragStartOffsetX += wrapAdjustment; // Update drag start to match wrap
+            dragStartOffsetX += wrapAdjustment;
           }
         }
 
-        // Apply drag to all columns
+        // Apply horizontal drag to all columns
         currentColumns.forEach((col: ColumnData) => {
           if (!col.ref) return;
 
-          // If we wrapped horizontally, update both offset and targetOffset to prevent jump
           if (wrapAdjustment !== 0) {
             col.offsetX += wrapAdjustment;
             col.targetOffsetX += wrapAdjustment;
           }
 
-          // Horizontal dragging - all columns move together
-          // All actions modify targetOffsetX directly - lerp ensures smoothness
           col.targetOffsetX = newTargetX;
+        });
 
-          // Vertical movement is handled by grid copies, not individual columns during drag
-          // This ensures grid copies stay synchronized
+        // Apply vertical drag to columns by position
+        const columnsByPosition: { [key: number]: ColumnData[] } = {};
+        currentColumns.forEach(col => {
+          if (!columnsByPosition[col.positionIndex]) {
+            columnsByPosition[col.positionIndex] = [];
+          }
+          columnsByPosition[col.positionIndex].push(col);
+        });
+
+        Object.keys(columnsByPosition).forEach(posKey => {
+          const position = parseInt(posKey);
+          const positionColumns = columnsByPosition[position];
+          const firstCol = positionColumns[0];
+
+          if (firstCol) {
+            const colStartY = dragStartOffsetsY.get(firstCol.ref) || dragStartOffsetY;
+            const adjustedDeltaY = deltaY * firstCol.config.speedMultiplier * firstCol.config.direction * 0.5;
+            const newTargetY = colStartY + adjustedDeltaY;
+
+            positionColumns.forEach(col => {
+              col.targetOffset = newTargetY;
+            });
+          }
         });
 
         dragUpdateFrame = null;
@@ -460,6 +526,11 @@ export default function ArchivePage() {
         cancelAnimationFrame(dragUpdateFrame);
         dragUpdateFrame = null;
       }
+
+      // Small delay to allow click events to fire if it was a genuine click
+      setTimeout(() => {
+        dragThresholdExceeded = false;
+      }, 10);
 
       // Momentum is already stored in verticalMomentum map
       // It will be applied in the animation loop
@@ -484,8 +555,10 @@ export default function ArchivePage() {
       }
 
       isDragging = true;
+      dragThresholdExceeded = false;
       dragStartX = e.touches[0].clientX;
       dragStartY = e.touches[0].clientY;
+      lastDragX = e.touches[0].clientX;
       lastDragY = e.touches[0].clientY;
       lastDragTime = performance.now();
 
@@ -560,7 +633,41 @@ export default function ArchivePage() {
         const deltaX = e.touches[0].clientX - dragStartX;
         const deltaY = dragStartY - e.touches[0].clientY;
 
-        // Vertical momentum disabled during drag - only scroll wheel momentum
+        // Check if drag threshold exceeded (distinguish clicks from drags)
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        if (distance > DRAG_THRESHOLD && !dragThresholdExceeded) {
+          dragThresholdExceeded = true;
+        }
+
+        // Track velocity for vertical momentum
+        const currentTime = performance.now();
+        const timeDelta = currentTime - lastDragTime;
+        if (timeDelta > 0) {
+          const velocityY = (lastDragY - e.touches[0].clientY) / timeDelta;
+          lastDragY = e.touches[0].clientY;
+          lastDragTime = currentTime;
+
+          // Store momentum for each column position
+          const currentColumns = columns();
+          const columnsByPosition: { [key: number]: ColumnData[] } = {};
+          currentColumns.forEach(col => {
+            if (!columnsByPosition[col.positionIndex]) {
+              columnsByPosition[col.positionIndex] = [];
+            }
+            columnsByPosition[col.positionIndex].push(col);
+          });
+
+          Object.keys(columnsByPosition).forEach(posKey => {
+            const position = parseInt(posKey);
+            const positionColumns = columnsByPosition[position];
+            const firstCol = positionColumns[0];
+
+            if (firstCol && firstCol.singleSetHeight > 0) {
+              const adjustedVelocity = velocityY * firstCol.config.speedMultiplier * firstCol.config.direction * 0.5;
+              verticalMomentum.set(`momentum-pos-${position}`, adjustedVelocity);
+            }
+          });
+        }
 
         const currentColumns = columns();
         if (currentColumns.length === 0) {
@@ -571,7 +678,7 @@ export default function ArchivePage() {
         const firstCol = currentColumns[0];
         const setWidth = firstCol?.singleSetWidth || 0;
 
-        // Calculate new target positions
+        // Calculate new horizontal target positions
         let newTargetX = dragStartOffsetX + deltaX;
         let wrapAdjustment = 0;
 
@@ -588,21 +695,41 @@ export default function ArchivePage() {
           }
         }
 
+        // Apply horizontal drag to all columns
         currentColumns.forEach((col: ColumnData) => {
           if (!col.ref) return;
 
-          // If we wrapped horizontally, update both offset and targetOffset to prevent jump
           if (wrapAdjustment !== 0) {
             col.offsetX += wrapAdjustment;
             col.targetOffsetX += wrapAdjustment;
           }
 
-          // Horizontal dragging - all columns move together
-          // All actions modify targetOffsetX directly
           col.targetOffsetX = newTargetX;
+        });
 
-          // Vertical movement is handled by grid copies, not individual columns during drag
-          // This ensures grid copies stay synchronized
+        // Apply vertical drag to columns by position
+        const columnsByPosition: { [key: number]: ColumnData[] } = {};
+        currentColumns.forEach(col => {
+          if (!columnsByPosition[col.positionIndex]) {
+            columnsByPosition[col.positionIndex] = [];
+          }
+          columnsByPosition[col.positionIndex].push(col);
+        });
+
+        Object.keys(columnsByPosition).forEach(posKey => {
+          const position = parseInt(posKey);
+          const positionColumns = columnsByPosition[position];
+          const firstCol = positionColumns[0];
+
+          if (firstCol) {
+            const colStartY = dragStartOffsetsY.get(firstCol.ref) || dragStartOffsetY;
+            const adjustedDeltaY = deltaY * firstCol.config.speedMultiplier * firstCol.config.direction * 0.5;
+            const newTargetY = colStartY + adjustedDeltaY;
+
+            positionColumns.forEach(col => {
+              col.targetOffset = newTargetY;
+            });
+          }
         });
 
         dragUpdateFrame = null;
@@ -619,6 +746,12 @@ export default function ArchivePage() {
         cancelAnimationFrame(dragUpdateFrame);
         dragUpdateFrame = null;
       }
+
+      // Small delay to allow click events to fire if it was a genuine click
+      setTimeout(() => {
+        dragThresholdExceeded = false;
+      }, 10);
+
       document.body.style.userSelect = "";
     };
 
@@ -979,7 +1112,7 @@ export default function ArchivePage() {
                   gridWrapperRef = el;
                 }}
                 class="relative h-screen w-full overflow-hidden lg:hidden"
-                style={{ cursor: isDragging ? "grabbing" : "grab" }}
+                style={{ cursor: isDragging ? "grabbing" : "move" }}
               >
                 {/* Three copies of the grid for seamless horizontal looping */}
                 <div
@@ -1022,7 +1155,7 @@ export default function ArchivePage() {
                   gridWrapperRef = el;
                 }}
                 class="relative hidden h-screen w-full overflow-hidden lg:block"
-                style={{ cursor: isDragging ? "grabbing" : "grab" }}
+                style={{ cursor: isDragging ? "grabbing" : "move" }}
               >
                 {/* Three copies of the grid for seamless horizontal looping */}
                 <div
