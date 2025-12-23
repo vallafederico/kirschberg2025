@@ -253,45 +253,8 @@ export default function ArchivePage() {
     });
 
     virtualScroll.on((event) => {
-      // Don't handle scroll if dragging
-      if (isDragging) return;
-
-      // Clear any existing momentum when scrolling starts
-      verticalMomentum.clear();
-
-      // Close overlay if open when user scrolls (only if not triggered by initial load)
-      if (selectedItem() && columnsReady()) {
-        setSelectedItem(null);
-      }
-
-      // Get current columns
-      const currentColumns = columns();
-      if (currentColumns.length === 0) return;
-
-      // Sync targetOffset to current visual offset before applying scroll
-      // This ensures smooth transition from any previous action (drag, momentum)
-      currentColumns.forEach((col: ColumnData) => {
-        if (col.ref) {
-          col.targetOffset = col.offset;
-        }
-      });
-
-      // event.deltaY is the scroll delta from virtual-scroll
-      const deltaY = event.deltaY;
-
-      // Update all columns based on scroll delta
-      // All actions modify targetOffset directly - lerp ensures smoothness
-      currentColumns.forEach((col: ColumnData) => {
-        if (!col.ref || col.singleSetHeight === 0) return;
-
-        // Apply speed multiplier and direction (reduced for slower scroll)
-        const adjustedDelta =
-          deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
-        col.targetOffset += adjustedDelta;
-
-        // Don't wrap here - let the animation loop handle it
-        // This prevents jumps when targetOffset wraps but offset hasn't caught up
-      });
+      // TEMP: Disable all vertical scrolling for horizontal testing
+      return;
     });
 
     // Drag handlers for omnidirectional dragging
@@ -642,23 +605,24 @@ export default function ArchivePage() {
           // All actions modify targetOffsetX directly
           col.targetOffsetX = newTargetX;
 
-          // Vertical dragging - each column moves independently with its speed multiplier
-          // Use each column's own starting position (keyed by ref)
-          const colStartY = col.ref
-            ? (dragStartOffsetsY.get(col.ref) ?? dragStartOffsetY)
-            : dragStartOffsetY;
-          const adjustedDeltaY =
-            deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
-          let newTargetY = colStartY + adjustedDeltaY;
-          const setHeight = col.singleSetHeight;
-          if (setHeight > 0) {
-            if (newTargetY <= -setHeight * 2) {
-              newTargetY += setHeight;
-            } else if (newTargetY > 0) {
-              newTargetY -= setHeight;
-            }
-          }
-          col.targetOffset = newTargetY;
+          // TEMP: Disable vertical dragging for horizontal testing
+          // // Vertical dragging - each column moves independently with its speed multiplier
+          // // Use each column's own starting position (keyed by ref)
+          // const colStartY = col.ref
+          //   ? (dragStartOffsetsY.get(col.ref) ?? dragStartOffsetY)
+          //   : dragStartOffsetY;
+          // const adjustedDeltaY =
+          //   deltaY * col.config.speedMultiplier * col.config.direction * 0.5;
+          // let newTargetY = colStartY + adjustedDeltaY;
+          // const setHeight = col.singleSetHeight;
+          // if (setHeight > 0) {
+          //   if (newTargetY <= -setHeight * 2) {
+          //     newTargetY += setHeight;
+          //   } else if (newTargetY > 0) {
+          //     newTargetY -= setHeight;
+          //   }
+          // }
+          // col.targetOffset = newTargetY;
         });
 
         dragUpdateFrame = null;
@@ -732,12 +696,17 @@ export default function ArchivePage() {
       // Valid range: [-2*setWidth, 0] to stay within the 3 copies
       if (gridContainerRef && setWidth > 0) {
         let sharedOffsetX = firstCol?.targetOffsetX || 0;
+        let wrapAdjustment = 0;
 
         // Check and wrap horizontal target if needed
         if (sharedOffsetX <= -setWidth * 2) {
-          sharedOffsetX += setWidth;
+          wrapAdjustment = setWidth;
+          sharedOffsetX += wrapAdjustment;
+          dragStartOffsetX += wrapAdjustment; // Update drag start to match wrap
         } else if (sharedOffsetX > 0) {
-          sharedOffsetX -= setWidth;
+          wrapAdjustment = -setWidth;
+          sharedOffsetX += wrapAdjustment;
+          dragStartOffsetX += wrapAdjustment; // Update drag start to match wrap
         }
 
         // Set offset directly to target (no lerping)
@@ -748,6 +717,10 @@ export default function ArchivePage() {
 
         // Update all columns' offsetX and targetOffsetX to match (they're always in sync now)
         currentColumns.forEach((col) => {
+          // If we wrapped, update both offset and targetOffset to prevent jump
+          if (wrapAdjustment !== 0) {
+            col.offsetX += wrapAdjustment;
+          }
           col.offsetX = sharedOffset;
           col.targetOffsetX = sharedOffsetX;
         });
@@ -760,44 +733,47 @@ export default function ArchivePage() {
 
         const setHeight = col.singleSetHeight;
 
-        // Apply momentum scrolling (only when not actively dragging)
-        if (!isDragging && col.ref && verticalMomentum.has(col.ref)) {
-          const momentum = verticalMomentum.get(col.ref)!;
-          const frameTime = 16.67; // ~60fps, 16.67ms per frame
-          // Scale momentum for more natural feel (multiply by 0.8 to reduce intensity)
-          const momentumDelta = momentum * frameTime * 0.8;
+        // TEMP: Disable momentum scrolling for horizontal testing
+        // // Apply momentum scrolling (only when not actively dragging)
+        // if (!isDragging && col.ref && verticalMomentum.has(col.ref)) {
+        //   const momentum = verticalMomentum.get(col.ref)!;
+        //   const frameTime = 16.67; // ~60fps, 16.67ms per frame
+        //   // Scale momentum for more natural feel (multiply by 0.8 to reduce intensity)
+        //   const momentumDelta = momentum * frameTime * 0.8;
 
-          // Apply momentum to target
-          col.targetOffset += momentumDelta;
+        //   // Apply momentum to target
+        //   col.targetOffset += momentumDelta;
 
-          // Apply friction (reduce momentum by 3% per frame for longer scroll)
-          const newMomentum = momentum * 0.97;
+        //   // Apply friction (reduce momentum by 3% per frame for longer scroll)
+        //   const newMomentum = momentum * 0.97;
 
-          // Clear momentum if it's too small
-          if (Math.abs(newMomentum) < 0.005) {
-            verticalMomentum.delete(col.ref);
-          } else {
-            verticalMomentum.set(col.ref, newMomentum);
-          }
-        }
+        //   // Clear momentum if it's too small
+        //   if (Math.abs(newMomentum) < 0.005) {
+        //     verticalMomentum.delete(col.ref);
+        //   } else {
+        //     verticalMomentum.set(col.ref, newMomentum);
+        //   }
+        // }
 
-        // Check and wrap target to prevent items from disappearing
-        // Valid range: [-2*setHeight, 0] to stay within the 3 copies
-        if (setHeight > 0) {
-          if (col.targetOffset <= -setHeight * 2) {
-            // Target too far up, wrap to bottom (seamless because of 3 copies)
-            col.targetOffset += setHeight;
-          } else if (col.targetOffset > 0) {
-            // Target too far down, wrap to top (seamless because of 3 copies)
-            col.targetOffset -= setHeight;
-          }
-        }
+        // TEMP: Disable vertical wrapping for horizontal testing
+        // // Check and wrap target to prevent items from disappearing
+        // // Valid range: [-2*setHeight, 0] to stay within the 3 copies
+        // if (setHeight > 0) {
+        //   if (col.targetOffset <= -setHeight * 2) {
+        //     // Target too far up, wrap to bottom (seamless because of 3 copies)
+        //     col.targetOffset += setHeight;
+        //   } else if (col.targetOffset > 0) {
+        //     // Target too far down, wrap to top (seamless because of 3 copies)
+        //     col.targetOffset -= setHeight;
+        //   }
+        // }
 
-        // Set offset directly to target (no lerping)
-        col.offset = col.targetOffset;
+        // TEMP: Disable vertical animation for horizontal testing
+        // // Set offset directly to target (no lerping)
+        // col.offset = col.targetOffset;
 
-        // Update transform using translate3d for hardware acceleration
-        col.ref.style.transform = `translate3d(0, ${col.offset}px, 0)`;
+        // // Update transform using translate3d for hardware acceleration
+        // col.ref.style.transform = `translate3d(0, ${col.offset}px, 0)`;
       });
 
       requestAnimationFrame(animate);
@@ -851,10 +827,8 @@ export default function ArchivePage() {
           (c: ColumnData) => c.ref === ref,
         );
 
-        // Add random initial offset within one set's range for visual variety
-        // Random value between 0 and 1, applied to the set height
-        const randomOffsetFactor = Math.random();
-        const initialOffset = -oneSetHeight - randomOffsetFactor * oneSetHeight;
+        // TEMP: Disable random initial offset for horizontal testing
+        const initialOffset = -oneSetHeight;
 
         // Calculate grid width (one set = full viewport width)
         let oneSetWidth = 0;
