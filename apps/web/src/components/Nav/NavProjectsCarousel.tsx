@@ -5,16 +5,46 @@ import { createEffect, createSignal, For, onCleanup } from "solid-js";
 import { navStore } from "~/lib/stores/navStore";
 import Media from "../Media";
 
-const getProjects = query(() => {
+const getProjects = query(async () => {
   "use server";
 
-  return getDocumentByType("case-study", {
-    extraQuery: "{title,byline,slug,'thumbnail':featuredMedia[0]}",
+  const MAX_PROJECTS = 10; // Maximum number of projects to show in carousel
+
+  // Get featured case studies (showInNav == true), ordered by creation date (latest first)
+  // Using defined() to handle cases where the field might not exist yet
+  const featured = await getDocumentByType("case-study", {
+    filter: "&& defined(showInNav) && showInNav == true",
+    extraQuery:
+      "| order(_createdAt desc){title,byline,slug,'thumbnail':featuredMedia[0],showInNav,_id}",
   });
+
+  // If we have enough featured projects, return them
+  if (featured.length >= MAX_PROJECTS) {
+    return featured.slice(0, MAX_PROJECTS);
+  }
+
+  // Otherwise, get the latest non-featured case studies to fill up to MAX_PROJECTS
+  const remaining = MAX_PROJECTS - featured.length;
+  const featuredIds =
+    featured.length > 0 ? featured.map((p: any) => p._id) : [];
+
+  // Build filter to exclude featured projects
+  const excludeFilter =
+    featuredIds.length > 0
+      ? `&& !(_id in [${featuredIds.map((id: string) => `"${id}"`).join(",")}])`
+      : "";
+
+  const latest = await getDocumentByType("case-study", {
+    filter: excludeFilter,
+    extraQuery: `| order(_createdAt desc)[0...${remaining}]{title,byline,slug,'thumbnail':featuredMedia[0],showInNav,_id}`,
+  });
+
+  // Combine: featured first, then latest
+  return [...featured, ...latest];
 }, "projects");
 
 export default function NavProjectsCarousel() {
-  let interval = null;
+  let interval: ReturnType<typeof setInterval> | null = null;
   const projects = createAsync(() => getProjects());
 
   const [activeIndex, setActiveIndex] = createSignal(0);
@@ -27,13 +57,24 @@ export default function NavProjectsCarousel() {
   createEffect(() => {
     if (!navStore.panelOpen) {
       if (interval) clearInterval(interval);
+      interval = null;
       return;
     }
 
     interval = setInterval(() => {
       //   console.log("interval", activeIndex());
-      setActiveIndex((activeIndex() + 1) % projects().length);
+      const projs = projects();
+      if (projs && projs.length > 0) {
+        setActiveIndex((activeIndex() + 1) % projs.length);
+      }
     }, DURATION);
+  });
+
+  onCleanup(() => {
+    if (interval) {
+      clearInterval(interval);
+      interval = null;
+    }
   });
 
   return (

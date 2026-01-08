@@ -396,11 +396,11 @@ export default function CaseStudy(props: RouteSectionProps) {
             <Show when={showContent}>
               <article
                 ref={setArticleRef}
-                class="lg:rounded-xxl bg-primary text-inverted relative z-2 mx-auto min-h-[140vh] pb-20 lg:w-920 lg:px-64 lg:pt-54 lg:pb-86"
+                class="lg:rounded-xxl bg-primary text-inverted relative z-2 mx-auto min-h-[140vh] px-16 pb-20 lg:w-920 lg:pt-54 lg:pb-86"
               >
                 <CaseStudyHero {...caseStudy} />
                 <CaseStudyIntro {...caseStudy} />
-                <div class="max-lg:px-margin-1 flex flex-col gap-32">
+                <div class="flex flex-col gap-32">
                   <SanityComponents
                     components={caseStudy.slices}
                     componentList={SLICE_LIST}

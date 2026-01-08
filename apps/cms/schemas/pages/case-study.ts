@@ -67,5 +67,12 @@ export default createPage({
       type: 'array',
       of: [{type: 'reference', to: [{type: 'collaborator'}]}],
     },
+    {
+      name: 'showInNav',
+      type: 'boolean',
+      title: 'Show in Navigation Carousel',
+      description: 'When enabled, this case study will be displayed in the navigation projects carousel. If not enough case studies are selected, the latest ones will be used to fill the carousel.',
+      initialValue: false,
+    },
   ],
 })
