@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { createEffect, createSignal, For, onMount, Show } from "solid-js";
+import { ErrorBoundary, createEffect, createSignal, For, onMount, Show } from "solid-js";
 import Media from "~/components/Media";
 import { useSmooothy } from "~/lib/hooks/useSmooothy";
 
@@ -11,6 +11,7 @@ const ArticleCard = ({
 	featuredMedia,
 	parallaxValues,
 	index,
+	duplicated,
 }: {
 	slug: { fullUrl: string };
 	title: string;
@@ -19,6 +20,7 @@ const ArticleCard = ({
 	featuredMedia: any;
 	parallaxValues: any;
 	index: any;
+	duplicated?: boolean;
 }) => {
 	const formatedClient = client ? client.map((c) => c.name)?.join(" & ") : null;
 	const formatedRole = role ? role?.join(", ") : null;
@@ -69,7 +71,7 @@ const ArticleCard = ({
 								priority: true,
 							}}
 							class="relative top-1/2 size-full -translate-y-1/2 object-cover object-center"
-							{...featuredMedia?.[0]}
+							{...featuredMedia?.[duplicated ? 1 : 0]}
 						/>
 					</div>
 				</A>
@@ -221,11 +223,34 @@ export default function HeroSlider(props: HeroSliderProps) {
 			<For each={props.caseStudies}>
 				{(caseStudy, index) => {
 					return (
-						<ArticleCard
-							{...caseStudy}
-							parallaxValues={parallaxValues}
-							index={index}
-						/>
+						<ErrorBoundary
+							fallback={(err, reset) => (
+								<li class="shrink-0 px-9">
+									<article class="flex h-340 flex-col items-center justify-center rounded-md border border-red-300 bg-red-50 p-6 lg:h-380">
+										<div class="text-center">
+											<h3 class="text-14 font-semibold text-red-800 mb-2">
+												Error loading card
+											</h3>
+											<p class="text-12 text-red-600 mb-4">
+												{err?.message || "Unknown error occurred"}
+											</p>
+											<button
+												onClick={reset}
+												class="text-12 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+											>
+												Try again
+											</button>
+										</div>
+									</article>
+								</li>
+							)}
+						>
+							<ArticleCard
+								{...caseStudy}
+								parallaxValues={parallaxValues}
+								index={index}
+							/>
+						</ErrorBoundary>
 					);
 				}}
 			</For>
