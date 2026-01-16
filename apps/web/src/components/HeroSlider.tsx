@@ -70,7 +70,7 @@ const ArticleCard = ({
 
     // Offset based on integral of the scale curve to keep spacing non-overlapping
     const offset = (SCALE_MAX - 1) * ax - (SCALE_FALLOFF * ax * ax) / 2;
-    const epsilon = 3.5;
+    const epsilon = 2;
     return Math.sign(x) * (offset * CARD_WIDTH() - epsilon);
   };
 
