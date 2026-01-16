@@ -406,8 +406,14 @@ export default function CaseStudy(props: RouteSectionProps) {
                     componentList={SLICE_LIST}
                   />
                 </div>
+                <div class="absolute inset-0 z-1 size-full">
+                  <div class="absolute inset-0">
+                    <div class="sticky top-[80svh]">
+                      <CaseStudySubnav link={caseStudy.liveLink} />
+                    </div>
+                  </div>
+                </div>
               </article>
-              <CaseStudySubnav link={caseStudy.liveLink} />
             </Show>
 
             <Show when={hasPassword && !showContent}>

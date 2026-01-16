@@ -1,259 +1,266 @@
 import { A } from "@solidjs/router";
-import { ErrorBoundary, createEffect, createSignal, For, onMount, Show } from "solid-js";
+import {
+  ErrorBoundary,
+  createEffect,
+  createSignal,
+  For,
+  onMount,
+  Show,
+} from "solid-js";
 import Media from "~/components/Media";
 import { useSmooothy } from "~/lib/hooks/useSmooothy";
 
 const ArticleCard = ({
-	slug,
-	title,
-	client,
-	role,
-	featuredMedia,
-	parallaxValues,
-	index,
-	duplicated,
+  slug,
+  title,
+  client,
+  role,
+  featuredMedia,
+  parallaxValues,
+  index,
+  duplicated,
 }: {
-	slug: { fullUrl: string };
-	title: string;
-	client: { name: string }[];
-	role: string[];
-	featuredMedia: any;
-	parallaxValues: any;
-	index: any;
-	duplicated?: boolean;
+  slug: { fullUrl: string };
+  title: string;
+  client: { name: string }[];
+  role: string[];
+  featuredMedia: any;
+  parallaxValues: any;
+  index: any;
+  duplicated?: boolean;
 }) => {
-	const formatedClient = client ? client.map((c) => c.name)?.join(" & ") : null;
-	const formatedRole = role ? role?.join(", ") : null;
+  const formatedClient = client ? client.map((c) => c.name)?.join(" & ") : null;
+  const formatedRole = role ? role?.join(", ") : null;
 
-	const [scale, setScale] = createSignal(1);
-	const [offset, setOffset] = createSignal(0);
+  const [scale, setScale] = createSignal(1);
+  const [offset, setOffset] = createSignal(0);
 
-	createEffect(() => {
-		if (index() !== undefined && Array.isArray(parallaxValues())) {
-			// if (index() === 0) {
-			//   console.log(parallaxValues()[index()]);
-			// }
+  createEffect(() => {
+    if (index() !== undefined && Array.isArray(parallaxValues())) {
+      // if (index() === 0) {
+      //   console.log(parallaxValues()[index()]);
+      // }
 
-			const value = parallaxValues()[index()];
-			const distance = Math.abs(value || 0);
-			const scale = 1 - distance * 0.1;
-			setScale(scale);
+      const value = parallaxValues()[index()];
+      const distance = Math.abs(value || 0);
+      const scale = 1 - distance * 0.1;
+      setScale(scale);
 
-			const sign = value < 0 ? -1 : 1;
-			const scaleDeviation = 1 - scale;
-			const offset = scaleDeviation * -150 * sign;
-			setOffset(offset);
-		}
-	});
+      const sign = value < 0 ? -1 : 1;
+      const scaleDeviation = 1 - scale;
+      const offset = scaleDeviation * -150 * sign;
+      setOffset(offset);
+    }
+  });
 
-	return (
-		<li class="shrink-0 px-9">
-			<article
-				style={{
-					transform: `scale(${scale()}) translateX(${offset()}px)`,
-					"transform-origin": "bottom center",
-				}}
-			>
-				<A href={slug?.fullUrl} class="pointer-events-none block h-full w-300">
-					<div class="mb-12">
-						<h2 class="text-18">{title}</h2>
-						<p class="text-12 text-gry mt-2 font-semibold">
+  return (
+    <li class="shrink-0 px-9">
+      <article
+        style={{
+          transform: `scale(${scale()}) translateX(${offset()}px)`,
+          "transform-origin": "bottom center",
+        }}
+      >
+        <A href={slug?.fullUrl} class="pointer-events-none block h-full w-300">
+          <div class="mb-12">
+            <h2 class="text-18">{title}</h2>
+            {/* <p class="text-12 text-gry mt-2 font-semibold">
 							{formatedClient}
 							<Show when={formatedClient && formatedRole}>•</Show>
 							{formatedRole}
-						</p>
-					</div>
-					<div class="h-340 overflow-hidden rounded-md lg:h-380">
-						<Media
-							imageProps={{
-								desktopWidth: 35,
-								mobileWidth: 45,
-								priority: true,
-							}}
-							class="relative top-1/2 size-full -translate-y-1/2 object-cover object-center"
-							{...featuredMedia?.[duplicated ? 1 : 0]}
-						/>
-					</div>
-				</A>
-			</article>
-		</li>
-	);
+						</p> */}
+          </div>
+          <div class="h-340 overflow-hidden rounded-md lg:h-380">
+            <Media
+              imageProps={{
+                desktopWidth: 35,
+                mobileWidth: 45,
+                priority: true,
+              }}
+              class="relative top-1/2 size-full -translate-y-1/2 object-cover object-center"
+              {...featuredMedia?.[duplicated ? 1 : 0]}
+            />
+          </div>
+        </A>
+      </article>
+    </li>
+  );
 };
 
 interface HeroSliderProps {
-	caseStudies: any[];
+  caseStudies: any[];
 }
 
 export default function HeroSlider(props: HeroSliderProps) {
-	const [parallaxValues, setParallaxValues] = createSignal<any>(null);
+  const [parallaxValues, setParallaxValues] = createSignal<any>(null);
 
-	const { ref, slider } = useSmooothy({
-		infinite: true,
-		snap: false,
-		onUpdate: ({ parallaxValues }: any) => {
-			// Store parallax values for use in components
-			setParallaxValues(parallaxValues);
-		},
-	});
+  const { ref, slider } = useSmooothy({
+    infinite: true,
+    snap: false,
+    onUpdate: ({ parallaxValues }: any) => {
+      // Store parallax values for use in components
+      setParallaxValues(parallaxValues);
+    },
+  });
 
-	// Handle link clicks while allowing slider to slide
-	createEffect(() => {
-		const sliderInstance = slider();
-		if (!sliderInstance) return;
+  // Handle link clicks while allowing slider to slide
+  createEffect(() => {
+    const sliderInstance = slider();
+    if (!sliderInstance) return;
 
-		const handleLinks = () => {
-			const links = sliderInstance.wrapper.querySelectorAll("a");
-			links.forEach((link: HTMLAnchorElement) => {
-				let startX = 0;
-				let startY = 0;
-				let startTime = 0;
-				let isDragging = false;
+    const handleLinks = () => {
+      const links = sliderInstance.wrapper.querySelectorAll("a");
+      links.forEach((link: HTMLAnchorElement) => {
+        let startX = 0;
+        let startY = 0;
+        let startTime = 0;
+        let isDragging = false;
 
-				link.style.pointerEvents = "none";
+        link.style.pointerEvents = "none";
 
-				const handleMouseDown = (e: MouseEvent) => {
-					startX = e.clientX;
-					startY = e.clientY;
-					startTime = Date.now();
-					isDragging = false;
-				};
+        const handleMouseDown = (e: MouseEvent) => {
+          startX = e.clientX;
+          startY = e.clientY;
+          startTime = Date.now();
+          isDragging = false;
+        };
 
-				const handleMouseMove = (e: MouseEvent) => {
-					if (!startTime) return;
+        const handleMouseMove = (e: MouseEvent) => {
+          if (!startTime) return;
 
-					const deltaX = Math.abs(e.clientX - startX);
-					const deltaY = Math.abs(e.clientY - startY);
+          const deltaX = Math.abs(e.clientX - startX);
+          const deltaY = Math.abs(e.clientY - startY);
 
-					if (deltaX > 5 || deltaY > 5) {
-						isDragging = true;
-					}
-				};
+          if (deltaX > 5 || deltaY > 5) {
+            isDragging = true;
+          }
+        };
 
-				const handleMouseUp = (e: MouseEvent) => {
-					const deltaTime = Date.now() - startTime;
+        const handleMouseUp = (e: MouseEvent) => {
+          const deltaTime = Date.now() - startTime;
 
-					if (!isDragging && deltaTime < 200) {
-						link.click();
-					}
+          if (!isDragging && deltaTime < 200) {
+            link.click();
+          }
 
-					startTime = 0;
-					isDragging = false;
-				};
+          startTime = 0;
+          isDragging = false;
+        };
 
-				// Add listeners to the parent element (article)
-				const parentElement = link.parentElement;
-				if (parentElement) {
-					parentElement.addEventListener("mousedown", handleMouseDown);
-					parentElement.addEventListener("mousemove", handleMouseMove);
-					parentElement.addEventListener("mouseup", handleMouseUp);
-				}
-			});
-		};
+        // Add listeners to the parent element (article)
+        const parentElement = link.parentElement;
+        if (parentElement) {
+          parentElement.addEventListener("mousedown", handleMouseDown);
+          parentElement.addEventListener("mousemove", handleMouseMove);
+          parentElement.addEventListener("mouseup", handleMouseUp);
+        }
+      });
+    };
 
-		handleLinks();
-	});
+    handleLinks();
+  });
 
-	// Handle wheel events for mouse scrolling
-	createEffect(() => {
-		const sliderInstance = slider();
-		if (!sliderInstance || !sliderInstance.wrapper) return;
+  // Handle wheel events for mouse scrolling
+  createEffect(() => {
+    const sliderInstance = slider();
+    if (!sliderInstance || !sliderInstance.wrapper) return;
 
-		let accumulatedDelta = 0;
-		let rafId: number | null = null;
+    let accumulatedDelta = 0;
+    let rafId: number | null = null;
 
-		const handleWheel = (e: WheelEvent) => {
-			// Only handle vertical wheel scrolling
-			if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-				e.preventDefault();
-				e.stopPropagation();
+    const handleWheel = (e: WheelEvent) => {
+      // Only handle vertical wheel scrolling
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        e.stopPropagation();
 
-				// Accumulate wheel delta
-				accumulatedDelta += e.deltaY;
+        // Accumulate wheel delta
+        accumulatedDelta += e.deltaY;
 
-				// Cancel any pending animation
-				if (rafId !== null) {
-					cancelAnimationFrame(rafId);
-				}
+        // Cancel any pending animation
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+        }
 
-				// Update slider position using requestAnimationFrame for smooth updates
-				const updatePosition = () => {
-					if (Math.abs(accumulatedDelta) > 0.1) {
-						// Convert vertical scroll to horizontal slider movement
-						const scrollAmount = accumulatedDelta * 0.0005; // Adjust multiplier for sensitivity
+        // Update slider position using requestAnimationFrame for smooth updates
+        const updatePosition = () => {
+          if (Math.abs(accumulatedDelta) > 0.1) {
+            // Convert vertical scroll to horizontal slider movement
+            const scrollAmount = accumulatedDelta * 0.0005; // Adjust multiplier for sensitivity
 
-						// Update the target position directly (target is in pixels)
-						const sliderAny = sliderInstance as any;
-						if (typeof sliderAny.target !== "undefined") {
-							sliderAny.target -= scrollAmount; // Negative because scrolling down should move right
-						}
+            // Update the target position directly (target is in pixels)
+            const sliderAny = sliderInstance as any;
+            if (typeof sliderAny.target !== "undefined") {
+              sliderAny.target -= scrollAmount; // Negative because scrolling down should move right
+            }
 
-						// Decay accumulated delta
-						accumulatedDelta *= 0.85;
+            // Decay accumulated delta
+            accumulatedDelta *= 0.85;
 
-						// Continue animation if there's still delta
-						if (Math.abs(accumulatedDelta) > 0.1) {
-							rafId = requestAnimationFrame(updatePosition);
-						} else {
-							rafId = null;
-							accumulatedDelta = 0;
-						}
-					} else {
-						rafId = null;
-						accumulatedDelta = 0;
-					}
-				};
+            // Continue animation if there's still delta
+            if (Math.abs(accumulatedDelta) > 0.1) {
+              rafId = requestAnimationFrame(updatePosition);
+            } else {
+              rafId = null;
+              accumulatedDelta = 0;
+            }
+          } else {
+            rafId = null;
+            accumulatedDelta = 0;
+          }
+        };
 
-				rafId = requestAnimationFrame(updatePosition);
-			}
-		};
+        rafId = requestAnimationFrame(updatePosition);
+      }
+    };
 
-		const wrapperElement = sliderInstance.wrapper;
-		wrapperElement.addEventListener("wheel", handleWheel, { passive: false });
+    const wrapperElement = sliderInstance.wrapper;
+    wrapperElement.addEventListener("wheel", handleWheel, { passive: false });
 
-		return () => {
-			wrapperElement.removeEventListener("wheel", handleWheel);
-			if (rafId !== null) {
-				cancelAnimationFrame(rafId);
-			}
-		};
-	});
+    return () => {
+      wrapperElement.removeEventListener("wheel", handleWheel);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  });
 
-	return (
-		<ul ref={ref} class="flex w-screen items-end pl-[calc(50vw-150px)]">
-			<For each={props.caseStudies}>
-				{(caseStudy, index) => {
-					return (
-						<ErrorBoundary
-							fallback={(err, reset) => (
-								<li class="shrink-0 px-9">
-									<article class="flex h-340 flex-col items-center justify-center rounded-md border border-red-300 bg-red-50 p-6 lg:h-380">
-										<div class="text-center">
-											<h3 class="text-14 font-semibold text-red-800 mb-2">
-												Error loading card
-											</h3>
-											<p class="text-12 text-red-600 mb-4">
-												{err?.message || "Unknown error occurred"}
-											</p>
-											<button
-												onClick={reset}
-												class="text-12 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-											>
-												Try again
-											</button>
-										</div>
-									</article>
-								</li>
-							)}
-						>
-							<ArticleCard
-								{...caseStudy}
-								parallaxValues={parallaxValues}
-								index={index}
-							/>
-						</ErrorBoundary>
-					);
-				}}
-			</For>
-		</ul>
-	);
+  return (
+    <ul ref={ref} class="flex w-screen items-end pl-[calc(50vw-150px)]">
+      <For each={props.caseStudies}>
+        {(caseStudy, index) => {
+          return (
+            <ErrorBoundary
+              fallback={(err, reset) => (
+                <li class="shrink-0 px-9">
+                  <article class="flex h-340 flex-col items-center justify-center rounded-md border border-red-300 bg-red-50 p-6 lg:h-380">
+                    <div class="text-center">
+                      <h3 class="text-14 mb-2 font-semibold text-red-800">
+                        Error loading card
+                      </h3>
+                      <p class="text-12 mb-4 text-red-600">
+                        {err?.message || "Unknown error occurred"}
+                      </p>
+                      <button
+                        onClick={reset}
+                        class="text-12 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                      >
+                        Try again
+                      </button>
+                    </div>
+                  </article>
+                </li>
+              )}
+            >
+              <ArticleCard
+                {...caseStudy}
+                parallaxValues={parallaxValues}
+                index={index}
+              />
+            </ErrorBoundary>
+          );
+        }}
+      </For>
+    </ul>
+  );
 }
