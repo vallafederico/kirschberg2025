@@ -28,7 +28,7 @@ const ArticleCard = ({
       (mediaItem.mediaType === "video" && mediaItem.video?.asset));
 
   return (
-    <li class="shrink-0 px-9">
+    <li class="shrink-0 px-9 outline-1 outline-gray-300">
       <article>
         <A href={slug?.fullUrl} class="pointer-events-none block h-full w-300">
           <div class="mb-12">
@@ -41,10 +41,17 @@ const ArticleCard = ({
           </div>
           <div
             class={`h-340 overflow-hidden rounded-md lg:h-380 ${
-              !hasMedia ? "bg-gray-800" : ""
+              !hasMedia
+                ? "bg-gray-800"
+                : mediaItem?.mediaType === "image"
+                  ? "bg-blue-500"
+                  : mediaItem?.mediaType === "video"
+                    ? "bg-green-500"
+                    : "bg-purple-500"
             }`}
           >
-            {hasMedia ? (
+            {/* Temporarily disabled for debugging - showing background colors only */}
+            {/* {hasMedia ? (
               <Media
                 imageProps={{
                   desktopWidth: 35,
@@ -54,7 +61,7 @@ const ArticleCard = ({
                 class="relative top-1/2 size-full -translate-y-1/2 object-cover object-center"
                 {...mediaItem}
               />
-            ) : null}
+            ) : null} */}
           </div>
         </A>
       </article>
@@ -201,7 +208,7 @@ export default function HeroSlider(props: HeroSliderProps) {
           return (
             <ErrorBoundary
               fallback={(err, reset) => (
-                <li class="shrink-0 px-9">
+                <li class="shrink-0 px-9 outline-1 outline-gray-300">
                   <article class="flex h-340 flex-col items-center justify-center rounded-md border border-red-300 bg-red-50 p-6 lg:h-380">
                     <div class="text-center">
                       <h3 class="text-14 mb-2 font-semibold text-red-800">
