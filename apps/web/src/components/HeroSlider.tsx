@@ -1,5 +1,12 @@
 import { A } from "@solidjs/router";
-import { ErrorBoundary, createEffect, createSignal, For } from "solid-js";
+import {
+  ErrorBoundary,
+  createEffect,
+  createSignal,
+  For,
+  onCleanup,
+  onMount,
+} from "solid-js";
 import Media from "~/components/Media";
 import { useSmooothy } from "~/lib/hooks/useSmooothy";
 
@@ -38,7 +45,10 @@ const ArticleCard = ({
     return 0;
   };
 
-  const CARD_WIDTH = 300;
+  const [cardWidth, setCardWidth] = createSignal(300);
+  let itemRef: HTMLLIElement | undefined;
+
+  const CARD_WIDTH = () => cardWidth();
   const SCALE_MAX = 1.2;
   const SCALE_FALLOFF = 0.2;
 
@@ -60,8 +70,21 @@ const ArticleCard = ({
 
     // Offset based on integral of the scale curve to keep spacing non-overlapping
     const offset = (SCALE_MAX - 1) * ax - (SCALE_FALLOFF * ax * ax) / 2;
-    return Math.sign(x) * offset * CARD_WIDTH;
+    const epsilon = 3.5;
+    return Math.sign(x) * (offset * CARD_WIDTH() - epsilon);
   };
+
+  onMount(() => {
+    if (!itemRef) return;
+    const updateWidth = () =>
+      setCardWidth(itemRef?.getBoundingClientRect().width || 300);
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(itemRef);
+
+    onCleanup(() => observer.disconnect());
+  });
 
   const borderClass = () => {
     const colors = [
@@ -90,7 +113,10 @@ const ArticleCard = ({
   };
 
   return (
-    <li class="relative h-340 w-300 shrink-0 px-9 outline-1 outline-gray-100/10 lg:h-380">
+    <li
+      ref={itemRef}
+      class="relative h-340 w-300 shrink-0 px-9 outline-1 outline-gray-100/10 lg:h-380"
+    >
       <div
         class={`absolute inset-0 flex items-center justify-center border-2 ${borderClass()}`}
         style={{
