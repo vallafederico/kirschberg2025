@@ -1,12 +1,5 @@
 import { A } from "@solidjs/router";
-import {
-  ErrorBoundary,
-  createEffect,
-  createSignal,
-  For,
-  onMount,
-  Show,
-} from "solid-js";
+import { ErrorBoundary, createEffect, For } from "solid-js";
 import Media from "~/components/Media";
 import { useSmooothy } from "~/lib/hooks/useSmooothy";
 
@@ -16,8 +9,6 @@ const ArticleCard = ({
   client,
   role,
   featuredMedia,
-  parallaxValues,
-  index,
   duplicated,
 }: {
   slug: { fullUrl: string };
@@ -25,42 +16,20 @@ const ArticleCard = ({
   client: { name: string }[];
   role: string[];
   featuredMedia: any;
-  parallaxValues: any;
-  index: any;
   duplicated?: boolean;
 }) => {
   const formatedClient = client ? client.map((c) => c.name)?.join(" & ") : null;
   const formatedRole = role ? role?.join(", ") : null;
 
-  const [scale, setScale] = createSignal(1);
-  const [offset, setOffset] = createSignal(0);
-
-  createEffect(() => {
-    if (index() !== undefined && Array.isArray(parallaxValues())) {
-      // if (index() === 0) {
-      //   console.log(parallaxValues()[index()]);
-      // }
-
-      const value = parallaxValues()[index()];
-      const distance = Math.abs(value || 0);
-      const scale = 1 - distance * 0.1;
-      setScale(scale);
-
-      const sign = value < 0 ? -1 : 1;
-      const scaleDeviation = 1 - scale;
-      const offset = scaleDeviation * -150 * sign;
-      setOffset(offset);
-    }
-  });
+  const mediaItem = featuredMedia?.[duplicated ? 1 : 0];
+  const hasMedia =
+    mediaItem &&
+    ((mediaItem.mediaType === "image" && mediaItem.image?.asset) ||
+      (mediaItem.mediaType === "video" && mediaItem.video?.asset));
 
   return (
     <li class="shrink-0 px-9">
-      <article
-        style={{
-          transform: `scale(${scale()}) translateX(${offset()}px)`,
-          "transform-origin": "bottom center",
-        }}
-      >
+      <article>
         <A href={slug?.fullUrl} class="pointer-events-none block h-full w-300">
           <div class="mb-12">
             <h2 class="text-18">{title}</h2>
@@ -70,16 +39,22 @@ const ArticleCard = ({
 							{formatedRole}
 						</p> */}
           </div>
-          <div class="h-340 overflow-hidden rounded-md lg:h-380">
-            <Media
-              imageProps={{
-                desktopWidth: 35,
-                mobileWidth: 45,
-                priority: true,
-              }}
-              class="relative top-1/2 size-full -translate-y-1/2 object-cover object-center"
-              {...featuredMedia?.[duplicated ? 1 : 0]}
-            />
+          <div
+            class={`h-340 overflow-hidden rounded-md lg:h-380 ${
+              !hasMedia ? "bg-gray-800" : ""
+            }`}
+          >
+            {hasMedia ? (
+              <Media
+                imageProps={{
+                  desktopWidth: 35,
+                  mobileWidth: 45,
+                  priority: true,
+                }}
+                class="relative top-1/2 size-full -translate-y-1/2 object-cover object-center"
+                {...mediaItem}
+              />
+            ) : null}
           </div>
         </A>
       </article>
@@ -92,15 +67,9 @@ interface HeroSliderProps {
 }
 
 export default function HeroSlider(props: HeroSliderProps) {
-  const [parallaxValues, setParallaxValues] = createSignal<any>(null);
-
   const { ref, slider } = useSmooothy({
     infinite: true,
     snap: false,
-    onUpdate: ({ parallaxValues }: any) => {
-      // Store parallax values for use in components
-      setParallaxValues(parallaxValues);
-    },
   });
 
   // Handle link clicks while allowing slider to slide
@@ -228,7 +197,7 @@ export default function HeroSlider(props: HeroSliderProps) {
   return (
     <ul ref={ref} class="flex w-screen items-end pl-[calc(50vw-150px)]">
       <For each={props.caseStudies}>
-        {(caseStudy, index) => {
+        {(caseStudy) => {
           return (
             <ErrorBoundary
               fallback={(err, reset) => (
@@ -252,11 +221,7 @@ export default function HeroSlider(props: HeroSliderProps) {
                 </li>
               )}
             >
-              <ArticleCard
-                {...caseStudy}
-                parallaxValues={parallaxValues}
-                index={index}
-              />
+              <ArticleCard {...caseStudy} />
             </ErrorBoundary>
           );
         }}
