@@ -41,8 +41,8 @@ const ArticleCard = ({
   const parallaxValue = () => {
     if (index() !== undefined && Array.isArray(parallaxValues())) {
       const x = parallaxValues()[index()];
-      // Linear scaling: max 1.4 at center, decreases proportionally with distance
-      return 1.2 - 0.4 * Math.abs(x);
+      // Linear scaling: max at center, gentler falloff with distance
+      return 1.2 - 0.2 * Math.abs(x);
     }
     return 0;
   };
