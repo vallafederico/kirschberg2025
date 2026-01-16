@@ -37,116 +37,6 @@ const ArticleCard = ({
     }
     return 0;
   };
-  const baseWidth = 300;
-  const extraWidth = 200;
-  const shrinkPerUnit = 250;
-  const minWidth = 120;
-  const innerWidth = () => {
-    const width =
-      baseWidth + extraWidth - Math.abs(parallaxValue()) * shrinkPerUnit;
-    return Math.max(minWidth, width);
-  };
-  const innerOffset = () => {
-    const values = parallaxValues();
-    if (!Array.isArray(values) || index() === undefined) return 0;
-
-    const count = values.length;
-    const gap = 20;
-    const widths = values.map((value: number) =>
-      Math.max(
-        minWidth,
-        baseWidth + extraWidth - Math.abs(value || 0) * shrinkPerUnit,
-      ),
-    );
-
-    const anchorIndex = 0;
-    const deltas = values.map((_, valueIndex) => {
-      let delta = valueIndex - anchorIndex;
-      if (delta > count / 2) delta -= count;
-      if (delta < -count / 2) delta += count;
-      return delta;
-    });
-
-    const targetPositions: number[] = new Array(count).fill(0);
-    targetPositions[anchorIndex] = 0;
-
-    const rightIndices = deltas
-      .map((delta, valueIndex) => ({ delta, index: valueIndex }))
-      .filter((item) => item.delta > 0)
-      .sort((a, b) => a.delta - b.delta)
-      .map((item) => item.index);
-    const leftIndices = deltas
-      .map((delta, valueIndex) => ({ delta, index: valueIndex }))
-      .filter((item) => item.delta < 0)
-      .sort((a, b) => b.delta - a.delta)
-      .map((item) => item.index);
-
-    rightIndices.forEach((valueIndex, orderIndex) => {
-      const prevIndex =
-        orderIndex === 0 ? anchorIndex : rightIndices[orderIndex - 1];
-      targetPositions[valueIndex] =
-        targetPositions[prevIndex] +
-        (widths[prevIndex] + widths[valueIndex]) / 2 +
-        gap;
-    });
-
-    leftIndices.forEach((valueIndex, orderIndex) => {
-      const prevIndex =
-        orderIndex === 0 ? anchorIndex : leftIndices[orderIndex - 1];
-      targetPositions[valueIndex] =
-        targetPositions[prevIndex] -
-        ((widths[prevIndex] + widths[valueIndex]) / 2 + gap);
-    });
-
-    const idx = index();
-    const baseCenter = deltas[idx] * baseWidth;
-
-    const exactZeroIndex = values.findIndex((value: number) => value === 0);
-    if (exactZeroIndex !== -1) {
-      return (
-        targetPositions[idx] - targetPositions[exactZeroIndex] - baseCenter
-      );
-    }
-
-    let nearestNegIndex = -1;
-    let nearestNegValue = -Infinity;
-    let nearestPosIndex = -1;
-    let nearestPosValue = Infinity;
-    values.forEach((value: number, valueIndex: number) => {
-      if (value < 0 && value > nearestNegValue) {
-        nearestNegValue = value;
-        nearestNegIndex = valueIndex;
-      }
-      if (value > 0 && value < nearestPosValue) {
-        nearestPosValue = value;
-        nearestPosIndex = valueIndex;
-      }
-    });
-
-    if (nearestNegIndex !== -1 && nearestPosIndex !== -1) {
-      const negPos = targetPositions[nearestNegIndex];
-      const posPos = targetPositions[nearestPosIndex];
-      const t =
-        Math.abs(nearestNegValue) /
-        (Math.abs(nearestNegValue) + Math.abs(nearestPosValue));
-      const zeroPosition = negPos + (posPos - negPos) * t;
-      return targetPositions[idx] - zeroPosition - baseCenter;
-    }
-
-    if (nearestNegIndex !== -1) {
-      return (
-        targetPositions[idx] - targetPositions[nearestNegIndex] - baseCenter
-      );
-    }
-
-    if (nearestPosIndex !== -1) {
-      return (
-        targetPositions[idx] - targetPositions[nearestPosIndex] - baseCenter
-      );
-    }
-
-    return -baseCenter;
-  };
   const borderClass = () => {
     const colors = [
       "border-red-500",
@@ -176,11 +66,7 @@ const ArticleCard = ({
   return (
     <li class="relative h-340 w-300 shrink-0 px-9 outline-1 outline-gray-100/10 lg:h-380">
       <div
-        class={`absolute inset-y-0 left-1/2 flex items-center justify-center border-2 ${borderClass()}`}
-        style={{
-          width: `${innerWidth()}px`,
-          transform: `translateX(calc(-50% + ${innerOffset()}px))`,
-        }}
+        class={`absolute inset-0 flex items-center justify-center border-2 ${borderClass()}`}
       >
         <p class="text-12 text-red-500">{parallaxValue().toFixed(2)}</p>
       </div>
