@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { ErrorBoundary, createEffect, For } from "solid-js";
+import { ErrorBoundary, createEffect, createSignal, For } from "solid-js";
 import Media from "~/components/Media";
 import { useSmooothy } from "~/lib/hooks/useSmooothy";
 
@@ -9,6 +9,8 @@ const ArticleCard = ({
   client,
   role,
   featuredMedia,
+  parallaxValues,
+  index,
   duplicated,
 }: {
   slug: { fullUrl: string };
@@ -16,6 +18,8 @@ const ArticleCard = ({
   client: { name: string }[];
   role: string[];
   featuredMedia: any;
+  parallaxValues: any;
+  index: any;
   duplicated?: boolean;
 }) => {
   const formatedClient = client ? client.map((c) => c.name)?.join(" & ") : null;
@@ -27,9 +31,19 @@ const ArticleCard = ({
     ((mediaItem.mediaType === "image" && mediaItem.image?.asset) ||
       (mediaItem.mediaType === "video" && mediaItem.video?.asset));
 
+  const parallaxValue = () => {
+    if (index() !== undefined && Array.isArray(parallaxValues())) {
+      return parallaxValues()[index()] || 0;
+    }
+    return 0;
+  };
+
   return (
-    <li class="shrink-0 px-9 outline-1 outline-gray-300">
-      <article>
+    <li class="relative h-340 w-300 shrink-0 px-9 outline-1 outline-gray-100/10 lg:h-380">
+      <div class="absolute inset-0 flex items-center justify-center border-2 border-red-500">
+        <p class="text-12 text-red-500">{parallaxValue().toFixed(2)}</p>
+      </div>
+      <article class="hidden">
         <A href={slug?.fullUrl} class="pointer-events-none block h-full w-300">
           <div class="mb-12">
             <h2 class="text-18">{title}</h2>
@@ -74,9 +88,14 @@ interface HeroSliderProps {
 }
 
 export default function HeroSlider(props: HeroSliderProps) {
+  const [parallaxValues, setParallaxValues] = createSignal<any>(null);
+
   const { ref, slider } = useSmooothy({
     infinite: true,
     snap: false,
+    onUpdate: ({ parallaxValues }: any) => {
+      setParallaxValues(parallaxValues);
+    },
   });
 
   // Handle link clicks while allowing slider to slide
@@ -204,12 +223,15 @@ export default function HeroSlider(props: HeroSliderProps) {
   return (
     <ul ref={ref} class="flex w-screen items-end pl-[calc(50vw-150px)]">
       <For each={props.caseStudies}>
-        {(caseStudy) => {
+        {(caseStudy, index) => {
           return (
             <ErrorBoundary
               fallback={(err, reset) => (
-                <li class="shrink-0 px-9 outline-1 outline-gray-300">
-                  <article class="flex h-340 flex-col items-center justify-center rounded-md border border-red-300 bg-red-50 p-6 lg:h-380">
+                <li class="relative h-340 w-300 shrink-0 px-9 outline-1 outline-gray-100/10 lg:h-380">
+                  <div class="absolute inset-0 flex items-center justify-center border-2 border-red-500">
+                    <p class="text-12 text-red-500">0.00</p>
+                  </div>
+                  <article class="hidden">
                     <div class="text-center">
                       <h3 class="text-14 mb-2 font-semibold text-red-800">
                         Error loading card
@@ -228,7 +250,11 @@ export default function HeroSlider(props: HeroSliderProps) {
                 </li>
               )}
             >
-              <ArticleCard {...caseStudy} />
+              <ArticleCard
+                {...caseStudy}
+                parallaxValues={parallaxValues}
+                index={index}
+              />
             </ErrorBoundary>
           );
         }}
