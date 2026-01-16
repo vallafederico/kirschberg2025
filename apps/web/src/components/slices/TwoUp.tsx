@@ -11,7 +11,7 @@ export default function TwoUp({ images }: { images: any[] }) {
 	};
 
 	return (
-		<section class="flex gap-16 max-lg:flex-col">
+		<section class="flex gap-[16px] max-lg:flex-col">
 			<Show when={images?.[0]}>
 				{(media) => (
 					<Media
