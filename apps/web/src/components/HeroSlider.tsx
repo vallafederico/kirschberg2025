@@ -38,16 +38,30 @@ const ArticleCard = ({
     return 0;
   };
 
+  const CARD_WIDTH = 300;
+  const SCALE_MAX = 1.2;
+  const SCALE_FALLOFF = 0.2;
+
   const parallaxValue = () => {
     if (index() !== undefined && Array.isArray(parallaxValues())) {
       const x = parallaxValues()[index()];
       // Linear scaling: max at center, gentler falloff with distance
-      return 1.2 - 0.2 * Math.abs(x);
+      return SCALE_MAX - SCALE_FALLOFF * Math.abs(x);
     }
     return 0;
   };
 
   const scaleValue = () => parallaxValue();
+
+  const translateXValue = () => {
+    const x = rawParallaxValue();
+    const ax = Math.abs(x);
+    if (!ax) return 0;
+
+    // Offset based on integral of the scale curve to keep spacing non-overlapping
+    const offset = (SCALE_MAX - 1) * ax - (SCALE_FALLOFF * ax * ax) / 2;
+    return Math.sign(x) * offset * CARD_WIDTH;
+  };
 
   const borderClass = () => {
     const colors = [
@@ -80,7 +94,7 @@ const ArticleCard = ({
       <div
         class={`absolute inset-0 flex items-center justify-center border-2 ${borderClass()}`}
         style={{
-          transform: `scale(${scaleValue()})`,
+          transform: `translateX(${translateXValue()}px) scale(${scaleValue()})`,
           "transform-origin": "center bottom",
         }}
       >
