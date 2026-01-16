@@ -83,7 +83,7 @@ export default function CaseStudyIntro({
         </Show>
       </dl>
       <Show when={description}>
-        <div class="text-18 font-medium">
+        <div class="text-18 font-medium whitespace-pre-line [&_p]:not-last:mb-24">
           <PortableText value={description} />
         </div>
       </Show>
