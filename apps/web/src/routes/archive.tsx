@@ -298,10 +298,24 @@ export default function ArchivePage() {
 
       // event.deltaY is the scroll delta from virtual-scroll
       const deltaY = event.deltaY;
+      // event.deltaX is the horizontal scroll delta from virtual-scroll (trackpad horizontal scroll)
+      const deltaX = event.deltaX || 0;
+
+      // Apply horizontal scrolling if there's significant horizontal delta
+      // Only apply horizontal scroll if deltaX is significantly larger than deltaY to avoid accidental horizontal scrolling
+      const currentColumns = columns();
+      if (Math.abs(deltaX) > Math.abs(deltaY) * 0.5 && currentColumns.length > 0) {
+        const firstCol = currentColumns[0];
+        const horizontalScrollSpeed = 0.5; // Adjust this multiplier to control horizontal scroll sensitivity
+        
+        // Apply horizontal scroll to all columns (they're synced horizontally)
+        currentColumns.forEach((col: ColumnData) => {
+          col.targetOffsetX += deltaX * horizontalScrollSpeed;
+        });
+      }
 
       // Apply scrolling to individual columns for varied speeds
       // But ensure columns in same positions across grid copies behave identically
-      const currentColumns = columns();
       currentColumns.forEach((col: ColumnData) => {
         if (!col.ref) return;
 
@@ -319,9 +333,6 @@ export default function ArchivePage() {
 
       // Update columns state
       setColumns([...currentColumns]);
-
-      // Update grid copies state
-      setGridCopies([...currentGridCopies]);
 
       // Update grid copies state
       setGridCopies([...currentGridCopies]);
