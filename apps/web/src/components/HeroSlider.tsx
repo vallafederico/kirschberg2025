@@ -31,12 +31,24 @@ const ArticleCard = ({
     ((mediaItem.mediaType === "image" && mediaItem.image?.asset) ||
       (mediaItem.mediaType === "video" && mediaItem.video?.asset));
 
-  const parallaxValue = () => {
+  const rawParallaxValue = () => {
     if (index() !== undefined && Array.isArray(parallaxValues())) {
       return parallaxValues()[index()] || 0;
     }
     return 0;
   };
+
+  const parallaxValue = () => {
+    if (index() !== undefined && Array.isArray(parallaxValues())) {
+      const x = parallaxValues()[index()];
+      // Linear scaling: max 1.4 at center, decreases proportionally with distance
+      return 1.2 - 0.4 * Math.abs(x);
+    }
+    return 0;
+  };
+
+  const scaleValue = () => parallaxValue();
+
   const borderClass = () => {
     const colors = [
       "border-red-500",
@@ -67,8 +79,12 @@ const ArticleCard = ({
     <li class="relative h-340 w-300 shrink-0 px-9 outline-1 outline-gray-100/10 lg:h-380">
       <div
         class={`absolute inset-0 flex items-center justify-center border-2 ${borderClass()}`}
+        style={{
+          transform: `scale(${scaleValue()})`,
+          "transform-origin": "center bottom",
+        }}
       >
-        <p class="text-12 text-red-500">{parallaxValue().toFixed(2)}</p>
+        <p class="text-12 text-red-500">{rawParallaxValue().toFixed(2)}</p>
       </div>
       <article class="hidden">
         <A href={slug?.fullUrl} class="pointer-events-none block h-full w-300">
