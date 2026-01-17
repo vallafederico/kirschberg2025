@@ -6,6 +6,7 @@ import {
   For,
   onCleanup,
   onMount,
+  Show,
 } from "solid-js";
 import Media from "~/components/Media";
 import { useSmooothy } from "~/lib/hooks/useSmooothy";
@@ -86,82 +87,59 @@ const ArticleCard = ({
     onCleanup(() => observer.disconnect());
   });
 
-  const borderClass = () => {
-    const colors = [
-      "border-red-500",
-      "border-orange-500",
-      "border-amber-500",
-      "border-yellow-500",
-      "border-lime-500",
-      "border-green-500",
-      "border-emerald-500",
-      "border-teal-500",
-      "border-cyan-500",
-      "border-sky-500",
-      "border-blue-500",
-      "border-indigo-500",
-      "border-violet-500",
-      "border-purple-500",
-      "border-fuchsia-500",
-      "border-pink-500",
-      "border-rose-500",
-    ];
-    const idx = index();
-    if (idx === undefined) return "border-red-500";
-    const safeIndex = Math.abs(idx) % colors.length;
-    return colors[safeIndex];
-  };
+  
 
   return (
     <li
       ref={itemRef}
-      class="relative h-340 w-300 shrink-0 px-9 outline-1 outline-gray-100/10 lg:h-380"
+      class="relative h-340 w-300 shrink-0 px-9 lg:h-380"
     >
       <div
-        class={`absolute inset-0 flex items-center justify-center border-2 ${borderClass()}`}
+        class="absolute inset-0 flex items-center justify-center"
         style={{
           transform: `translateX(${translateXValue()}px) scale(${scaleValue()})`,
           "transform-origin": "center bottom",
         }}
       >
-        <p class="text-12 text-red-500">{rawParallaxValue().toFixed(2)}</p>
-      </div>
-      <article class="hidden">
-        <A href={slug?.fullUrl} class="pointer-events-none block h-full w-300">
-          <div class="mb-12">
-            <h2 class="text-18">{title}</h2>
-            {/* <p class="text-12 text-gry mt-2 font-semibold">
-							{formatedClient}
-							<Show when={formatedClient && formatedRole}>•</Show>
-							{formatedRole}
-						</p> */}
-          </div>
-          <div
-            class={`h-340 overflow-hidden rounded-md lg:h-380 ${
-              !hasMedia
-                ? "bg-gray-800"
-                : mediaItem?.mediaType === "image"
-                  ? "bg-blue-500"
-                  : mediaItem?.mediaType === "video"
-                    ? "bg-green-500"
-                    : "bg-purple-500"
-            }`}
+        <article>
+          <A
+            href={slug?.fullUrl}
+            class="pointer-events-none block h-full w-300 px-10"
           >
-            {/* Temporarily disabled for debugging - showing background colors only */}
-            {/* {hasMedia ? (
-              <Media
-                imageProps={{
-                  desktopWidth: 35,
-                  mobileWidth: 45,
-                  priority: true,
-                }}
-                class="relative top-1/2 size-full -translate-y-1/2 object-cover object-center"
-                {...mediaItem}
-              />
-            ) : null} */}
-          </div>
-        </A>
-      </article>
+            <div class="mb-12">
+              <h2 class="text-18">{title}</h2>
+              <p class="mt-2 text-12 font-semibold text-gry">
+                {formatedClient}
+                <Show when={formatedClient && formatedRole}>•</Show>
+                {formatedRole}
+              </p>
+            </div>
+            <div
+              class={`relative h-340 overflow-hidden rounded-md lg:h-380 ${
+                !hasMedia
+                  ? "bg-gray-800"
+                  : mediaItem?.mediaType === "image"
+                    ? "bg-blue-500"
+                    : mediaItem?.mediaType === "video"
+                      ? "bg-green-500"
+                      : "bg-purple-500"
+              }`}
+            >
+              {hasMedia ? (
+                <Media
+                  imageProps={{
+                    desktopWidth: 35,
+                    mobileWidth: 45,
+                    priority: true,
+                  }}
+                  class="absolute inset-0 size-full object-cover object-center"
+                  {...mediaItem}
+                />
+              ) : null}
+            </div>
+          </A>
+        </article>
+      </div>
     </li>
   );
 };
@@ -181,7 +159,6 @@ export default function HeroSlider(props: HeroSliderProps) {
     },
   });
 
-  // Handle link clicks while allowing slider to slide
   createEffect(() => {
     const sliderInstance = slider();
     if (!sliderInstance) return;
@@ -225,7 +202,6 @@ export default function HeroSlider(props: HeroSliderProps) {
           isDragging = false;
         };
 
-        // Add listeners to the parent element (article)
         const parentElement = link.parentElement;
         if (parentElement) {
           parentElement.addEventListener("mousedown", handleMouseDown);
@@ -238,7 +214,6 @@ export default function HeroSlider(props: HeroSliderProps) {
     handleLinks();
   });
 
-  // Handle wheel events for mouse scrolling
   createEffect(() => {
     const sliderInstance = slider();
     if (!sliderInstance || !sliderInstance.wrapper) return;
@@ -247,35 +222,27 @@ export default function HeroSlider(props: HeroSliderProps) {
     let rafId: number | null = null;
 
     const handleWheel = (e: WheelEvent) => {
-      // Only handle vertical wheel scrolling
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         e.preventDefault();
         e.stopPropagation();
 
-        // Accumulate wheel delta
         accumulatedDelta += e.deltaY;
 
-        // Cancel any pending animation
         if (rafId !== null) {
           cancelAnimationFrame(rafId);
         }
 
-        // Update slider position using requestAnimationFrame for smooth updates
         const updatePosition = () => {
           if (Math.abs(accumulatedDelta) > 0.1) {
-            // Convert vertical scroll to horizontal slider movement
             const scrollAmount = accumulatedDelta * 0.0005; // Adjust multiplier for sensitivity
 
-            // Update the target position directly (target is in pixels)
             const sliderAny = sliderInstance as any;
             if (typeof sliderAny.target !== "undefined") {
               sliderAny.target -= scrollAmount; // Negative because scrolling down should move right
             }
 
-            // Decay accumulated delta
             accumulatedDelta *= 0.85;
 
-            // Continue animation if there's still delta
             if (Math.abs(accumulatedDelta) > 0.1) {
               rafId = requestAnimationFrame(updatePosition);
             } else {
