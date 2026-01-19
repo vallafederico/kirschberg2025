@@ -397,7 +397,7 @@ export default function CaseStudy(props: RouteSectionProps) {
               <div class="relative z-2 flex min-h-full justify-center lg:pt-95 lg:pb-117">
                 <article
                   ref={setArticleRef}
-                  class="lg:rounded-xxl bg-primary text-inverted relative z-2 md:min-h-[140vh] pb-20 lg:w-920 lg:pt-54 lg:pb-86"
+                  class="lg:rounded-xxl bg-primary text-inverted relative z-2 md:min-h-[140vh] pb-20 lg:w-920 lg:pb-86"
                 >
                   <CaseStudyHero {...caseStudy} />
                   <div class="px-16">
@@ -409,9 +409,9 @@ export default function CaseStudy(props: RouteSectionProps) {
                       />
                     </div>
                   </div>
-                  <div class="absolute inset-0 z-1 size-full">
-                    <div class="absolute inset-0 pointer-events-none">
-                      <div class="sticky top-[80svh]">
+                  <div class="absolute pointer-events-none inset-0 z-1 size-full">
+                    <div class="absolute inset-0 ">
+                      <div class="sticky top-[90svh]">
                         <CaseStudySubnav link={caseStudy.liveLink} />
                       </div>
                     </div>
