@@ -79,7 +79,7 @@ export default function CaseStudy(props: RouteSectionProps) {
   return (
     <SanityPage
       element="dialog"
-      class="relative z-2 size-full overflow-y-auto bg-[black]/30 lg:pt-95 lg:pb-117"
+      class="fixed inset-0 z-2 m-0 size-full max-h-none max-w-none overflow-y-auto border-none bg-[black]/30 p-0"
       fetcher={data}
       aria-modal={true}
       aria-labelledby="case-title"
@@ -394,26 +394,30 @@ export default function CaseStudy(props: RouteSectionProps) {
             <SanityMeta pageData={caseStudy} />
 
             <Show when={showContent}>
-              <article
-                ref={setArticleRef}
-                class="lg:rounded-xxl bg-primary text-inverted relative z-2 mx-auto min-h-[140vh] px-16 pb-20 lg:w-920 lg:pt-54 lg:pb-86"
-              >
-                <CaseStudyHero {...caseStudy} />
-                <CaseStudyIntro {...caseStudy} />
-                <div class="flex flex-col gap-32">
-                  <SanityComponents
-                    components={caseStudy.slices}
-                    componentList={SLICE_LIST}
-                  />
-                </div>
-                <div class="absolute inset-0 z-1 size-full">
-                  <div class="absolute inset-0">
-                    <div class="sticky top-[80svh]">
-                      <CaseStudySubnav link={caseStudy.liveLink} />
+              <div class="relative z-2 flex min-h-full justify-center lg:pt-95 lg:pb-117">
+                <article
+                  ref={setArticleRef}
+                  class="lg:rounded-xxl bg-primary text-inverted relative z-2 md:min-h-[140vh] pb-20 lg:w-920 lg:pt-54 lg:pb-86"
+                >
+                  <CaseStudyHero {...caseStudy} />
+                  <div class="px-16">
+                    <CaseStudyIntro {...caseStudy} />
+                    <div class="flex flex-col gap-32">
+                      <SanityComponents
+                        components={caseStudy.slices}
+                        componentList={SLICE_LIST}
+                      />
                     </div>
                   </div>
-                </div>
-              </article>
+                  <div class="absolute inset-0 z-1 size-full">
+                    <div class="absolute inset-0">
+                      <div class="sticky top-[80svh]">
+                        <CaseStudySubnav link={caseStudy.liveLink} />
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </div>
             </Show>
 
             <Show when={hasPassword && !showContent}>

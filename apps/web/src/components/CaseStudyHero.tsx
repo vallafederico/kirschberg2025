@@ -15,7 +15,7 @@ export default function CaseStudyHero({
 	const isImage = featuredMedia[0]?.image;
 
 	return (
-		<header class="relative mb-64">
+		<header class="relative mb-32 lg:mb-64">
 			<div class="w-full max-h-550 lg:rounded-xxl overflow-hidden">
 				<Media
 					imageProps={{
