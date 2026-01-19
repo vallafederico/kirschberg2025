@@ -410,7 +410,7 @@ export default function CaseStudy(props: RouteSectionProps) {
                     </div>
                   </div>
                   <div class="absolute inset-0 z-1 size-full">
-                    <div class="absolute inset-0">
+                    <div class="absolute inset-0 pointer-events-none">
                       <div class="sticky top-[80svh]">
                         <CaseStudySubnav link={caseStudy.liveLink} />
                       </div>
