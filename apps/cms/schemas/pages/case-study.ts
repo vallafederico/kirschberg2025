@@ -35,13 +35,24 @@ export default createPage({
       type: 'url',
     },
     {
+      name: 'directLink',
+      type: 'boolean',
+      title: 'Direct Link',
+      description: 'When enabled, the case will link directly to the live link, otherwise it will link to the case study page.',
+      initialValue: false,
+    },
+    {
       name: 'featuredMedia',
       type: 'array',
       description:
         'Pair of medias, the first item is used on the case study page, the second item is used on the archived project page',
       of: [{type: 'media'}],
     },
-
+    {
+     name: "casePageMedia",
+     type: 'media',
+     title: 'Case Page Hero',
+    },
     {
       name: 'byline',
       type: 'text',
