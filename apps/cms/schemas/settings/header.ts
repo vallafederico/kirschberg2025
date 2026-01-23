@@ -7,7 +7,13 @@ export default {
 	fields: [
 		{
 			name: "email",
+			title: "Email",
 			type: "string",
+			description: "Contact email address",
+			validation: (Rule: any) =>
+				Rule.required()
+					.email("Please enter a valid email address")
+					.lowercase(),
 		},
 		{
 			name: "navLinks",
