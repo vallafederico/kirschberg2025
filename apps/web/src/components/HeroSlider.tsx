@@ -31,11 +31,20 @@ const ArticleCard = ({
   const formatedClient = client ? client.map((c) => c.name)?.join(" & ") : null;
   const formatedRole = role ? role?.join(", ") : null;
 
-  const mediaItem = featuredMedia?.[duplicated ? 1 : 0];
-  const hasMedia =
-    mediaItem &&
-    ((mediaItem.mediaType === "image" && mediaItem.image?.asset) ||
-      (mediaItem.mediaType === "video" && mediaItem.video?.asset));
+  // Get both media items - default (index 0) determines size, alternate (index 1) fades in on hover
+  const defaultMedia = featuredMedia?.[0];
+  const alternateMedia = featuredMedia?.[1];
+  
+  const hasDefaultMedia =
+    defaultMedia &&
+    ((defaultMedia.mediaType === "image" && defaultMedia.image?.asset) ||
+      (defaultMedia.mediaType === "video" && defaultMedia.video?.asset));
+  
+  const hasAlternateMedia =
+    alternateMedia &&
+    ((alternateMedia.mediaType === "image" && alternateMedia.image?.asset) ||
+      (alternateMedia.mediaType === "video" && alternateMedia.video?.asset));
+  
   const useDirectLink = Boolean(directLink && liveLink);
   const cardContent = (
     <>
@@ -48,26 +57,56 @@ const ArticleCard = ({
         </p>
       </div>
       <div
-        class={`overflow-hidden rounded-md ${
-          !hasMedia
+        class={`relative overflow-hidden rounded-md group pointer-events-auto ${
+          !hasDefaultMedia
             ? "bg-gray-800"
-            : mediaItem?.mediaType === "image"
+            : defaultMedia?.mediaType === "image"
               ? "bg-blue-500"
-              : mediaItem?.mediaType === "video"
+              : defaultMedia?.mediaType === "video"
                 ? "bg-green-500"
                 : "bg-purple-500"
         }`}
       >
-        {hasMedia ? (
+        {/* Default media (index 0) - always rendered to determine size, visible when !duplicated */}
+        {hasDefaultMedia ? (
           <Media
+            mediaType={defaultMedia.mediaType || "image"}
+            image={defaultMedia.image}
+            video={defaultMedia.video}
             imageProps={{
               desktopWidth: 35,
               mobileWidth: 45,
               priority: true,
             }}
-            class="block w-full h-auto object-cover object-center"
-            {...mediaItem}
+            class={`block w-full h-auto object-cover object-center transition-opacity duration-500 ease-out ${
+              duplicated 
+                ? "opacity-0 group-hover:opacity-100" 
+                : "opacity-100 group-hover:opacity-0"
+            }`}
           />
+        ) : null}
+        
+        {/* Alternate media (index 1) - always rendered as overlay, visible when duplicated, fades in on hover when !duplicated */}
+        {hasAlternateMedia ? (
+          <div
+            class={`absolute inset-0 transition-opacity duration-500 ease-out ${
+              duplicated 
+                ? "opacity-100 group-hover:opacity-0" 
+                : "opacity-0 group-hover:opacity-100"
+            }`}
+          >
+            <Media
+              mediaType={alternateMedia.mediaType || "image"}
+              image={alternateMedia.image}
+              video={alternateMedia.video}
+              imageProps={{
+                desktopWidth: 35,
+                mobileWidth: 45,
+                priority: false,
+              }}
+              class="block w-full h-full object-cover object-center"
+            />
+          </div>
         ) : null}
       </div>
     </>

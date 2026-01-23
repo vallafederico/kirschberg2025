@@ -39,10 +39,6 @@ const getHomeData = query(async () => {
 export default function Home(props: RouteSectionProps) {
   const data = createAsync(() => getHomeData());
 
-  createEffect(() => {
-    console.log(data()?.caseStudies);
-  });
-
   return (
     <>
       <SanityPage fetcher={data}>
