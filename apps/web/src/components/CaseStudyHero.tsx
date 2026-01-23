@@ -17,7 +17,7 @@ export default function CaseStudyHero({
 	return (
 		<header class="relative mb-32 lg:mb-64">
 			<div class="w-full lg:px-16">
-				<div class="w-full max-h-550 lg:rounded-xxl overflow-hidden">
+				<div class="w-full max-h-550 lg:rounded-xxl overflow-hidden flex items-center justify-center">
 					<Media
 						imageProps={{
 							desktopWidth: 52,
