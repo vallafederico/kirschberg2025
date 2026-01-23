@@ -2,10 +2,7 @@ import { A } from "@solidjs/router";
 import {
   ErrorBoundary,
   createEffect,
-  createSignal,
   For,
-  onCleanup,
-  onMount,
   Show,
 } from "solid-js";
 import Media from "~/components/Media";
@@ -17,8 +14,6 @@ const ArticleCard = ({
   client,
   role,
   featuredMedia,
-  parallaxValues,
-  index,
   duplicated,
 }: {
   slug: { fullUrl: string };
@@ -26,8 +21,6 @@ const ArticleCard = ({
   client: { name: string }[];
   role: string[];
   featuredMedia: any;
-  parallaxValues: any;
-  index: any;
   duplicated?: boolean;
 }) => {
   const formatedClient = client ? client.map((c) => c.name)?.join(" & ") : null;
@@ -39,107 +32,43 @@ const ArticleCard = ({
     ((mediaItem.mediaType === "image" && mediaItem.image?.asset) ||
       (mediaItem.mediaType === "video" && mediaItem.video?.asset));
 
-  const rawParallaxValue = () => {
-    if (index() !== undefined && Array.isArray(parallaxValues())) {
-      return parallaxValues()[index()] || 0;
-    }
-    return 0;
-  };
-
-  const [cardWidth, setCardWidth] = createSignal(300);
-  let itemRef: HTMLLIElement | undefined;
-
-  const CARD_WIDTH = () => cardWidth();
-  const SCALE_MAX = 1.2;
-  const SCALE_FALLOFF = 0.2;
-
-  const parallaxValue = () => {
-    if (index() !== undefined && Array.isArray(parallaxValues())) {
-      const x = parallaxValues()[index()];
-      // Linear scaling: max at center, gentler falloff with distance
-      return SCALE_MAX - SCALE_FALLOFF * Math.abs(x);
-    }
-    return 0;
-  };
-
-  const scaleValue = () => parallaxValue();
-
-  const translateXValue = () => {
-    const x = rawParallaxValue();
-    const ax = Math.abs(x);
-    if (!ax) return 0;
-
-    // Offset based on integral of the scale curve to keep spacing non-overlapping
-    const offset = (SCALE_MAX - 1) * ax - (SCALE_FALLOFF * ax * ax) / 2;
-    const epsilon = 2.15;
-    return Math.sign(x) * (offset * CARD_WIDTH() - epsilon);
-  };
-
-  onMount(() => {
-    if (!itemRef) return;
-    const updateWidth = () =>
-      setCardWidth(itemRef?.getBoundingClientRect().width || 300);
-    updateWidth();
-
-    const observer = new ResizeObserver(updateWidth);
-    observer.observe(itemRef);
-
-    onCleanup(() => observer.disconnect());
-  });
-
-  
-
   return (
-    <li
-      ref={itemRef}
-      class="relative h-340 w-300 shrink-0 px-9 lg:h-380"
-    >
-      <div
-        class="absolute inset-0 flex items-center justify-center"
-        style={{
-          transform: `translateX(${translateXValue()}px) scale(${scaleValue()})`,
-          "transform-origin": "center bottom",
-        }}
-      >
-        <article>
-          <A
-            href={slug?.fullUrl}
-            class="pointer-events-none block h-full w-300 px-10"
+    <li class="relative w-300 shrink-0 px-9">
+      <article>
+        <A href={slug?.fullUrl} class="pointer-events-none block w-300 px-10">
+          <div class="mb-12">
+            <h2 class="text-18">{title}</h2>
+            <p class="mt-2 text-12 font-semibold text-gry">
+              {formatedClient}
+              <Show when={formatedClient && formatedRole}>•</Show>
+              {formatedRole}
+            </p>
+          </div>
+          <div
+            class={`overflow-hidden rounded-md ${
+              !hasMedia
+                ? "bg-gray-800"
+                : mediaItem?.mediaType === "image"
+                  ? "bg-blue-500"
+                  : mediaItem?.mediaType === "video"
+                    ? "bg-green-500"
+                    : "bg-purple-500"
+            }`}
           >
-            <div class="mb-12">
-              <h2 class="text-18">{title}</h2>
-              <p class="mt-2 text-12 font-semibold text-gry">
-                {formatedClient}
-                <Show when={formatedClient && formatedRole}>•</Show>
-                {formatedRole}
-              </p>
-            </div>
-            <div
-              class={`relative h-340 overflow-hidden rounded-md lg:h-380 ${
-                !hasMedia
-                  ? "bg-gray-800"
-                  : mediaItem?.mediaType === "image"
-                    ? "bg-blue-500"
-                    : mediaItem?.mediaType === "video"
-                      ? "bg-green-500"
-                      : "bg-purple-500"
-              }`}
-            >
-              {hasMedia ? (
-                <Media
-                  imageProps={{
-                    desktopWidth: 35,
-                    mobileWidth: 45,
-                    priority: true,
-                  }}
-                  class="absolute inset-0 size-full object-cover object-center"
-                  {...mediaItem}
-                />
-              ) : null}
-            </div>
-          </A>
-        </article>
-      </div>
+            {hasMedia ? (
+              <Media
+                imageProps={{
+                  desktopWidth: 35,
+                  mobileWidth: 45,
+                  priority: true,
+                }}
+                class="block w-full h-auto object-cover object-center"
+                {...mediaItem}
+              />
+            ) : null}
+          </div>
+        </A>
+      </article>
     </li>
   );
 };
@@ -149,14 +78,9 @@ interface HeroSliderProps {
 }
 
 export default function HeroSlider(props: HeroSliderProps) {
-  const [parallaxValues, setParallaxValues] = createSignal<any>(null);
-
   const { ref, slider } = useSmooothy({
     infinite: true,
     snap: false,
-    onUpdate: ({ parallaxValues }: any) => {
-      setParallaxValues(parallaxValues);
-    },
   });
 
   createEffect(() => {
@@ -273,7 +197,7 @@ export default function HeroSlider(props: HeroSliderProps) {
   return (
     <ul ref={ref} class="flex w-screen items-end pl-[calc(50vw-150px)]">
       <For each={props.caseStudies}>
-        {(caseStudy, index) => {
+        {(caseStudy) => {
           return (
             <ErrorBoundary
               fallback={(err, reset) => (
@@ -305,8 +229,6 @@ export default function HeroSlider(props: HeroSliderProps) {
             >
               <ArticleCard
                 {...caseStudy}
-                parallaxValues={parallaxValues}
-                index={index}
               />
             </ErrorBoundary>
           );
