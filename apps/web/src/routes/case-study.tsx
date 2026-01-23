@@ -20,7 +20,9 @@ import Lenis from "lenis";
 const getCaseStudyData = query(async (slug: string) => {
   "use server";
 
-  return await getDocumentBySlug("case-study", slug);
+  return await getDocumentBySlug("case-study", slug, {
+    filter: "&& (!defined(hidden) || hidden != true)",
+  });
 }, "case-study");
 
 const checkAuthentication = query(async (slug: string) => {

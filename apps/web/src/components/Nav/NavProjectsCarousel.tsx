@@ -12,8 +12,9 @@ const getProjects = query(async () => {
 
   // Get featured case studies (showInNav == true), ordered by creation date (latest first)
   // Using defined() to handle cases where the field might not exist yet
+  // Exclude hidden case studies
   const featured = await getDocumentByType("case-study", {
-    filter: "&& defined(showInNav) && showInNav == true",
+    filter: "&& defined(showInNav) && showInNav == true && (!defined(hidden) || hidden != true)",
     extraQuery:
       "| order(_createdAt desc){title,byline,slug,'thumbnail':featuredMedia[0],showInNav,_id}",
   });
@@ -28,14 +29,14 @@ const getProjects = query(async () => {
   const featuredIds =
     featured.length > 0 ? featured.map((p: any) => p._id) : [];
 
-  // Build filter to exclude featured projects
+  // Build filter to exclude featured projects and hidden case studies
   const excludeFilter =
     featuredIds.length > 0
       ? `&& !(_id in [${featuredIds.map((id: string) => `"${id}"`).join(",")}])`
       : "";
 
   const latest = await getDocumentByType("case-study", {
-    filter: excludeFilter,
+    filter: `${excludeFilter} && (!defined(hidden) || hidden != true)`,
     extraQuery: `| order(_createdAt desc)[0...${remaining}]{title,byline,slug,'thumbnail':featuredMedia[0],showInNav,_id}`,
   });
 

@@ -85,5 +85,12 @@ export default createPage({
       description: 'When enabled, this case study will be displayed in the navigation projects carousel. If not enough case studies are selected, the latest ones will be used to fill the carousel.',
       initialValue: false,
     },
+    {
+      name: 'hidden',
+      type: 'boolean',
+      title: 'Hidden',
+      description: 'When enabled, this case study will be hidden from the frontend and will not appear in any listings or be accessible via direct links.',
+      initialValue: false,
+    },
   ],
 })
