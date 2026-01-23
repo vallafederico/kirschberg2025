@@ -1,7 +1,7 @@
 import { getDocumentByType } from "@local/sanity";
-import { createAsync, query } from "@solidjs/router";
+import { A, createAsync, query } from "@solidjs/router";
 import gsap from "gsap";
-import { createEffect, createSignal, For, onCleanup } from "solid-js";
+import { createEffect, createSignal, For, onCleanup, Show } from "solid-js";
 import { navStore } from "~/lib/stores/navStore";
 import Media from "../Media";
 
@@ -16,7 +16,7 @@ const getProjects = query(async () => {
   const featured = await getDocumentByType("case-study", {
     filter: "&& defined(showInNav) && showInNav == true && (!defined(hidden) || hidden != true)",
     extraQuery:
-      "| order(_createdAt desc){title,byline,slug,'thumbnail':featuredMedia[0],showInNav,_id}",
+      "| order(_createdAt desc){title,byline,slug,'thumbnail':featuredMedia[0],showInNav,_id,liveLink,directLink}",
   });
 
   // If we have enough featured projects, return them
@@ -37,7 +37,7 @@ const getProjects = query(async () => {
 
   const latest = await getDocumentByType("case-study", {
     filter: `${excludeFilter} && (!defined(hidden) || hidden != true)`,
-    extraQuery: `| order(_createdAt desc)[0...${remaining}]{title,byline,slug,'thumbnail':featuredMedia[0],showInNav,_id}`,
+    extraQuery: `| order(_createdAt desc)[0...${remaining}]{title,byline,slug,'thumbnail':featuredMedia[0],showInNav,_id,liveLink,directLink}`,
   });
 
   // Combine: featured first, then latest
@@ -85,6 +85,7 @@ export default function NavProjectsCarousel() {
         <For each={projects()}>
           {(project, index) => {
             const randomRotation = Math.random() * (8 - -8) + -8; // random between -10 and 10
+            const hasLiveLink = Boolean(project.liveLink);
             return (
               <li
                 id={`slide-${index()}`}
@@ -97,11 +98,29 @@ export default function NavProjectsCarousel() {
                 }}
                 class="ease-quint-out top-0 left-1/2 z-[var(--index)] w-[82vw] -translate-x-1/2 text-center duration-400 not-first:absolute first:relative lg:w-340"
               >
-                {/* <A href={project.slug.fullUrl}> */}
-                <Media
-                  class="aspect-[1.47/1] w-full rotate-[var(--rotate)] overflow-hidden rounded-xl object-cover"
-                  {...project.thumbnail}
-                />
+                <Show
+                  when={hasLiveLink}
+                  fallback={
+                    <div class="block">
+                      <Media
+                        class="aspect-[1.47/1] w-full rotate-[var(--rotate)] overflow-hidden rounded-xl object-cover"
+                        {...project.thumbnail}
+                      />
+                    </div>
+                  }
+                >
+                  <a
+                    href={project.liveLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="block"
+                  >
+                    <Media
+                      class="aspect-[1.47/1] w-full rotate-[var(--rotate)] overflow-hidden rounded-xl object-cover cursor-pointer"
+                      {...project.thumbnail}
+                    />
+                  </a>
+                </Show>
 
                 <div class="mt-32">
                   <h2 class="text-20 font-bold">{project.title}</h2>
@@ -109,7 +128,6 @@ export default function NavProjectsCarousel() {
                     {project.byline}
                   </p>
                 </div>
-                {/* </A> */}
               </li>
             );
           }}

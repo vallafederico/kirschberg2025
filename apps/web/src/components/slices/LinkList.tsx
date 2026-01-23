@@ -20,23 +20,23 @@ export default function LinkList({
 						class="flex max-lg:flex-col gap-y-40 not-last:mb-40"
 						data-size={item.imageSize}
 					>
-						<h3 class="w-[34%] pr-20  shrink-0 text-20">{item.label}</h3>
-						<ul class="w-full">
+						<h3 class="w-[34%] max-lg:w-full pr-20 shrink-0 text-20">{item.label}</h3>
+						<ul class="w-full min-w-0">
 							<For each={item.items}>
 								{(subItem) => (
-									<li class="not-last:mb-24 w-full">
-										<article class="w-full">
+									<li class="not-last:mb-24 w-full min-w-0">
+										<article class="w-full min-w-0">
 											<a
 												target="_blank"
-												class="flex gap-12 w-full relative"
+												class="flex gap-12 w-full relative min-w-0"
 												href={subItem?.link || ""}
 											>
 												<div
 													class={cx(
 														"overflow-hidden rounded-md shrink-0",
 														item.imageSize === "square"
-															? "size-64"
-															: "w-170 aspect-video",
+															? "size-64 max-lg:size-48"
+															: "w-170 max-lg:w-120 aspect-video",
 													)}
 												>
 													<Media
@@ -47,12 +47,12 @@ export default function LinkList({
 													/>
 												</div>
 
-												<div class="text-18 pr-40 lg:pr-60 w-full">
+												<div class="text-18 pr-20 max-lg:pr-32 lg:pr-60 w-full min-w-0">
 													<h4 class="font-medium">{subItem.title}</h4>
 													<p class="font-semibold">{subItem.description}</p>
 												</div>
 												<Show when={subItem.link}>
-													<Arrow class="absolute text-inverted right-0 top-15 size-11" />
+													<Arrow class="absolute text-inverted right-0 top-15 size-11 shrink-0" />
 												</Show>
 											</a>
 										</article>
