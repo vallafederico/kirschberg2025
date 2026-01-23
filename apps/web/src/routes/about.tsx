@@ -13,7 +13,7 @@ export default function AboutPage() {
   const data = createAsync(() => getAboutData());
 
   return (
-    <SanityPage class="px-margin-1 lg:max-w-[580px] mx-auto" fetcher={data}>
+    <SanityPage class="px-margin-1 max-w-[580px] mx-auto" fetcher={data}>
       {(page) => {
         return (
           <>
