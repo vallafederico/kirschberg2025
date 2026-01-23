@@ -207,6 +207,7 @@ export default function CaseStudy(props: RouteSectionProps) {
         // Open dialog as soon as we have case study data (regardless of authentication)
         createEffect(() => {
           let timeoutId: ReturnType<typeof setTimeout>;
+          let focusBlurTimeoutId: ReturnType<typeof setTimeout>;
 
           // Find the dialog element after it's rendered and open it
           const findDialog = () => {
@@ -216,7 +217,28 @@ export default function CaseStudy(props: RouteSectionProps) {
             if (dialog) {
               // Open the dialog if it's not already open
               if (!dialog.open) {
+                // Prevent auto-focus by blurring any focused element immediately after showModal
+                const handleFocusIn = (e: FocusEvent) => {
+                  // If focus moves to a link inside the dialog, blur it
+                  const target = e.target as HTMLElement;
+                  if (target.tagName === "A" && dialog.contains(target)) {
+                    // Use setTimeout to blur after the browser's focus is set
+                    focusBlurTimeoutId = setTimeout(() => {
+                      target.blur();
+                      dialog.removeEventListener("focusin", handleFocusIn);
+                    }, 0);
+                  }
+                };
+
+                dialog.addEventListener("focusin", handleFocusIn);
                 dialog.showModal();
+
+                // Also blur any element that might have been focused
+                requestAnimationFrame(() => {
+                  if (document.activeElement && document.activeElement !== dialog) {
+                    (document.activeElement as HTMLElement).blur();
+                  }
+                });
               }
 
               // Ensure dialog is scrollable
@@ -228,6 +250,7 @@ export default function CaseStudy(props: RouteSectionProps) {
           // Register cleanup at effect level (must be in reactive context)
           onCleanup(() => {
             clearTimeout(timeoutId);
+            clearTimeout(focusBlurTimeoutId);
           });
 
           // Use requestAnimationFrame to ensure DOM is ready
@@ -470,7 +493,7 @@ export default function CaseStudy(props: RouteSectionProps) {
 
             <div
               onClick={() => navigate("/")}
-              class="fixed inset-0 z-1 size-full bg-[black]/30 lg:backdrop-blur-xs"
+              class="fixed inset-0 z-1 size-full bg-[black]/30 lg:backdrop-blur-xs lg:scale-110"
             ></div>
           </>
         );

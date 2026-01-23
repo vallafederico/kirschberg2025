@@ -263,3 +263,21 @@ body {
     }
   }
 }
+
+/* Remove focus styles from links in case study dialog to prevent auto-focus styling */
+dialog[aria-labelledby="case-title"] a:focus {
+  outline: none;
+  text-decoration: underline;
+}
+
+dialog[aria-labelledby="case-title"] a:focus-visible {
+  outline: none;
+}
+
+/* Remove grab cursor from homepage carousel */
+.hero-slider,
+.hero-slider:hover,
+.hero-slider:active,
+.hero-slider * {
+  cursor: default !important;
+}

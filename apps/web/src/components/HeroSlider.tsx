@@ -219,7 +219,7 @@ export default function HeroSlider(props: HeroSliderProps) {
   });
 
   return (
-    <ul ref={ref} class="flex w-screen items-end pl-[calc(50vw-150px)]">
+    <ul ref={ref} class="hero-slider flex w-screen items-end pl-[calc(50vw-150px)]">
       <For each={props.caseStudies}>
         {(caseStudy) => {
           return (
