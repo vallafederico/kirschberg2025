@@ -14,6 +14,8 @@ const ArticleCard = ({
   client,
   role,
   featuredMedia,
+  liveLink,
+  directLink,
   duplicated,
 }: {
   slug: { fullUrl: string };
@@ -21,6 +23,8 @@ const ArticleCard = ({
   client: { name: string }[];
   role: string[];
   featuredMedia: any;
+  liveLink?: string;
+  directLink?: boolean;
   duplicated?: boolean;
 }) => {
   const formatedClient = client ? client.map((c) => c.name)?.join(" & ") : null;
@@ -31,43 +35,63 @@ const ArticleCard = ({
     mediaItem &&
     ((mediaItem.mediaType === "image" && mediaItem.image?.asset) ||
       (mediaItem.mediaType === "video" && mediaItem.video?.asset));
+  const useDirectLink = Boolean(directLink && liveLink);
+  const cardContent = (
+    <>
+      <div class="mb-12">
+        <h2 class="text-18">{title}</h2>
+        <p class="mt-2 text-12 font-semibold text-gry">
+          {formatedClient}
+          <Show when={formatedClient && formatedRole}>•</Show>
+          {formatedRole}
+        </p>
+      </div>
+      <div
+        class={`overflow-hidden rounded-md ${
+          !hasMedia
+            ? "bg-gray-800"
+            : mediaItem?.mediaType === "image"
+              ? "bg-blue-500"
+              : mediaItem?.mediaType === "video"
+                ? "bg-green-500"
+                : "bg-purple-500"
+        }`}
+      >
+        {hasMedia ? (
+          <Media
+            imageProps={{
+              desktopWidth: 35,
+              mobileWidth: 45,
+              priority: true,
+            }}
+            class="block w-full h-auto object-cover object-center"
+            {...mediaItem}
+          />
+        ) : null}
+      </div>
+    </>
+  );
 
   return (
     <li class="relative w-300 shrink-0 px-9">
       <article>
-        <A href={slug?.fullUrl} class="pointer-events-none block w-300 px-10">
-          <div class="mb-12">
-            <h2 class="text-18">{title}</h2>
-            <p class="mt-2 text-12 font-semibold text-gry">
-              {formatedClient}
-              <Show when={formatedClient && formatedRole}>•</Show>
-              {formatedRole}
-            </p>
-          </div>
-          <div
-            class={`overflow-hidden rounded-md ${
-              !hasMedia
-                ? "bg-gray-800"
-                : mediaItem?.mediaType === "image"
-                  ? "bg-blue-500"
-                  : mediaItem?.mediaType === "video"
-                    ? "bg-green-500"
-                    : "bg-purple-500"
-            }`}
+        <Show
+          when={useDirectLink}
+          fallback={
+            <A href={slug?.fullUrl} class="pointer-events-none block w-300 px-10">
+              {cardContent}
+            </A>
+          }
+        >
+          <a
+            href={liveLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="pointer-events-none block w-300 px-10"
           >
-            {hasMedia ? (
-              <Media
-                imageProps={{
-                  desktopWidth: 35,
-                  mobileWidth: 45,
-                  priority: true,
-                }}
-                class="block w-full h-auto object-cover object-center"
-                {...mediaItem}
-              />
-            ) : null}
-          </div>
-        </A>
+            {cardContent}
+          </a>
+        </Show>
       </article>
     </li>
   );

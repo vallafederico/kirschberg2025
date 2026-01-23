@@ -397,7 +397,7 @@ export default function CaseStudy(props: RouteSectionProps) {
               <div class="relative z-2 flex min-h-full justify-center lg:pt-95 lg:pb-117">
                 <article
                   ref={setArticleRef}
-                  class="lg:rounded-xxl bg-primary text-inverted relative z-2 md:min-h-[140vh] pb-20 lg:w-920 lg:pb-86"
+                  class="lg:rounded-xxl bg-primary text-inverted relative z-2 md:min-h-[140vh] w-full max-w-[1160px] pt-16 pb-20 lg:pb-86"
                 >
                   <CaseStudyHero {...caseStudy} />
                   <div class="px-16">
@@ -422,7 +422,7 @@ export default function CaseStudy(props: RouteSectionProps) {
 
             <Show when={hasPassword && !showContent}>
               <div class="relative z-2 flex min-h-full items-center justify-center">
-                <div class="lg:rounded-xxl bg-primary text-inverted max-lg:px-margin-1 relative z-2 mx-auto py-40 lg:w-920 lg:px-64 lg:py-54">
+                <div class="lg:rounded-xxl bg-primary text-inverted max-lg:px-16 relative z-2 mx-auto py-40 w-full max-w-[1160px] lg:px-64 lg:py-54">
                   <div class="flex flex-col items-center gap-32">
                     <h2 class="text-32 font-display font-medium">
                       Password Protection

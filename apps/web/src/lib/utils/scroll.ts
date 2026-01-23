@@ -49,6 +49,7 @@ class _Scroll extends Subscribable<ScrollEvent> {
     this.lenis = new Lenis({
       wrapper: wrapper || window,
       autoResize: false,
+      smoothWheel: false,
     });
 
     this.lenis.on("scroll", this.onScroll.bind(this));

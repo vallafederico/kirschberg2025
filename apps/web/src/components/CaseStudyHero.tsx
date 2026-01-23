@@ -16,20 +16,22 @@ export default function CaseStudyHero({
 
 	return (
 		<header class="relative mb-32 lg:mb-64">
-			<div class="w-full max-h-550 lg:rounded-xxl overflow-hidden">
-				<Media
-					imageProps={{
-						desktopWidth: 52,
-						mobileWidth: 95,
-					}}
-					class={cx(
-						"w-full relative h-full object-cover",
-						isImage && "h-full md:-translate-y-1/4 ",
-					)}
-					{...(featuredMedia?.[0] || {})}
-				/>
+			<div class="w-full lg:px-16">
+				<div class="w-full max-h-550 lg:rounded-xxl overflow-hidden">
+					<Media
+						imageProps={{
+							desktopWidth: 52,
+							mobileWidth: 95,
+						}}
+						class={cx(
+							"w-full relative h-full object-cover",
+							isImage && "h-full md:-translate-y-1/4 ",
+						)}
+						{...(featuredMedia?.[0] || {})}
+					/>
+				</div>
 			</div>
-			<div class="lg:w-[50%] max-lg:px-margin-1 lg:ml-grid-2">
+			<div class="lg:w-[50%] max-lg:px-16 lg:ml-grid-2">
 				<h1 id="case-title" class="text-32 font-display font-medium mt-44">
 					{title}
 				</h1>

@@ -19,7 +19,8 @@ const getHomeData = query(async () => {
   const [home, caseStudies] = await Promise.all([
     getDocumentByType("home"),
     getDocumentByType("case-study", {
-      extraQuery: "{title,role,featuredMedia,client{name},slug}",
+      extraQuery:
+        "{title,role,featuredMedia,client{name},slug,liveLink,directLink}",
     }),
   ]);
 

@@ -29,7 +29,7 @@ export default function CaseStudyIntro({
   };
 
   return (
-    <section class="max-lg:px-margin-1 mb-64 flex items-start max-lg:flex-col">
+    <section class="max-lg:px-16 mb-64 flex items-start max-lg:flex-col">
       <dl class="text-14 lg:w-grid-2 flex w-full shrink-0 gap-32 font-medium max-lg:mb-32 max-lg:justify-between lg:flex-col lg:pr-90">
         <Show when={role}>
           <IntroSubsection label="Role">{role.join(", ")}</IntroSubsection>
