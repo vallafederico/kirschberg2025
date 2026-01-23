@@ -2,6 +2,7 @@ import { A } from "@solidjs/router";
 import {
   ErrorBoundary,
   createEffect,
+  createSignal,
   For,
   Show,
 } from "solid-js";
@@ -106,6 +107,8 @@ export default function HeroSlider(props: HeroSliderProps) {
     infinite: true,
     snap: false,
   });
+  
+  const [sliderElement, setSliderElement] = createSignal<HTMLElement | null>(null);
 
   createEffect(() => {
     const sliderInstance = slider();
@@ -160,6 +163,51 @@ export default function HeroSlider(props: HeroSliderProps) {
     };
 
     handleLinks();
+  });
+
+  createEffect(() => {
+    const sliderInstance = slider();
+    if (!sliderInstance) return;
+
+    // Remove grab cursor from slider wrapper and element
+    // Use MutationObserver to override any cursor changes made by the library
+    const updateCursor = () => {
+      if (sliderInstance.wrapper) {
+        sliderInstance.wrapper.style.cursor = "default";
+        // Also set on all child elements
+        const allElements = sliderInstance.wrapper.querySelectorAll("*");
+        allElements.forEach((el: Element) => {
+          const htmlEl = el as HTMLElement;
+          if (htmlEl && htmlEl.style) {
+            htmlEl.style.cursor = "default";
+          }
+        });
+      }
+      
+      const element = sliderElement();
+      if (element && element.style) {
+        element.style.cursor = "default";
+      }
+    };
+
+    updateCursor();
+
+    // Watch for style attribute changes and override cursor
+    if (sliderInstance.wrapper) {
+      const observer = new MutationObserver(() => {
+        updateCursor();
+      });
+
+      observer.observe(sliderInstance.wrapper, {
+        attributes: true,
+        attributeFilter: ["style"],
+        subtree: true,
+      });
+
+      return () => {
+        observer.disconnect();
+      };
+    }
   });
 
   createEffect(() => {
@@ -219,7 +267,14 @@ export default function HeroSlider(props: HeroSliderProps) {
   });
 
   return (
-    <ul ref={ref} class="hero-slider flex w-screen items-end pl-[calc(50vw-150px)]">
+    <ul 
+      ref={(el) => {
+        setSliderElement(el);
+        ref(el);
+      }}
+      class="hero-slider flex w-screen items-end pl-[calc(50vw-150px)]"
+      style={{ cursor: "default" }}
+    >
       <For each={props.caseStudies}>
         {(caseStudy) => {
           return (

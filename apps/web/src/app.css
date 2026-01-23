@@ -278,6 +278,8 @@ dialog[aria-labelledby="case-title"] a:focus-visible {
 .hero-slider,
 .hero-slider:hover,
 .hero-slider:active,
-.hero-slider * {
+.hero-slider *,
+.hero-slider *:hover,
+.hero-slider *:active {
   cursor: default !important;
 }
