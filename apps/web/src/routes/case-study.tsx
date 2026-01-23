@@ -102,24 +102,31 @@ export default function CaseStudy(props: RouteSectionProps) {
         let startY = 0;
         let startScrollY = 0;
         let dialogLenis: Lenis | null = null;
+        let hasMoved = false; // Track if mouse moved during drag
 
         const handleMouseDown = (e: MouseEvent) => {
           // Only enable on desktop (lg breakpoint)
           if (window.innerWidth < 1024) return;
 
-          // Don't start drag if clicking on interactive elements
+          // Don't start drag if clicking on interactive elements or backdrop overlay
           const target = e.target as HTMLElement;
           if (
             target.tagName === "A" ||
             target.tagName === "BUTTON" ||
             target.closest("a") ||
             target.closest("button") ||
-            target.closest("[data-selectable]")
+            target.closest("[data-selectable]") ||
+            target.classList.contains("backdrop-overlay") ||
+            target === e.currentTarget // Don't drag if clicking directly on dialog backdrop
           ) {
+            // Reset drag flag when clicking on backdrop/interactive elements
+            dragOccurred = false;
             return;
           }
 
           isDragging = true;
+          hasMoved = false;
+          dragOccurred = false; // Reset drag flag on new mouse down
           startY = e.clientY;
 
           // Get current scroll position from Lenis or scroll container
@@ -143,8 +150,15 @@ export default function CaseStudy(props: RouteSectionProps) {
         const handleMouseMove = (e: MouseEvent) => {
           if (!isDragging) return;
 
-          const deltaY = startY - e.clientY;
-          const newScrollY = startScrollY + deltaY;
+          // Track if mouse has moved (to distinguish click from drag)
+          const deltaY = Math.abs(startY - e.clientY);
+          if (deltaY > 5) {
+            // Threshold to distinguish click from drag
+            hasMoved = true;
+            dragOccurred = true; // Mark that a drag occurred
+          }
+
+          const newScrollY = startScrollY + (startY - e.clientY);
 
           // Use Lenis for smooth scrolling (without immediate flag for smoothness)
           if (dialogLenis) {
@@ -166,8 +180,10 @@ export default function CaseStudy(props: RouteSectionProps) {
           if (!isDragging) return;
 
           isDragging = false;
+          hasMoved = false;
           document.body.style.cursor = "";
           document.body.style.userSelect = "";
+          // Note: dragOccurred flag is checked in click handler, then reset
         };
 
         const setupDragScroll = (dialogElement: HTMLElement) => {
@@ -206,6 +222,33 @@ export default function CaseStudy(props: RouteSectionProps) {
           isDragging = false;
         };
 
+        // Track if a drag occurred to distinguish clicks from drags
+        let dragOccurred = false;
+        
+        // Handle backdrop click to close dialog and navigate home
+        const handleDialogClick = (e: MouseEvent) => {
+          const dialog = e.currentTarget as HTMLDialogElement;
+          const target = e.target as HTMLElement;
+          
+          // Only close if clicking directly on the dialog backdrop (not on content)
+          // Check if the click target is the dialog itself or the backdrop overlay div
+          const isBackdropClick = 
+            target === dialog || 
+            target.classList.contains('backdrop-overlay');
+          
+          // Don't close if a drag occurred (user was scrolling, not clicking)
+          if (isBackdropClick && !dragOccurred && !isDragging) {
+            e.stopPropagation();
+            e.preventDefault();
+            dialog.close();
+            navigate("/");
+            return;
+          }
+          
+          // Reset drag flag after click handler
+          dragOccurred = false;
+        };
+
         // Open dialog as soon as we have case study data (regardless of authentication)
         createEffect(() => {
           let timeoutId: ReturnType<typeof setTimeout>;
@@ -217,6 +260,9 @@ export default function CaseStudy(props: RouteSectionProps) {
               "dialog[aria-labelledby='case-title']",
             ) as HTMLDialogElement;
             if (dialog) {
+              // Add click handler for backdrop clicks
+              dialog.addEventListener("click", handleDialogClick);
+
               // Open the dialog if it's not already open
               if (!dialog.open) {
                 // Prevent auto-focus by blurring any focused element immediately after showModal
@@ -253,6 +299,13 @@ export default function CaseStudy(props: RouteSectionProps) {
           onCleanup(() => {
             clearTimeout(timeoutId);
             clearTimeout(focusBlurTimeoutId);
+            // Remove click handler on cleanup
+            const dialog = document.querySelector(
+              "dialog[aria-labelledby='case-title']",
+            ) as HTMLDialogElement;
+            if (dialog) {
+              dialog.removeEventListener("click", handleDialogClick);
+            }
           });
 
           // Use requestAnimationFrame to ensure DOM is ready
@@ -419,7 +472,11 @@ export default function CaseStudy(props: RouteSectionProps) {
             <SanityMeta pageData={caseStudy} />
 
             <Show when={showContent}>
-              <div class="relative z-2 flex min-h-full justify-center lg:pt-95 lg:pb-117">
+              <div 
+                class="relative z-[101] flex min-h-full justify-center lg:pt-95 lg:pb-117"
+                onClick={(e) => e.stopPropagation()}
+                style={{ "pointer-events": "auto", "position": "relative" }}
+              >
                 <article
                   ref={setArticleRef}
                   class="lg:rounded-xxl bg-primary text-inverted relative z-2 md:min-h-[140vh] w-full max-w-[1160px] pt-16 pb-20 lg:pb-86"
@@ -446,7 +503,10 @@ export default function CaseStudy(props: RouteSectionProps) {
             </Show>
 
             <Show when={hasPassword && !showContent}>
-              <div class="relative z-2 flex min-h-full items-center justify-center">
+              <div 
+                class="relative z-2 flex min-h-full items-center justify-center"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div class="lg:rounded-xxl bg-primary text-inverted max-lg:px-16 relative z-2 mx-auto py-40 w-full max-w-[1160px] lg:px-64 lg:py-54">
                   <div class="flex flex-col items-center gap-32">
                     <h2 class="text-32 font-display font-medium">
@@ -493,9 +553,30 @@ export default function CaseStudy(props: RouteSectionProps) {
               </div>
             </Show>
 
+            {/* Backdrop overlay to capture clicks on empty space - needs to be above content to catch clicks */}
             <div
-              onClick={() => navigate("/")}
-              class="fixed inset-0 z-1 size-full bg-[black]/30 lg:backdrop-blur-xs lg:scale-110"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Only close if not dragging
+                if (!dragOccurred && !isDragging) {
+                  const dialog = document.querySelector(
+                    "dialog[aria-labelledby='case-title']",
+                  ) as HTMLDialogElement;
+                  if (dialog) {
+                    dialog.close();
+                  }
+                  navigate("/");
+                }
+              }}
+              onMouseDown={(e) => {
+                // Prevent drag scroll from starting on backdrop
+                e.stopPropagation();
+              }}
+              class="backdrop-overlay fixed inset-0 z-[100]"
+              style={{ 
+                "pointer-events": "auto",
+                "background": "transparent"
+              }}
             ></div>
           </>
         );
